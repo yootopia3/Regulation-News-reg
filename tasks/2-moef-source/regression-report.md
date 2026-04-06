@@ -37,3 +37,73 @@
 - **A의 영구성**: 같은 슬러그가 또 abandon될 경우는 새 stale guard가 14일 이내에 경고로 잡는다. 운영에서 WARNING 로그를 봐야 의미가 있으므로 로그 수집 여부는 별도 확인 필요.
 - **B 영구 차단 여부**: `mofe.go.kr`는 본 환경에서 두 번 모두 reset됐다. WAF/지역 차단/임시 차단 어느 쪽인지는 본 task에서 단정하지 않는다. 다음 round에서 대체 vantage point로 1회 재시도 가능.
 - **DB 실측 결합**: 본 task는 DB insert를 직접 검증하지 않았다. dedup 로직(`Pipeline._is_duplicate`)은 link 키 기반이고 신규 entries의 `link`는 다른 `newsId`를 가지므로 다음 정상 사이클에서 자연 insert될 것이 예상되지만, 실측은 다음 cron 실행 결과로 확인하라.
+
+---
+
+## 5. Phase 3 재검증 (2026-04-06, runner 세션)
+
+phase 3은 코드 변경 없이 phase 2 결과를 다시 측정하고, AC 출력을 그대로 기록한다. 이번 측정 환경은 `www.korea.kr` 외부 접근이 가능하다.
+
+### AC1 — Import smoke
+
+```
+$ source venv/bin/activate && python -c "from src.pipeline import Pipeline; from src.services.analyzer import HybridAnalyzer; print('OK')"
+.../src/services/analyzer/gemini_client.py:7: FutureWarning: All support for the `google.generativeai` package has ended. ...
+OK
+```
+
+PASS. (FutureWarning은 본 task와 무관, 사전부터 존재.)
+
+### AC2 — MOEF targeted verify (≥10 entries, age ≤ 7d)
+
+```
+$ python -c "...fetch_rss_feed(MOEF cfg); assert len>=10; assert age<=7..."
+Fetching RSS for 기재부 (MOEF)...
+MOEF_OK 50 age 0
+```
+
+PASS. 50 entries, latest age **0d**.
+
+### AC3 — FSC sanity (no crash)
+
+```
+$ python -c "...fetch_rss_feed(FSC cfg); print('FSC count', len(items))"
+Fetching RSS for 금융위 (FSC)...
+  > Error processing URL https://www.fsc.go.kr/about/fsc_bbs_rss/?fid=0111: ('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer'))
+FSC count 0
+```
+
+PASS — phase 지시상 0건은 회귀가 아니며, 본 측정 환경에서 `www.fsc.go.kr` TCP가 reset된다 (phase 2 측정 시점과 동일). parser는 list로 정상 반환.
+
+### AC4 — Stale guard fires on dead URL only
+
+```
+$ python -c "
+import logging; logging.basicConfig(level=logging.WARNING, format='%(levelname)s:%(message)s')
+from src.collectors.rss_parser import fetch_rss_feed
+fetch_rss_feed({'code':'MOEF_OLD','collection_method':'rss','url':'https://www.korea.kr/rss/dept_moef.xml'})
+fetch_rss_feed({'code':'MOEF_NEW','collection_method':'rss','url':'https://www.korea.kr/rss/dept_mofe.xml'})
+"
+WARNING:[STALE RSS] MOEF_OLD latest entry is 20d old (2026-03-17); source URL may be dead: https://www.korea.kr/rss/dept_moef.xml
+Fetching RSS for Unknown...
+Fetching RSS for Unknown...
+```
+
+PASS. 옛 URL에서 정확히 1줄 WARNING, 신규 URL에서는 미발화. 20d > `RSS_STALE_WARN_DAYS=14` 임계와 일치.
+
+### AC5 — Scope guard (untracked 포함)
+
+```
+$ git status --short
+ M tasks/2-moef-source/index.json
+
+$ git diff --stat
+ tasks/2-moef-source/index.json | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+```
+
+PASS. phase 3 측정 시작 시점의 dirty 파일은 `tasks/2-moef-source/index.json` 단 1개. 본 phase에서 추가로 만들어지는 파일은 `tasks/2-moef-source/regression-report.md` (현재 파일) 업데이트뿐 — 모두 허용 경로(`tasks/2-moef-source/**`) 안. `git diff --stat` 단독으로는 untracked가 빠지므로 `git status --short`를 함께 확인.
+
+### Phase 3 결론
+
+phase 2에서 적용된 MOEF URL 교체 + RSS stale guard는 정상 동작하며, 본 측정 환경에서 다른 RSS 경로(FSC) 회귀나 scope 외 변경이 없음을 재확인했다. 코드 변경 없음.
