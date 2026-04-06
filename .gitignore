@@ -1,0 +1,18 @@
+# Task outputs (generated at runtime)
+tasks/*/phase*-output.json
+
+# OS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# IDE
+.vscode/
+.idea/
+.omc/
+.codex
+
+# Local Claude settings
+.claude/settings.local.json
