@@ -29,7 +29,7 @@
       "name": "regression-verify",
       "status": "completed",
       "started_at": "2026-04-06T22:41:51+0900",
-      "completed_at": "2026-04-06T22:43:35+0900",
+      "completed_at": "2026-04-06T22:43:50+0900",
       "note": "All AC pass on current HEAD. AC1 import smoke OK. AC2 MOEF fetch 50 entries, age 0d. AC3 FSC sanity returns empty list (ConnectionReset, no crash — env-only, not regression). AC4 stale guard fires exactly once on dept_moef.xml (20d old) and stays silent on dept_mofe.xml. AC5 scope clean (only tasks/2-moef-source/** touched). regression-report.md updated with phase 3 section."
     }
   ]
