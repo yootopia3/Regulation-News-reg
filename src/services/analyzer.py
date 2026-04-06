@@ -10,37 +10,30 @@ import json
 import time
 import logging
 from typing import Dict, Any, Optional
-from dotenv import load_dotenv
 import google.generativeai as genai
 from google.generativeai.types import GenerationConfig
 
-# Load env
-load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env'))
-
-# Import settings
-from config.settings import (
-    MODEL_FILTER_ID, 
-    MODEL_ANALYZER_ID, 
+from src.config.settings import (
+    MODEL_FILTER_ID,
+    MODEL_ANALYZER_ID,
     MODEL_ANALYZER_FALLBACK,
     IMPORTANCE_THRESHOLD,
-    API_CALL_DELAY
+    API_CALL_DELAY,
+    load_env,
+    get_gemini_api_key,
 )
 
-# Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 
 class HybridAnalyzer:
     """2-Tier Hybrid Analyzer with Gatekeeper + Analyst pipeline."""
-    
+
     def __init__(self):
-        if not GEMINI_API_KEY:
-            raise ValueError("GEMINI_API_KEY is not set in .env")
-        
-        genai.configure(api_key=GEMINI_API_KEY)
+        load_env()
+        api_key = get_gemini_api_key()
+
+        genai.configure(api_key=api_key)
         
         self.filter_model = MODEL_FILTER_ID
         self.analyzer_model = MODEL_ANALYZER_ID

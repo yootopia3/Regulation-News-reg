@@ -6,7 +6,7 @@ from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 import logging
 import re
-from config import settings
+from src.config import settings
 
 import urllib3
 

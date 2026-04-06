@@ -1,13 +1,10 @@
-import os
 from supabase import create_client, Client
-from dotenv import load_dotenv
 
-load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env'))
+from src.config.settings import load_env, get_supabase_url, get_supabase_anon_key
 
-url: str = os.environ.get("SUPABASE_URL")
-key: str = os.environ.get("SUPABASE_ANON_KEY")
+load_env()
 
-if not url or not key:
-    raise ValueError("Supabase credentials not found in .env")
+url: str = get_supabase_url()
+key: str = get_supabase_anon_key()
 
 supabase: Client = create_client(url, key)

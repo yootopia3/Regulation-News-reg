@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 from src.collectors.rss_parser import collect_all_rss
 from src.collectors.scraper import ContentScraper
+from src.config.agency_codes import AgencyCode, SANCTION_AGENCY_CODES
 from src.utils.logger import setup_logger
 
 logger = logging.getLogger(__name__)
@@ -145,7 +146,7 @@ class Pipeline:
             agency_id = agency.get('code') or agency.get('id')
             
             # Skip sanction notice agencies here (they use a different method)
-            if agency_id in ['FSS_SANCTION', 'FSS_MGMT_NOTICE']:
+            if agency_id in SANCTION_AGENCY_CODES:
                 continue
             
             logger.info(f"Starting HTML scraping for {agency_id}...")
@@ -159,7 +160,7 @@ class Pipeline:
                 logger.error(f"Scraping failed for {agency_id}: {e}")
 
         # 3. Sanction Notice Collection (separate handling)
-        sanction_targets = [a for a in self.agency_map.values() if a.get('code') in ['FSS_SANCTION', 'FSS_MGMT_NOTICE']]
+        sanction_targets = [a for a in self.agency_map.values() if a.get('code') in SANCTION_AGENCY_CODES]
         for agency in sanction_targets:
             agency_id = agency.get('code')
             logger.info(f"Starting sanction notice scraping for {agency_id}...")
@@ -188,7 +189,7 @@ class Pipeline:
         link = item['link']
         
         # Deduplication (use sanction-specific check for sanction agencies)
-        if agency_id in ['FSS_SANCTION', 'FSS_MGMT_NOTICE']:
+        if agency_id in SANCTION_AGENCY_CODES:
             if self._is_sanction_duplicate(link, agency_id):
                 logger.debug(f"Skipping duplicate sanction: {title[:30]}...")
                 return

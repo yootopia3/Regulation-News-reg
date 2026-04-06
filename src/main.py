@@ -1,8 +1,12 @@
 import os
 import sys
 import logging
+from src.config.settings import load_env
 from src.utils.logger import setup_logger
 from src.pipeline import Pipeline
+
+# Load environment variables once at program entry
+load_env()
 
 # Setup Logging (Global)
 logger = setup_logger()
