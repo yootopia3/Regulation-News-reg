@@ -1,0 +1,654 @@
+2026-01-04 14:43:33,361 - ERROR - Failed to init Analyzer: GEMINI_API_KEY is not set in .env
+2026-01-04 14:43:35,652 - WARNING - !!! BACKFILL MODE ACTIVATED !!! Target: 60 days
+2026-01-04 14:43:35,657 - INFO - Starting 60-Day Backfill Pipeline...
+2026-01-04 14:43:35,662 - INFO - Loaded Agencies: ['FSC', 'MOEF', 'FSS', 'BOK', 'FSS_REG', 'FSC_REG', 'FSS_REG_INFO']
+2026-01-04 14:43:35,668 - INFO - Processing FSC...
+2026-01-04 14:43:35,673 - INFO -   > RSS Mode for FSC
+2026-01-04 14:43:35,681 - WARNING -   > RSS backfill limited to feed capacity.
+2026-01-04 14:43:35,683 - INFO - Processing MOEF...
+2026-01-04 14:43:35,684 - INFO -   > RSS Mode for MOEF
+2026-01-04 14:43:35,686 - WARNING -   > RSS backfill limited to feed capacity.
+2026-01-04 14:43:35,687 - INFO - Processing FSS...
+2026-01-04 14:43:36,154 - INFO - [FSS] Starting BACKFILL. Cutoff: 2025-11-05
+2026-01-04 14:43:36,154 - INFO -   [FSS] Scraping Page 1: https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=1
+2026-01-04 14:43:37,165 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:43:38,172 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=1 HTTP/1.1" 200 None
+2026-01-04 14:43:38,468 - INFO -     > Found 10 items.
+2026-01-04 14:43:38,469 - INFO -   [FSS] Scraping Page 2: https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=2
+2026-01-04 14:43:39,070 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:43:40,078 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=2 HTTP/1.1" 200 None
+2026-01-04 14:43:40,330 - INFO -     > Found 10 items.
+2026-01-04 14:43:40,330 - INFO -   [FSS] Scraping Page 3: https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=3
+2026-01-04 14:43:41,012 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:43:41,686 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=3 HTTP/1.1" 200 None
+2026-01-04 14:43:41,891 - INFO -     > Found 10 items.
+2026-01-04 14:43:41,892 - INFO -   [FSS] Scraping Page 4: https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=4
+2026-01-04 14:43:43,184 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:43:44,007 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=4 HTTP/1.1" 200 None
+2026-01-04 14:43:44,283 - INFO -     > Found 10 items.
+2026-01-04 14:43:44,284 - INFO -   [FSS] Scraping Page 5: https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=5
+2026-01-04 14:43:45,100 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:43:45,749 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=5 HTTP/1.1" 200 None
+2026-01-04 14:43:45,964 - INFO -     > Found 10 items.
+2026-01-04 14:43:45,965 - INFO -   [FSS] Scraping Page 6: https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=6
+2026-01-04 14:43:47,300 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:43:47,832 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=6 HTTP/1.1" 200 None
+2026-01-04 14:43:48,051 - INFO -     > Found 10 items.
+2026-01-04 14:43:48,052 - INFO -   [FSS] Scraping Page 7: https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=7
+2026-01-04 14:43:48,881 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:43:49,538 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=7 HTTP/1.1" 200 None
+2026-01-04 14:43:49,758 - INFO -     > Found 10 items.
+2026-01-04 14:43:49,759 - INFO -   [FSS] Scraping Page 8: https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=8
+2026-01-04 14:43:51,134 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:43:51,893 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=8 HTTP/1.1" 200 None
+2026-01-04 14:43:52,115 - INFO -     > Found 10 items.
+2026-01-04 14:43:52,115 - INFO -   [FSS] Scraping Page 9: https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=9
+2026-01-04 14:43:52,663 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:43:53,421 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=9 HTTP/1.1" 200 None
+2026-01-04 14:43:53,671 - INFO -     > Found 10 items.
+2026-01-04 14:43:53,671 - INFO -   [FSS] Scraping Page 10: https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=10
+2026-01-04 14:43:54,726 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:43:55,476 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=10 HTTP/1.1" 200 None
+2026-01-04 14:43:55,689 - INFO -     > Found 10 items.
+2026-01-04 14:43:55,689 - INFO -   [FSS] Scraping Page 11: https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=11
+2026-01-04 14:43:56,806 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:43:57,525 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=11 HTTP/1.1" 200 None
+2026-01-04 14:43:57,747 - INFO -     > Found 10 items.
+2026-01-04 14:43:57,748 - INFO -   [FSS] Scraping Page 12: https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=12
+2026-01-04 14:43:58,743 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:43:59,469 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=12 HTTP/1.1" 200 None
+2026-01-04 14:43:59,765 - INFO -     > Found 10 items.
+2026-01-04 14:43:59,765 - INFO -   [FSS] Scraping Page 13: https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=13
+2026-01-04 14:44:00,864 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:44:01,520 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=13 HTTP/1.1" 200 None
+2026-01-04 14:44:01,734 - INFO -     > Found 10 items.
+2026-01-04 14:44:01,735 - INFO -   [FSS] Scraping Page 14: https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=14
+2026-01-04 14:44:02,245 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:44:02,951 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=14 HTTP/1.1" 200 None
+2026-01-04 14:44:03,167 - INFO -     > Found 10 items.
+2026-01-04 14:44:03,168 - INFO -   [FSS] Scraping Page 15: https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=15
+2026-01-04 14:44:04,190 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:44:04,853 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=15 HTTP/1.1" 200 None
+2026-01-04 14:44:05,065 - INFO -     > Found 10 items.
+2026-01-04 14:44:05,066 - INFO -   [FSS] Scraping Page 16: https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=16
+2026-01-04 14:44:06,196 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:44:06,945 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/list.do?menuNo=200218&pageIndex=16 HTTP/1.1" 200 None
+2026-01-04 14:44:07,155 - INFO -     > Old item found (2025-11-05). Stopping.
+2026-01-04 14:44:09,567 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:44:10,530 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208536&menuNo=200218&pageIndex=1 HTTP/1.1" 200 None
+2026-01-04 14:44:10,757 - WARNING - ⚠️ Short content detected (44 chars) for https://www.fss.or.kr/fss/bbs/B0000188/view.do?nttId=208536&menuNo=200218&pageIndex=1
+2026-01-04 14:44:13,502 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:44:14,688 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208510&menuNo=200218&pageIndex=1 HTTP/1.1" 200 None
+2026-01-04 14:44:17,819 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:44:18,978 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208485&menuNo=200218&pageIndex=1 HTTP/1.1" 200 None
+2026-01-04 14:44:21,893 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:44:23,021 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208484&menuNo=200218&pageIndex=1 HTTP/1.1" 200 None
+2026-01-04 14:44:25,677 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:44:26,609 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208480&menuNo=200218&pageIndex=1 HTTP/1.1" 200 None
+2026-01-04 14:44:29,427 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:44:30,498 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208448&menuNo=200218&pageIndex=1 HTTP/1.1" 200 None
+2026-01-04 14:44:34,616 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:44:35,721 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208445&menuNo=200218&pageIndex=1 HTTP/1.1" 200 None
+2026-01-04 14:44:38,727 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:44:39,845 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208421&menuNo=200218&pageIndex=1 HTTP/1.1" 200 None
+2026-01-04 14:44:42,745 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:44:43,914 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208374&menuNo=200218&pageIndex=1 HTTP/1.1" 200 None
+2026-01-04 14:44:48,143 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:44:49,158 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208371&menuNo=200218&pageIndex=1 HTTP/1.1" 200 None
+2026-01-04 14:44:51,505 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:44:52,311 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208370&menuNo=200218&pageIndex=2 HTTP/1.1" 200 None
+2026-01-04 14:44:55,113 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:44:56,236 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208369&menuNo=200218&pageIndex=2 HTTP/1.1" 200 None
+2026-01-04 14:45:00,506 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:45:01,385 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208366&menuNo=200218&pageIndex=2 HTTP/1.1" 200 None
+2026-01-04 14:45:04,138 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:45:05,260 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208360&menuNo=200218&pageIndex=2 HTTP/1.1" 200 None
+2026-01-04 14:45:08,139 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:45:09,308 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208355&menuNo=200218&pageIndex=2 HTTP/1.1" 200 None
+2026-01-04 14:45:12,488 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:45:13,508 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208354&menuNo=200218&pageIndex=2 HTTP/1.1" 200 None
+2026-01-04 14:45:16,951 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:45:18,014 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208346&menuNo=200218&pageIndex=2 HTTP/1.1" 200 None
+2026-01-04 14:45:20,942 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:45:22,213 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208334&menuNo=200218&pageIndex=2 HTTP/1.1" 200 None
+2026-01-04 14:45:25,615 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:45:26,617 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208330&menuNo=200218&pageIndex=2 HTTP/1.1" 200 None
+2026-01-04 14:45:30,786 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:45:32,145 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208325&menuNo=200218&pageIndex=2 HTTP/1.1" 200 None
+2026-01-04 14:45:35,126 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:45:36,241 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208324&menuNo=200218&pageIndex=3 HTTP/1.1" 200 None
+2026-01-04 14:45:41,668 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:45:42,808 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208321&menuNo=200218&pageIndex=3 HTTP/1.1" 200 None
+2026-01-04 14:45:46,277 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:45:47,055 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208320&menuNo=200218&pageIndex=3 HTTP/1.1" 200 None
+2026-01-04 14:45:49,817 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:45:50,883 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208319&menuNo=200218&pageIndex=3 HTTP/1.1" 200 None
+2026-01-04 14:45:53,203 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:45:55,173 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208313&menuNo=200218&pageIndex=3 HTTP/1.1" 200 None
+2026-01-04 14:45:57,902 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:45:59,178 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208312&menuNo=200218&pageIndex=3 HTTP/1.1" 200 None
+2026-01-04 14:46:03,153 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:46:04,402 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208311&menuNo=200218&pageIndex=3 HTTP/1.1" 200 None
+2026-01-04 14:46:08,279 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:46:09,527 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208310&menuNo=200218&pageIndex=3 HTTP/1.1" 200 None
+2026-01-04 14:46:13,041 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:46:14,231 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208302&menuNo=200218&pageIndex=3 HTTP/1.1" 200 None
+2026-01-04 14:46:17,651 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:46:18,840 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208298&menuNo=200218&pageIndex=3 HTTP/1.1" 200 None
+2026-01-04 14:46:22,797 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:46:23,961 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208293&menuNo=200218&pageIndex=4 HTTP/1.1" 200 None
+2026-01-04 14:46:27,497 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:46:28,569 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208290&menuNo=200218&pageIndex=4 HTTP/1.1" 200 None
+2026-01-04 14:46:31,358 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:46:32,561 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208291&menuNo=200218&pageIndex=4 HTTP/1.1" 200 None
+2026-01-04 14:46:36,615 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:46:37,785 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208289&menuNo=200218&pageIndex=4 HTTP/1.1" 200 None
+2026-01-04 14:46:41,537 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:46:42,699 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208275&menuNo=200218&pageIndex=4 HTTP/1.1" 200 None
+2026-01-04 14:46:46,669 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:46:47,717 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208266&menuNo=200218&pageIndex=4 HTTP/1.1" 200 None
+2026-01-04 14:46:51,643 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:46:52,730 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208267&menuNo=200218&pageIndex=4 HTTP/1.1" 200 None
+2026-01-04 14:46:56,353 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:46:57,548 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208265&menuNo=200218&pageIndex=4 HTTP/1.1" 200 None
+2026-01-04 14:47:00,413 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:47:01,553 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208260&menuNo=200218&pageIndex=4 HTTP/1.1" 200 None
+2026-01-04 14:47:05,359 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:47:06,403 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208251&menuNo=200218&pageIndex=4 HTTP/1.1" 200 None
+2026-01-04 14:47:09,725 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:47:10,861 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208248&menuNo=200218&pageIndex=5 HTTP/1.1" 200 None
+2026-01-04 14:47:13,625 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:47:14,752 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208246&menuNo=200218&pageIndex=5 HTTP/1.1" 200 None
+2026-01-04 14:47:18,911 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:47:20,178 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208245&menuNo=200218&pageIndex=5 HTTP/1.1" 200 None
+2026-01-04 14:47:24,337 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:47:25,400 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208237&menuNo=200218&pageIndex=5 HTTP/1.1" 200 None
+2026-01-04 14:47:27,906 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:47:29,000 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208231&menuNo=200218&pageIndex=5 HTTP/1.1" 200 None
+2026-01-04 14:47:32,942 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:47:34,105 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208228&menuNo=200218&pageIndex=5 HTTP/1.1" 200 None
+2026-01-04 14:47:37,963 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:47:39,133 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208227&menuNo=200218&pageIndex=5 HTTP/1.1" 200 None
+2026-01-04 14:47:42,110 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:47:43,260 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208226&menuNo=200218&pageIndex=5 HTTP/1.1" 200 None
+2026-01-04 14:47:45,870 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:47:47,111 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208217&menuNo=200218&pageIndex=5 HTTP/1.1" 200 None
+2026-01-04 14:47:49,909 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:47:51,001 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208218&menuNo=200218&pageIndex=5 HTTP/1.1" 200 None
+2026-01-04 14:47:53,745 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:47:54,893 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208213&menuNo=200218&pageIndex=6 HTTP/1.1" 200 None
+2026-01-04 14:47:58,100 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:47:59,297 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208209&menuNo=200218&pageIndex=6 HTTP/1.1" 200 None
+2026-01-04 14:48:02,844 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:48:04,213 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208198&menuNo=200218&pageIndex=6 HTTP/1.1" 200 None
+2026-01-04 14:48:06,714 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:48:07,887 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208197&menuNo=200218&pageIndex=6 HTTP/1.1" 200 None
+2026-01-04 14:48:10,665 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:48:12,199 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208195&menuNo=200218&pageIndex=6 HTTP/1.1" 200 None
+2026-01-04 14:48:15,179 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:48:16,296 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208180&menuNo=200218&pageIndex=6 HTTP/1.1" 200 None
+2026-01-04 14:48:20,340 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:48:21,423 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208179&menuNo=200218&pageIndex=6 HTTP/1.1" 200 None
+2026-01-04 14:48:25,166 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:48:26,434 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208171&menuNo=200218&pageIndex=6 HTTP/1.1" 200 None
+2026-01-04 14:48:29,734 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:48:30,931 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208169&menuNo=200218&pageIndex=6 HTTP/1.1" 200 None
+2026-01-04 14:48:34,380 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:48:35,447 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208168&menuNo=200218&pageIndex=6 HTTP/1.1" 200 None
+2026-01-04 14:48:38,701 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:48:39,847 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208160&menuNo=200218&pageIndex=7 HTTP/1.1" 200 None
+2026-01-04 14:48:44,089 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:48:45,173 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208158&menuNo=200218&pageIndex=7 HTTP/1.1" 200 None
+2026-01-04 14:48:47,679 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:48:48,859 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208145&menuNo=200218&pageIndex=7 HTTP/1.1" 200 None
+2026-01-04 14:48:52,072 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:48:52,956 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208140&menuNo=200218&pageIndex=7 HTTP/1.1" 200 None
+2026-01-04 14:48:56,588 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:48:57,769 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208139&menuNo=200218&pageIndex=7 HTTP/1.1" 200 None
+2026-01-04 14:49:00,997 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:49:02,173 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208116&menuNo=200218&pageIndex=7 HTTP/1.1" 200 None
+2026-01-04 14:49:05,174 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:49:06,268 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208113&menuNo=200218&pageIndex=7 HTTP/1.1" 200 None
+2026-01-04 14:49:09,107 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:49:10,568 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208112&menuNo=200218&pageIndex=7 HTTP/1.1" 200 None
+2026-01-04 14:49:14,108 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:49:15,279 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208111&menuNo=200218&pageIndex=7 HTTP/1.1" 200 None
+2026-01-04 14:49:19,362 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:49:23,879 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208087&menuNo=200218&pageIndex=7 HTTP/1.1" 200 None
+2026-01-04 14:49:27,357 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:49:28,490 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208073&menuNo=200218&pageIndex=8 HTTP/1.1" 200 None
+2026-01-04 14:49:31,755 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:49:32,892 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208062&menuNo=200218&pageIndex=8 HTTP/1.1" 200 None
+2026-01-04 14:49:35,181 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:49:36,275 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208040&menuNo=200218&pageIndex=8 HTTP/1.1" 200 None
+2026-01-04 14:49:38,908 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:49:40,060 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208035&menuNo=200218&pageIndex=8 HTTP/1.1" 200 None
+2026-01-04 14:49:43,298 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:49:44,465 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208029&menuNo=200218&pageIndex=8 HTTP/1.1" 200 None
+2026-01-04 14:49:48,059 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:49:49,174 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208008&menuNo=200218&pageIndex=8 HTTP/1.1" 200 None
+2026-01-04 14:49:51,756 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:49:52,989 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208007&menuNo=200218&pageIndex=8 HTTP/1.1" 200 None
+2026-01-04 14:49:56,840 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:50:05,251 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=208000&menuNo=200218&pageIndex=8 HTTP/1.1" 200 None
+2026-01-04 14:50:09,002 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:50:10,168 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207997&menuNo=200218&pageIndex=8 HTTP/1.1" 200 None
+2026-01-04 14:50:12,563 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:50:13,648 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207987&menuNo=200218&pageIndex=8 HTTP/1.1" 200 None
+2026-01-04 14:50:16,358 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:50:17,540 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207981&menuNo=200218&pageIndex=9 HTTP/1.1" 200 None
+2026-01-04 14:50:21,358 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:50:22,455 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207945&menuNo=200218&pageIndex=9 HTTP/1.1" 200 None
+2026-01-04 14:50:26,139 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:50:27,063 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207932&menuNo=200218&pageIndex=9 HTTP/1.1" 200 None
+2026-01-04 14:50:33,404 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:50:34,128 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207921&menuNo=200218&pageIndex=9 HTTP/1.1" 200 None
+2026-01-04 14:50:36,593 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:50:37,425 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207920&menuNo=200218&pageIndex=9 HTTP/1.1" 200 None
+2026-01-04 14:50:41,272 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:50:42,116 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207916&menuNo=200218&pageIndex=9 HTTP/1.1" 200 None
+2026-01-04 14:50:45,078 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:50:46,008 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207913&menuNo=200218&pageIndex=9 HTTP/1.1" 200 None
+2026-01-04 14:50:48,911 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:50:50,104 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207912&menuNo=200218&pageIndex=9 HTTP/1.1" 200 None
+2026-01-04 14:50:53,774 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:50:54,712 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207910&menuNo=200218&pageIndex=9 HTTP/1.1" 200 None
+2026-01-04 14:50:57,744 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:50:58,709 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207909&menuNo=200218&pageIndex=9 HTTP/1.1" 200 None
+2026-01-04 14:51:01,384 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:51:02,291 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207887&menuNo=200218&pageIndex=10 HTTP/1.1" 200 None
+2026-01-04 14:51:05,239 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:51:06,181 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207888&menuNo=200218&pageIndex=10 HTTP/1.1" 200 None
+2026-01-04 14:51:09,017 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:51:10,175 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207859&menuNo=200218&pageIndex=10 HTTP/1.1" 200 None
+2026-01-04 14:51:12,821 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:51:13,965 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207858&menuNo=200218&pageIndex=10 HTTP/1.1" 200 None
+2026-01-04 14:51:16,314 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:51:17,446 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207852&menuNo=200218&pageIndex=10 HTTP/1.1" 200 None
+2026-01-04 14:51:20,527 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:51:21,644 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207847&menuNo=200218&pageIndex=10 HTTP/1.1" 200 None
+2026-01-04 14:51:25,420 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:51:26,559 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207846&menuNo=200218&pageIndex=10 HTTP/1.1" 200 None
+2026-01-04 14:51:30,337 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:51:31,389 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207834&menuNo=200218&pageIndex=10 HTTP/1.1" 200 None
+2026-01-04 14:51:34,552 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:51:35,672 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207831&menuNo=200218&pageIndex=10 HTTP/1.1" 200 None
+2026-01-04 14:51:38,816 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:51:39,975 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207830&menuNo=200218&pageIndex=10 HTTP/1.1" 200 None
+2026-01-04 14:51:42,934 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:51:44,173 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207805&menuNo=200218&pageIndex=11 HTTP/1.1" 200 None
+2026-01-04 14:51:48,047 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:51:49,191 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207793&menuNo=200218&pageIndex=11 HTTP/1.1" 200 None
+2026-01-04 14:51:52,593 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:51:53,797 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207705&menuNo=200218&pageIndex=11 HTTP/1.1" 200 None
+2026-01-04 14:51:56,417 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:51:57,548 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207664&menuNo=200218&pageIndex=11 HTTP/1.1" 200 None
+2026-01-04 14:52:01,931 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:52:03,117 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207662&menuNo=200218&pageIndex=11 HTTP/1.1" 200 None
+2026-01-04 14:52:05,757 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:52:07,008 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207650&menuNo=200218&pageIndex=11 HTTP/1.1" 200 None
+2026-01-04 14:52:09,506 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:52:10,696 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207644&menuNo=200218&pageIndex=11 HTTP/1.1" 200 None
+2026-01-04 14:52:14,149 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:52:15,303 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207636&menuNo=200218&pageIndex=11 HTTP/1.1" 200 None
+2026-01-04 14:52:19,548 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:52:20,730 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207635&menuNo=200218&pageIndex=11 HTTP/1.1" 200 None
+2026-01-04 14:52:23,338 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:52:24,439 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207627&menuNo=200218&pageIndex=11 HTTP/1.1" 200 None
+2026-01-04 14:52:27,838 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:52:48,492 - ERROR - Error scraping content from https://www.fss.or.kr/fss/bbs/B0000188/view.do?nttId=207626&menuNo=200218&pageIndex=12: HTTPSConnectionPool(host='www.fss.or.kr', port=443): Read timed out. (read timeout=20)
+2026-01-04 14:52:51,089 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:52:52,270 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207625&menuNo=200218&pageIndex=12 HTTP/1.1" 200 None
+2026-01-04 14:52:54,766 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:52:55,956 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207612&menuNo=200218&pageIndex=12 HTTP/1.1" 200 None
+2026-01-04 14:53:00,475 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:53:01,692 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207611&menuNo=200218&pageIndex=12 HTTP/1.1" 200 None
+2026-01-04 14:53:05,675 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:53:06,811 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207605&menuNo=200218&pageIndex=12 HTTP/1.1" 200 None
+2026-01-04 14:53:09,579 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:53:10,805 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207599&menuNo=200218&pageIndex=12 HTTP/1.1" 200 None
+2026-01-04 14:53:14,607 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:53:15,680 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207593&menuNo=200218&pageIndex=12 HTTP/1.1" 200 None
+2026-01-04 14:53:19,364 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:53:20,585 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207587&menuNo=200218&pageIndex=12 HTTP/1.1" 200 None
+2026-01-04 14:53:23,141 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:53:24,323 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207570&menuNo=200218&pageIndex=12 HTTP/1.1" 200 None
+2026-01-04 14:53:28,368 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:53:29,474 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207569&menuNo=200218&pageIndex=12 HTTP/1.1" 200 None
+2026-01-04 14:53:33,329 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:53:34,434 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207531&menuNo=200218&pageIndex=13 HTTP/1.1" 200 None
+2026-01-04 14:53:38,764 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:53:46,952 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207527&menuNo=200218&pageIndex=13 HTTP/1.1" 200 None
+2026-01-04 14:53:50,457 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:53:51,664 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207526&menuNo=200218&pageIndex=13 HTTP/1.1" 200 None
+2026-01-04 14:53:54,252 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:53:55,452 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207502&menuNo=200218&pageIndex=13 HTTP/1.1" 200 None
+2026-01-04 14:53:58,273 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:53:59,549 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207498&menuNo=200218&pageIndex=13 HTTP/1.1" 200 None
+2026-01-04 14:54:02,890 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:54:04,259 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207497&menuNo=200218&pageIndex=13 HTTP/1.1" 200 None
+2026-01-04 14:54:07,308 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:54:08,559 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207496&menuNo=200218&pageIndex=13 HTTP/1.1" 200 None
+2026-01-04 14:54:10,921 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:54:12,041 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207485&menuNo=200218&pageIndex=13 HTTP/1.1" 200 None
+2026-01-04 14:54:16,354 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:54:17,572 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207483&menuNo=200218&pageIndex=13 HTTP/1.1" 200 None
+2026-01-04 14:54:20,796 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:54:21,976 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207476&menuNo=200218&pageIndex=13 HTTP/1.1" 200 None
+2026-01-04 14:54:25,900 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:54:27,007 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207474&menuNo=200218&pageIndex=14 HTTP/1.1" 200 None
+2026-01-04 14:54:29,978 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:54:31,116 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207473&menuNo=200218&pageIndex=14 HTTP/1.1" 200 None
+2026-01-04 14:54:35,272 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:54:36,413 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207465&menuNo=200218&pageIndex=14 HTTP/1.1" 200 None
+2026-01-04 14:54:40,246 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:54:41,372 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207461&menuNo=200218&pageIndex=14 HTTP/1.1" 200 None
+2026-01-04 14:54:44,763 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:54:45,859 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207445&menuNo=200218&pageIndex=14 HTTP/1.1" 200 None
+2026-01-04 14:54:49,853 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:54:50,954 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207426&menuNo=200218&pageIndex=14 HTTP/1.1" 200 None
+2026-01-04 14:54:54,564 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:54:55,768 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207413&menuNo=200218&pageIndex=14 HTTP/1.1" 200 None
+2026-01-04 14:54:59,773 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:55:00,907 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207410&menuNo=200218&pageIndex=14 HTTP/1.1" 200 None
+2026-01-04 14:55:04,868 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:55:06,007 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207377&menuNo=200218&pageIndex=14 HTTP/1.1" 200 None
+2026-01-04 14:55:09,281 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:55:10,413 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207376&menuNo=200218&pageIndex=14 HTTP/1.1" 200 None
+2026-01-04 14:55:13,058 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:55:14,302 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207366&menuNo=200218&pageIndex=15 HTTP/1.1" 200 None
+2026-01-04 14:55:18,463 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:55:19,627 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207361&menuNo=200218&pageIndex=15 HTTP/1.1" 200 None
+2026-01-04 14:55:22,151 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:55:23,218 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207350&menuNo=200218&pageIndex=15 HTTP/1.1" 200 None
+2026-01-04 14:55:26,341 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:55:27,513 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207345&menuNo=200218&pageIndex=15 HTTP/1.1" 200 None
+2026-01-04 14:55:31,352 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:55:32,428 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207344&menuNo=200218&pageIndex=15 HTTP/1.1" 200 None
+2026-01-04 14:55:36,118 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:55:37,240 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207331&menuNo=200218&pageIndex=15 HTTP/1.1" 200 None
+2026-01-04 14:55:40,745 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:55:41,951 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207323&menuNo=200218&pageIndex=15 HTTP/1.1" 200 None
+2026-01-04 14:55:45,522 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:55:46,661 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207264&menuNo=200218&pageIndex=15 HTTP/1.1" 200 None
+2026-01-04 14:55:49,969 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:55:51,170 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207060&menuNo=200218&pageIndex=15 HTTP/1.1" 200 None
+2026-01-04 14:55:55,071 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:55:56,288 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207061&menuNo=200218&pageIndex=15 HTTP/1.1" 200 None
+2026-01-04 14:55:59,821 - DEBUG - Starting new HTTPS connection (1): www.fss.or.kr:443
+2026-01-04 14:56:00,986 - DEBUG - https://www.fss.or.kr:443 "GET /fss/bbs/B0000188/view.do?nttId=207045&menuNo=200218&pageIndex=16 HTTP/1.1" 200 None
+2026-01-04 14:56:01,313 - INFO - Processing BOK...
+2026-01-04 14:56:01,313 - INFO - [BOK] Starting BACKFILL. Cutoff: 2025-11-05
+2026-01-04 14:56:01,314 - INFO -   [BOK] Scraping Page 1: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=1
+2026-01-04 14:56:02,510 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:03,561 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=1 HTTP/1.1" 200 None
+2026-01-04 14:56:03,587 - INFO -     > Found 10 items.
+2026-01-04 14:56:03,588 - INFO -   [BOK] Scraping Page 2: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=2
+2026-01-04 14:56:04,689 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:05,610 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=2 HTTP/1.1" 200 None
+2026-01-04 14:56:05,652 - INFO -     > Found 10 items.
+2026-01-04 14:56:05,653 - INFO -   [BOK] Scraping Page 3: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=3
+2026-01-04 14:56:06,343 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:07,351 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=3 HTTP/1.1" 200 None
+2026-01-04 14:56:07,392 - INFO -     > Found 10 items.
+2026-01-04 14:56:07,392 - INFO -   [BOK] Scraping Page 4: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=4
+2026-01-04 14:56:08,679 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:09,624 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=4 HTTP/1.1" 200 None
+2026-01-04 14:56:09,663 - INFO -     > Found 10 items.
+2026-01-04 14:56:09,666 - INFO -   [BOK] Scraping Page 5: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=5
+2026-01-04 14:56:11,128 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:12,063 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=5 HTTP/1.1" 200 None
+2026-01-04 14:56:12,105 - INFO -     > Found 10 items.
+2026-01-04 14:56:12,106 - INFO -   [BOK] Scraping Page 6: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=6
+2026-01-04 14:56:12,754 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:13,696 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=6 HTTP/1.1" 200 None
+2026-01-04 14:56:13,727 - INFO -     > Found 10 items.
+2026-01-04 14:56:13,727 - INFO -   [BOK] Scraping Page 7: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=7
+2026-01-04 14:56:14,262 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:15,234 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=7 HTTP/1.1" 200 None
+2026-01-04 14:56:15,273 - INFO -     > Found 10 items.
+2026-01-04 14:56:15,273 - INFO -   [BOK] Scraping Page 8: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=8
+2026-01-04 14:56:16,545 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:17,490 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=8 HTTP/1.1" 200 None
+2026-01-04 14:56:17,821 - INFO -     > Found 10 items.
+2026-01-04 14:56:17,822 - INFO -   [BOK] Scraping Page 9: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=9
+2026-01-04 14:56:18,394 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:19,332 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=9 HTTP/1.1" 200 None
+2026-01-04 14:56:19,373 - INFO -     > Found 10 items.
+2026-01-04 14:56:19,373 - INFO -   [BOK] Scraping Page 10: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=10
+2026-01-04 14:56:20,220 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:21,174 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=10 HTTP/1.1" 200 None
+2026-01-04 14:56:21,212 - INFO -     > Found 10 items.
+2026-01-04 14:56:21,213 - INFO -   [BOK] Scraping Page 11: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=11
+2026-01-04 14:56:22,576 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:23,533 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=11 HTTP/1.1" 200 None
+2026-01-04 14:56:23,570 - INFO -     > Found 10 items.
+2026-01-04 14:56:23,571 - INFO -   [BOK] Scraping Page 12: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=12
+2026-01-04 14:56:24,753 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:25,684 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=12 HTTP/1.1" 200 None
+2026-01-04 14:56:25,722 - INFO -     > Found 10 items.
+2026-01-04 14:56:25,722 - INFO -   [BOK] Scraping Page 13: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=13
+2026-01-04 14:56:26,683 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:27,627 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=13 HTTP/1.1" 200 None
+2026-01-04 14:56:27,670 - INFO -     > Found 10 items.
+2026-01-04 14:56:27,670 - INFO -   [BOK] Scraping Page 14: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=14
+2026-01-04 14:56:28,923 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:29,844 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=14 HTTP/1.1" 200 None
+2026-01-04 14:56:29,887 - INFO -     > Found 10 items.
+2026-01-04 14:56:29,888 - INFO -   [BOK] Scraping Page 15: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=15
+2026-01-04 14:56:30,637 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:31,619 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=15 HTTP/1.1" 200 None
+2026-01-04 14:56:31,652 - INFO -     > Found 10 items.
+2026-01-04 14:56:31,653 - INFO -   [BOK] Scraping Page 16: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=16
+2026-01-04 14:56:32,639 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:33,575 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=16 HTTP/1.1" 200 None
+2026-01-04 14:56:33,619 - INFO -     > Found 10 items.
+2026-01-04 14:56:33,620 - INFO -   [BOK] Scraping Page 17: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=17
+2026-01-04 14:56:34,895 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:35,820 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=17 HTTP/1.1" 200 None
+2026-01-04 14:56:35,853 - INFO -     > Found 10 items.
+2026-01-04 14:56:35,853 - INFO -   [BOK] Scraping Page 18: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=18
+2026-01-04 14:56:36,585 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:37,463 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=18 HTTP/1.1" 200 None
+2026-01-04 14:56:37,503 - INFO -     > Found 10 items.
+2026-01-04 14:56:37,503 - INFO -   [BOK] Scraping Page 19: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=19
+2026-01-04 14:56:38,087 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:39,026 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=19 HTTP/1.1" 200 None
+2026-01-04 14:56:39,069 - INFO -     > Found 10 items.
+2026-01-04 14:56:39,069 - INFO -   [BOK] Scraping Page 20: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=20
+2026-01-04 14:56:40,323 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:41,351 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=20 HTTP/1.1" 200 None
+2026-01-04 14:56:41,393 - INFO -     > Found 10 items.
+2026-01-04 14:56:41,393 - INFO -   [BOK] Scraping Page 21: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=21
+2026-01-04 14:56:42,770 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:43,708 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=21 HTTP/1.1" 200 None
+2026-01-04 14:56:43,746 - INFO -     > Found 10 items.
+2026-01-04 14:56:43,749 - INFO -   [BOK] Scraping Page 22: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=22
+2026-01-04 14:56:44,817 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:45,765 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=22 HTTP/1.1" 200 None
+2026-01-04 14:56:45,817 - INFO -     > Found 10 items.
+2026-01-04 14:56:45,818 - INFO -   [BOK] Scraping Page 23: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=23
+2026-01-04 14:56:46,417 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:47,285 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=23 HTTP/1.1" 200 None
+2026-01-04 14:56:47,322 - INFO -     > Found 10 items.
+2026-01-04 14:56:47,322 - INFO -   [BOK] Scraping Page 24: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=24
+2026-01-04 14:56:48,031 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:49,030 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=24 HTTP/1.1" 200 None
+2026-01-04 14:56:49,072 - INFO -     > Found 10 items.
+2026-01-04 14:56:49,073 - INFO -   [BOK] Scraping Page 25: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=25
+2026-01-04 14:56:50,537 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:51,488 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=25 HTTP/1.1" 200 None
+2026-01-04 14:56:51,517 - INFO -     > Found 10 items.
+2026-01-04 14:56:51,518 - INFO -   [BOK] Scraping Page 26: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=26
+2026-01-04 14:56:52,355 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:53,228 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=26 HTTP/1.1" 200 None
+2026-01-04 14:56:53,270 - INFO -     > Found 10 items.
+2026-01-04 14:56:53,271 - INFO -   [BOK] Scraping Page 27: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=27
+2026-01-04 14:56:54,487 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:55,444 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=27 HTTP/1.1" 200 None
+2026-01-04 14:56:55,476 - INFO -     > Found 10 items.
+2026-01-04 14:56:55,493 - INFO -   [BOK] Scraping Page 28: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=28
+2026-01-04 14:56:56,583 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:57,529 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=28 HTTP/1.1" 200 None
+2026-01-04 14:56:57,563 - INFO -     > Found 10 items.
+2026-01-04 14:56:57,565 - INFO -   [BOK] Scraping Page 29: https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=29
+2026-01-04 14:56:58,668 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:56:59,679 - DEBUG - https://www.bok.or.kr:443 "GET /portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=29 HTTP/1.1" 200 None
+2026-01-04 14:56:59,718 - INFO -     > Old item found (2025-11-05). Stopping.
+2026-01-04 14:57:02,825 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:57:03,777 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0001773/view.do?nttId=10095520&depth=201150&pageUnit=10&pageIndex=1&programType=newsData&menuNo=200295&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:57:06,248 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:57:07,255 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0001773/view.do?nttId=10095516&depth=201150&pageUnit=10&pageIndex=1&programType=newsData&menuNo=200295&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:57:07,442 - WARNING - ⚠️ Short content detected (27 chars) for https://www.bok.or.kr/portal/bbs/P0001773/view.do?nttId=10095516&depth=201150&pageUnit=10&pageIndex=1&programType=newsData&menuNo=200295&oldMenuNo=201263
+2026-01-04 14:57:10,084 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:57:11,044 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0001773/view.do?nttId=10095514&depth=201150&pageUnit=10&pageIndex=1&programType=newsData&menuNo=200295&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:57:14,351 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:57:15,344 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0001773/view.do?nttId=10095512&depth=201150&pageUnit=10&pageIndex=1&programType=newsData&menuNo=200295&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:57:17,704 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:57:18,465 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0001726/view.do?nttId=10095511&depth=201150&pageUnit=10&pageIndex=1&programType=newsData&menuNo=200039&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:57:18,671 - WARNING - ⚠️ Short content detected (22 chars) for https://www.bok.or.kr/portal/bbs/P0001726/view.do?nttId=10095511&depth=201150&pageUnit=10&pageIndex=1&programType=newsData&menuNo=200039&oldMenuNo=201263
+2026-01-04 14:57:21,523 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:57:22,414 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0001773/view.do?nttId=10095510&depth=201150&pageUnit=10&pageIndex=1&programType=newsData&menuNo=200295&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:57:26,375 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:57:27,056 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0000561/view.do?nttId=10095196&depth=201150&pageUnit=10&pageIndex=1&programType=newsData&menuNo=200037&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:57:31,155 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:57:31,986 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0001773/view.do?nttId=10095508&depth=201150&pageUnit=10&pageIndex=1&programType=newsData&menuNo=200295&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:57:34,457 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:57:35,307 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0002575/view.do?nttId=10095505&depth=201150&pageUnit=10&pageIndex=1&programType=newsData&menuNo=200041&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:57:39,319 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:57:40,233 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/B0000502/view.do?nttId=10095501&depth=201150&pageUnit=10&pageIndex=1&programType=newsData&menuNo=201265&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:57:40,450 - WARNING - ⚠️ Short content detected (29 chars) for https://www.bok.or.kr/portal/bbs/B0000502/view.do?nttId=10095501&depth=201150&pageUnit=10&pageIndex=1&programType=newsData&menuNo=201265&oldMenuNo=201263
+2026-01-04 14:57:43,572 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:57:44,457 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0000561/view.do?nttId=10095500&depth=201150&pageUnit=10&pageIndex=2&programType=newsData&menuNo=200037&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:57:48,407 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:57:49,321 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0000561/view.do?nttId=10095499&depth=201150&pageUnit=10&pageIndex=2&programType=newsData&menuNo=200037&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:57:52,451 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:57:53,316 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0000556/view.do?nttId=10095473&depth=201150&pageUnit=10&pageIndex=2&programType=newsData&menuNo=200440&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:57:57,202 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:57:58,023 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0000556/view.do?nttId=10095472&depth=201150&pageUnit=10&pageIndex=2&programType=newsData&menuNo=200440&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:58:02,076 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:58:03,067 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/B0000502/view.do?nttId=10095489&depth=201150&pageUnit=10&pageIndex=2&programType=newsData&menuNo=201265&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:58:03,280 - WARNING - ⚠️ Short content detected (27 chars) for https://www.bok.or.kr/portal/bbs/B0000502/view.do?nttId=10095489&depth=201150&pageUnit=10&pageIndex=2&programType=newsData&menuNo=201265&oldMenuNo=201263
+2026-01-04 14:58:05,603 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:58:06,445 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0000561/view.do?nttId=10095482&depth=201150&pageUnit=10&pageIndex=2&programType=newsData&menuNo=200037&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:58:08,800 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:58:09,601 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0002223/view.do?nttId=10095480&depth=201150&pageUnit=10&pageIndex=2&programType=newsData&menuNo=200082&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:58:09,791 - WARNING - ⚠️ Short content detected (14 chars) for https://www.bok.or.kr/portal/bbs/P0002223/view.do?nttId=10095480&depth=201150&pageUnit=10&pageIndex=2&programType=newsData&menuNo=200082&oldMenuNo=201263
+2026-01-04 14:58:13,205 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:58:14,064 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0000561/view.do?nttId=10095451&depth=201150&pageUnit=10&pageIndex=2&programType=newsData&menuNo=200037&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:58:16,854 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:58:17,589 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0002231/view.do?nttId=10095470&depth=201150&pageUnit=10&pageIndex=2&programType=newsData&menuNo=200085&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:58:17,917 - WARNING - ⚠️ Short content detected (14 chars) for https://www.bok.or.kr/portal/bbs/P0002231/view.do?nttId=10095470&depth=201150&pageUnit=10&pageIndex=2&programType=newsData&menuNo=200085&oldMenuNo=201263
+2026-01-04 14:58:20,876 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:58:21,808 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0000607/view.do?nttId=10095449&depth=201150&pageUnit=10&pageIndex=2&programType=newsData&menuNo=200613&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:58:25,178 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:58:26,211 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0000559/view.do?nttId=10095285&depth=201150&pageUnit=10&pageIndex=3&programType=newsData&menuNo=200690&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:58:26,420 - WARNING - ⚠️ Short content detected (18 chars) for https://www.bok.or.kr/portal/bbs/P0000559/view.do?nttId=10095285&depth=201150&pageUnit=10&pageIndex=3&programType=newsData&menuNo=200690&oldMenuNo=201263
+2026-01-04 14:58:30,055 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:58:30,921 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/B0000245/view.do?nttId=10095284&depth=201150&pageUnit=10&pageIndex=3&programType=newsData&menuNo=200789&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:58:31,102 - WARNING - ⚠️ Short content detected (18 chars) for https://www.bok.or.kr/portal/bbs/B0000245/view.do?nttId=10095284&depth=201150&pageUnit=10&pageIndex=3&programType=newsData&menuNo=200789&oldMenuNo=201263
+2026-01-04 14:58:34,264 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:58:35,221 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/B0000501/view.do?nttId=10095414&depth=201150&pageUnit=10&pageIndex=3&programType=newsData&menuNo=201264&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:58:37,795 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:58:38,803 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/B0000502/view.do?nttId=10095408&depth=201150&pageUnit=10&pageIndex=3&programType=newsData&menuNo=201265&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:58:41,489 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:58:42,391 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0001773/view.do?nttId=10095437&depth=201150&pageUnit=10&pageIndex=3&programType=newsData&menuNo=200295&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:58:46,046 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:58:46,857 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0001773/view.do?nttId=10095431&depth=201150&pageUnit=10&pageIndex=3&programType=newsData&menuNo=200295&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:58:50,562 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:58:51,316 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0002229/view.do?nttId=10095468&depth=201150&pageUnit=10&pageIndex=3&programType=newsData&menuNo=200084&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:58:51,573 - WARNING - ⚠️ Short content detected (14 chars) for https://www.bok.or.kr/portal/bbs/P0002229/view.do?nttId=10095468&depth=201150&pageUnit=10&pageIndex=3&programType=newsData&menuNo=200084&oldMenuNo=201263
+2026-01-04 14:58:54,497 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:58:55,259 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0000561/view.do?nttId=10095399&depth=201150&pageUnit=10&pageIndex=3&programType=newsData&menuNo=200037&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:58:59,109 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:58:59,858 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0000561/view.do?nttId=10095398&depth=201150&pageUnit=10&pageIndex=3&programType=newsData&menuNo=200037&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:59:04,021 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:59:04,821 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/B0000501/view.do?nttId=10095393&depth=201150&pageUnit=10&pageIndex=3&programType=newsData&menuNo=201264&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:59:07,090 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:59:07,890 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0000561/view.do?nttId=10095403&depth=201150&pageUnit=10&pageIndex=4&programType=newsData&menuNo=200037&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:59:11,291 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:59:12,188 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/B0000257/view.do?nttId=10095401&depth=201150&pageUnit=10&pageIndex=4&programType=newsData&menuNo=200327&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:59:12,517 - WARNING - ⚠️ Short content detected (25 chars) for https://www.bok.or.kr/portal/bbs/B0000257/view.do?nttId=10095401&depth=201150&pageUnit=10&pageIndex=4&programType=newsData&menuNo=200327&oldMenuNo=201263
+2026-01-04 14:59:15,820 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:59:16,797 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/B0000501/view.do?nttId=10095382&depth=201150&pageUnit=10&pageIndex=4&programType=newsData&menuNo=201264&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:59:20,949 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:59:21,916 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/B0000257/view.do?nttId=10095383&depth=201150&pageUnit=10&pageIndex=4&programType=newsData&menuNo=200327&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:59:24,848 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:59:25,807 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/B0000502/view.do?nttId=10095379&depth=201150&pageUnit=10&pageIndex=4&programType=newsData&menuNo=201265&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:59:29,485 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:59:30,318 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0001773/view.do?nttId=10095378&depth=201150&pageUnit=10&pageIndex=4&programType=newsData&menuNo=200295&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:59:34,368 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:59:35,333 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0001773/view.do?nttId=10095375&depth=201150&pageUnit=10&pageIndex=4&programType=newsData&menuNo=200295&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:59:39,482 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:59:40,348 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/B0000502/view.do?nttId=10095374&depth=201150&pageUnit=10&pageIndex=4&programType=newsData&menuNo=201265&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 14:59:42,891 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 14:59:43,727 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0001773/view.do?nttId=10095373&depth=201150&pageUnit=10&pageIndex=4&programType=newsData&menuNo=200295&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:00:00,332 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:00:01,339 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0001773/view.do?nttId=10095371&depth=201150&pageUnit=10&pageIndex=4&programType=newsData&menuNo=200295&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:00:04,971 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:00:05,950 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0001726/view.do?nttId=10095367&depth=201150&pageUnit=10&pageIndex=5&programType=newsData&menuNo=200039&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:00:06,124 - WARNING - ⚠️ Short content detected (27 chars) for https://www.bok.or.kr/portal/bbs/P0001726/view.do?nttId=10095367&depth=201150&pageUnit=10&pageIndex=5&programType=newsData&menuNo=200039&oldMenuNo=201263
+2026-01-04 15:00:09,238 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:00:10,148 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/B0000205/view.do?nttId=10095368&depth=201150&pageUnit=10&pageIndex=5&programType=newsData&menuNo=700113&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:00:12,910 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:00:13,731 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0000559/view.do?nttId=10095360&depth=201150&pageUnit=10&pageIndex=5&programType=newsData&menuNo=200690&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:00:17,757 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:00:18,680 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0000093/view.do?nttId=10095328&depth=201150&pageUnit=10&pageIndex=5&programType=newsData&menuNo=200761&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:00:18,984 - WARNING - ⚠️ Short content detected (20 chars) for https://www.bok.or.kr/portal/bbs/P0000093/view.do?nttId=10095328&depth=201150&pageUnit=10&pageIndex=5&programType=newsData&menuNo=200761&oldMenuNo=201263
+2026-01-04 15:00:22,232 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:00:23,022 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/B0000347/view.do?nttId=10095282&depth=201150&pageUnit=10&pageIndex=5&programType=newsData&menuNo=201106&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:00:26,795 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:00:27,551 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0000561/view.do?nttId=10095297&depth=201150&pageUnit=10&pageIndex=5&programType=newsData&menuNo=200037&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:00:29,972 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:00:30,776 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0002226/view.do?nttId=10095332&depth=201150&pageUnit=10&pageIndex=5&programType=newsData&menuNo=200083&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:00:30,977 - WARNING - ⚠️ Short content detected (14 chars) for https://www.bok.or.kr/portal/bbs/P0002226/view.do?nttId=10095332&depth=201150&pageUnit=10&pageIndex=5&programType=newsData&menuNo=200083&oldMenuNo=201263
+2026-01-04 15:00:33,672 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:00:34,540 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0002221/view.do?nttId=10095331&depth=201150&pageUnit=10&pageIndex=5&programType=newsData&menuNo=200081&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:00:34,712 - WARNING - ⚠️ Short content detected (14 chars) for https://www.bok.or.kr/portal/bbs/P0002221/view.do?nttId=10095331&depth=201150&pageUnit=10&pageIndex=5&programType=newsData&menuNo=200081&oldMenuNo=201263
+2026-01-04 15:00:38,358 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:00:39,297 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/B0000501/view.do?nttId=10095310&depth=201150&pageUnit=10&pageIndex=5&programType=newsData&menuNo=201264&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:00:41,537 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:00:42,405 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0001773/view.do?nttId=10095323&depth=201150&pageUnit=10&pageIndex=5&programType=newsData&menuNo=200295&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:00:42,623 - WARNING - ⚠️ Short content detected (27 chars) for https://www.bok.or.kr/portal/bbs/P0001773/view.do?nttId=10095323&depth=201150&pageUnit=10&pageIndex=5&programType=newsData&menuNo=200295&oldMenuNo=201263
+2026-01-04 15:00:44,650 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:00:45,782 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/B0000502/view.do?nttId=10095321&depth=201150&pageUnit=10&pageIndex=6&programType=newsData&menuNo=201265&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:00:45,989 - WARNING - ⚠️ Short content detected (27 chars) for https://www.bok.or.kr/portal/bbs/B0000502/view.do?nttId=10095321&depth=201150&pageUnit=10&pageIndex=6&programType=newsData&menuNo=201265&oldMenuNo=201263
+2026-01-04 15:00:49,164 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:00:50,087 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0000093/view.do?nttId=10095298&depth=201150&pageUnit=10&pageIndex=6&programType=newsData&menuNo=200761&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:00:53,756 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:00:54,696 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/B0000502/view.do?nttId=10095262&depth=201150&pageUnit=10&pageIndex=6&programType=newsData&menuNo=201265&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:00:57,770 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:00:58,686 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0001773/view.do?nttId=10095316&depth=201150&pageUnit=10&pageIndex=6&programType=newsData&menuNo=200295&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:01:02,248 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:01:03,135 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/B0000502/view.do?nttId=10095309&depth=201150&pageUnit=10&pageIndex=6&programType=newsData&menuNo=201265&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:01:05,389 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:01:06,370 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0000593/view.do?nttId=10095308&depth=201150&pageUnit=10&pageIndex=6&programType=newsData&menuNo=200068&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:01:09,601 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:01:10,564 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0001773/view.do?nttId=10095307&depth=201150&pageUnit=10&pageIndex=6&programType=newsData&menuNo=200295&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:01:14,261 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:01:15,089 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0002232/view.do?nttId=10095277&depth=201150&pageUnit=10&pageIndex=6&programType=newsData&menuNo=200086&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:01:15,299 - WARNING - ⚠️ Short content detected (14 chars) for https://www.bok.or.kr/portal/bbs/P0002232/view.do?nttId=10095277&depth=201150&pageUnit=10&pageIndex=6&programType=newsData&menuNo=200086&oldMenuNo=201263
+2026-01-04 15:01:17,831 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:01:19,374 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0002221/view.do?nttId=10095290&depth=201150&pageUnit=10&pageIndex=6&programType=newsData&menuNo=200081&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:01:19,679 - WARNING - ⚠️ Short content detected (14 chars) for https://www.bok.or.kr/portal/bbs/P0002221/view.do?nttId=10095290&depth=201150&pageUnit=10&pageIndex=6&programType=newsData&menuNo=200081&oldMenuNo=201263
+2026-01-04 15:01:23,190 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:01:23,976 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0002233/view.do?nttId=10095278&depth=201150&pageUnit=10&pageIndex=6&programType=newsData&menuNo=200087&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:01:24,174 - WARNING - ⚠️ Short content detected (14 chars) for https://www.bok.or.kr/portal/bbs/P0002233/view.do?nttId=10095278&depth=201150&pageUnit=10&pageIndex=6&programType=newsData&menuNo=200087&oldMenuNo=201263
+2026-01-04 15:01:26,249 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:01:27,155 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0002232/view.do?nttId=10095275&depth=201150&pageUnit=10&pageIndex=7&programType=newsData&menuNo=200086&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:01:27,354 - WARNING - ⚠️ Short content detected (14 chars) for https://www.bok.or.kr/portal/bbs/P0002232/view.do?nttId=10095275&depth=201150&pageUnit=10&pageIndex=7&programType=newsData&menuNo=200086&oldMenuNo=201263
+2026-01-04 15:01:31,100 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:01:31,986 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/B0000501/view.do?nttId=10095267&depth=201150&pageUnit=10&pageIndex=7&programType=newsData&menuNo=201264&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:01:32,221 - WARNING - ⚠️ Short content detected (25 chars) for https://www.bok.or.kr/portal/bbs/B0000501/view.do?nttId=10095267&depth=201150&pageUnit=10&pageIndex=7&programType=newsData&menuNo=201264&oldMenuNo=201263
+2026-01-04 15:01:34,633 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:01:35,860 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0001773/view.do?nttId=10095273&depth=201150&pageUnit=10&pageIndex=7&programType=newsData&menuNo=200295&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:01:38,921 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:01:39,748 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0000561/view.do?nttId=10095271&depth=201150&pageUnit=10&pageIndex=7&programType=newsData&menuNo=200037&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:01:43,804 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:01:44,663 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0001773/view.do?nttId=10095264&depth=201150&pageUnit=10&pageIndex=7&programType=newsData&menuNo=200295&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:01:44,862 - WARNING - ⚠️ Short content detected (27 chars) for https://www.bok.or.kr/portal/bbs/P0001773/view.do?nttId=10095264&depth=201150&pageUnit=10&pageIndex=7&programType=newsData&menuNo=200295&oldMenuNo=201263
+2026-01-04 15:01:48,461 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:01:49,203 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0000093/view.do?nttId=10095261&depth=201150&pageUnit=10&pageIndex=7&programType=newsData&menuNo=200761&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:01:53,206 - DEBUG - Starting new HTTPS connection (1): www.bok.or.kr:443
+2026-01-04 15:01:54,074 - DEBUG - https://www.bok.or.kr:443 "GET /portal/bbs/P0000559/view.do?nttId=10095250&depth=201150&pageUnit=10&pageIndex=7&programType=newsData&menuNo=200690&oldMenuNo=201263 HTTP/1.1" 200 None
+2026-01-04 15:01:54,519 - WARNING - ⚠️ Short content detected (27 chars) for https://www.bok.or.kr/portal/bbs/P0000559/view.do?nttId=10095250&depth=201150&pageUnit=10&pageIndex=7&programType=newsData&menuNo=200690&oldMenuNo=201263

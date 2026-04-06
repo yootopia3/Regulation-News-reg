@@ -1,0 +1,89 @@
+# Product Requirements Document (PRD)
+
+**Project Name**: MarketPulse-Reg (Regulatory News Analysis System)
+**Version**: 2.0.0 (Forensic-Aligned)
+**Status**: Stage 2 Complete
+**Target User**: Risk Management Team (Korean Commercial Banks)
+
+## 1. Product Vision
+**"Zero-Maintenance, Zero-Miss Regulatory Radar"**
+To build a fully automated regulatory surveillance system that operates independently on serverless infrastructure (GitHub Actions), filtering out 90% of administrative noise while guaranteeing 100% capture of critical banking regulations using a 2-Tier AI strategy.
+
+---
+
+## 2. Core Value Proposition (4-Layer Defense)
+To overcome the fragility of traditional scrapers, we implement a multi-layered defense system:
+
+1.  **Infrastructure Layer (Serverless)**
+    - **Architecture**: 100% GitHub Actions (No idle servers).
+    - **Uptime**: Guaranteed by 'Watchdog' (Dead Man's Switch) monitoring.
+    - **Legacy Removal**: Deprecated [scheduler.py](file:///d:/Project/05_regulation_news/src/scheduler.py) to prevent zombie processes.
+
+2.  **Network Layer (Stealth)**
+    - **Resilience**: Smart rotation of User-Agents and random delays.
+    - **Protocol**: RSS feeds preferred; HTML scraping used only for FSS.
+
+3.  **Data Layer (Integrity)**
+    - **Deduplication**: Strict **URL-based** blocking to prevent double-processing.
+    - **Validation**: "Short Content" (<50 chars) detection to flag broken parsing.
+
+4.  **Business Logic Layer (Hybrid AI)**
+    - **Hierarchy**: `Safeguard Rules` > `AI Analysis`.
+    - **Benefit**: Ensures that "Personnel Appointments" (Keyword) are never discarded even if AI underestimates them.
+
+---
+
+## 3. Functional Specifications
+
+### 3.1 AI Analysis Engine (2025 Standard)
+*Strictly adhering to Requirements v1.6.0*
+
+| Tier | Role | Model (Config) | Logic |
+|------|------|----------------|-------|
+| **Tier 1** | **Gatekeeper** | `gemini-2.5-flash-lite` | **Speed**: Filters irrelevant news (Awards, Events) in ms.<br>**Output**: relevant (T/F), score (1-5). |
+| **Tier 2** | **Analyst** | `gemini-3-flash-preview` | **Depth**: Reasoning engine for full-text analysis.<br>**Trigger**: Only if Score > 3 or Safeguard Active. |
+
+**Vector Search Status**: **NOT IMPLEMENTED**. (Planned for v2.0).
+*Current system relies on Keyword & Metadata filtering only.*
+
+### 3.2 Notification System
+- **Channel**: Telegram Bot.
+- **Logic**: **Conditional Alerting**.
+    - ✅ **Send Alert**: If Article passed Tier 2 Analysis (Status `ANALYZED`).
+    - 🔇 **Silent**: If Article was filtered at Tier 1 (Status `SKIPPED`).
+    - 🚨 **System Critical**: Watchdog failure or Pipe break.
+
+### 3.3 Dashboard (Visualization)
+- **Timezone**: **KST (UTC+9)** enforced.
+- **Constraint**: Deployment on Vercel (Edge Network).
+- **Frontend Legacy Note**: Current logic manually shifts KST (`+9h`). This requires refactoring in Stage 3 to respect backend ISO offsets.
+
+---
+
+## 4. User Scenarios
+
+### 4.1 "The Morning Briefing" (Risk Manager)
+> 08:30 AM KST. The Risk Manager opens the Dashboard password-protected link on their phone.
+> They see 3 "High Risk" items regarding **DSR Regulations** and **FSS Director's Speech**.
+> 25 "Low Risk" items (Notices) are hidden by default, keeping the view clean.
+> They click "AI Report" to read the *Action Item*: "Prepare Impact Assessment for ALCO by 2pm".
+
+### 4.2 "The Silent Guardian" (System Admin)
+> The system runs every 30 minutes without supervision.
+> On Saturday, the FSS website changes layout, breaking the scraper.
+> The **Watchdog** detects "No Data for 6 Hours".
+> 14:00 KST. Admin receives a **CRITICAL ALERT** on Telegram.
+> Admin fixes the selector in [agencies.json](file:///d:/Project/05_regulation_news/config/agencies.json) via GitHub Mobile. System restores itself.
+
+---
+
+## 5. Deployment & Operations
+- **Repository**: `orbzodiac84/Regulation-News-reg`
+- **CI/CD**: GitHub Actions ([news_collector.yml](file:///d:/Project/05_regulation_news/.github/workflows/news_collector.yml), [watchdog.yml](file:///d:/Project/05_regulation_news/.github/workflows/watchdog.yml)).
+- **Database**: Supabase (PostgreSQL).
+- **Secrets Management**: GitHub Secrets (`GEMINI_API_KEY`, `SUPABASE_KEY`).
+
+## 6. Success Metrics
+- **False Negatives**: 0% on "High" importance news (Safeguard Guaranteed).
+- **Operational Cost**: < $5/month (Gemini Flash usage + Free Tier Supabase).
+- **Maintenance**: < 1 Manual Intervention per Month.

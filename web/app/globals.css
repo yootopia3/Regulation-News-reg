@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+/* === Custom Theme Variables === */
+@theme {
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", Arial, "Noto Sans KR", sans-serif;
+  --color-primary: #5B4BFF;
+  --color-background: #F5F7FA;
+  --color-foreground: #111827;
+}
+
+/* === Global Styles === */
+html {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  color: var(--color-foreground);
+  background: var(--color-background);
+}
+
+/* === Utility Classes === */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

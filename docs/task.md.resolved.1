@@ -1,0 +1,18 @@
+# Task: Stabilize and Automate News Collection Pipeline
+
+**Objective**: Eliminate manual debugging by hardening the collection pipeline, ensuring accurate data filtering, and implementing automated health monitoring.
+
+## 1. Documentation & Requirements (Stage 1-2)
+- [x] **Forensic Audit**: Verify codebase against documentation (Vector, Models, Dedup).
+- [x] **Requirements v1.7.0**: Finalize requirements including FSS 'Department Head' keywords.
+- [x] **PRD v2.0.0**: Establish architectural blueprint (GitHub Actions, 2-Tier AI).
+
+## 2. Technical Architecture (Stage 3)
+- [ ] **ARCHITECTURE.md**: Document "As-Built" structure (File Map, Data Flow).
+- [ ] **SCHEMA.md**: Document Supabase DB Schema (Explicit JSONB structure).
+- [ ] **Legacy Cleanup**: Plan for [scheduler.py](file:///d:/Project/05_regulation_news/src/scheduler.py) removal.
+
+## 3. Implementation & Verification (Stage 4)
+- [/] **Code Synchronization**: Update [settings.py](file:///d:/Project/05_regulation_news/config/settings.py) (Models) and [safeguard_keywords.json](file:///d:/Project/05_regulation_news/config/safeguard_keywords.json) (FSS Keywords).
+- [ ] **Final Dry Run**: Verify full pipeline execution with new config.
+

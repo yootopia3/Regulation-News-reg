@@ -1,0 +1,45 @@
+# MarketPulse-Reg: Project Constitution (Master Context)
+
+**Version**: 1.0.0
+**Enforcement**: Absolute
+**Last Updated**: 2025-12-24
+
+## ⚠️ CRITICAL INSTRUCTION FOR AI AGENTS
+**BEFORE** writing any code, migrating files, or answering architecture questions, you **MUST** read the following documents in order. They represent the "Forensic Truth" of this system.
+
+---
+
+## 1. The Four Pillars of Truth
+The codebase (`src/`) is the reality, but these documents defined the Rules of Engagement. Any deviation must be explicitly approved.
+
+| Document | Purpose | Key Constraints (Non-Negotiable) |
+|----------|---------|-----------------------------------|
+| **[REQUIREMENTS.md](./REQUIREMENTS.md)** | **The Law** | • **AI Models**: Gemini 2.5 (T1) / 3.0 (T2) only.<br>• **Vector**: Not Implemented (Do not hallucinate it).<br>• **Dedup**: URL-based. |
+| **[PRD.md](./PRD.md)** | **The Vision** | • **Infrastructure**: GitHub Actions ONLY (No Scheduler).<br>• **Dashboard**: Requires Auth (Middleware).<br>• **Zero-Maintenance**: Watchdog must run every 2h. |
+| **[ARCHITECTURE.md](./ARCHITECTURE.md)** | **The Structure** | • **Modules**: [pipeline.py](file:///d:/Project/05_regulation_news/src/pipeline.py) is King.<br>• **Legacy**: [scheduler.py](file:///d:/Project/05_regulation_news/src/scheduler.py) is dead code.<br>• **Flow**: Scraper -> Analyzer -> Supabase -> Telegram. |
+| **[SCHEMA.md](./SCHEMA.md)** | **The Data** | • **JSONB**: `analysis_result` structure is fixed.<br>• **Time**: All dates must be **KST (UTC+9)** isoformat. |
+
+---
+
+## 2. Core Principles (The "Code of Conduct")
+
+### Principle 1: As-Built Over As-Designed
+- If the PRD says "Vector Search" but the Code says "None", **Trust the Code** (and update PRD to say "Planned").
+- Never assume a feature exists just because it sounds cool (e.g., "Semantic Search").
+
+### Principle 2: Zero-Hallucination Config
+- Do not invent Model IDs (`gemini-4-ultra`). Use only what is validated in [settings.py](file:///d:/Project/05_regulation_news/config/settings.py).
+- Do not invent Keywords (`농협`). Use only what is in [safeguard_keywords.json](file:///d:/Project/05_regulation_news/config/safeguard_keywords.json).
+
+### Principle 3: Timezone Sovereignty
+- **KST (Korea Standard Time)** is the only acceptable timezone.
+- `datetime.now()` is forbidden. Use `datetime.now(pytz.timezone('Asia/Seoul'))`.
+
+---
+
+## 3. How to Apply These Rules
+1.  **Check Config**: Before answering "What keywords are triggered?", read [config/safeguard_keywords.json](file:///d:/Project/05_regulation_news/config/safeguard_keywords.json).
+2.  **Check Schema**: Before writing SQL, read [docs/SCHEMA.md](file:///d:/Project/05_regulation_news/docs/SCHEMA.md).
+3.  **Check Legacy**: Before editing [scheduler.py](file:///d:/Project/05_regulation_news/src/scheduler.py), stop. It is deprecated.
+
+> **"This document is the bridge between the User's Intent and the System's Reality."**

@@ -1,0 +1,41 @@
+# Implementation Plan: Final Stabilization
+
+**Goal**: Minimize disruption, maximize reliability. "Safe Mode" for data collection.
+
+## 1. Keyword Safeguards (Refined)
+Instead of forcing AI to ignore everything, we act as a "Safety Net".
+- **Rules**: If Title contains X -> Force Minimum Score Y.
+- **Keywords**:
+    - `인사`, `임원`, `조직개편`, `조직 개편` -> **Min Score 5** (Must Watch)
+    - `은행`, `은행업`, `은행법`, `여신`, `수신`, `BIS`, `LCR`, `DSR`, `LTV`, `예대율`, `가계부채`, `스트레스` -> **Min Score 4** (Banking Core)
+- **Implementation**: [src/services/analyzer.py](file:///d:/Project/05_regulation_news/src/services/analyzer.py) -> `_apply_keyword_safeguards()` method added *after* AI analysis. If AI gives 2 but keyword matches, bump to 4.
+
+## 2. Infrastructure (Minimally Invasive)
+- **KST Enforcement**:
+    - [src/collectors/scraper.py](file:///d:/Project/05_regulation_news/src/collectors/scraper.py): Helper function `_parse_date_kst()` to replace current parsing.
+- **Data Integrity**:
+    - [src/collectors/scraper.py](file:///d:/Project/05_regulation_news/src/collectors/scraper.py): Inside `_parse_article_body`, if body length < 50 char, log warning but **do not crash**. Just tag as `[Short Content]` in DB so we can filter later if needed.
+
+## 3. Monitoring (Zero-Code Change to Core)
+- **`watchdog.py`**:
+    - Standalone script. Does not touch `src/`.
+    - Checks `last_collected_at` in DB.
+    - If old -> Alerts Telegram.
+
+## Proposed Changes
+
+### [MODIFY] [src/services/analyzer.py](file:///d:/Project/05_regulation_news/src/services/analyzer.py)
+- Add `_apply_keyword_safeguards(title, current_score)`
+- Keywords: `['인사', '임원', '조직개편', '은행', '여신', '수신', 'BIS', 'LCR', 'DSR', 'LTV']`
+
+### [MODIFY] [src/collectors/scraper.py](file:///d:/Project/05_regulation_news/src/collectors/scraper.py)
+- Add KST conversion.
+- Add "Empty Body" check (Soft warning).
+
+### [NEW] [config/safeguard_keywords.json]
+- External config file for keywords so user can edit later without asking me.
+
+## Execution Order
+1.  Isolate Keywords into JSON (Configurable).
+2.  Update [analyzer.py](file:///d:/Project/05_regulation_news/src/services/analyzer.py) to load this JSON and apply logic.
+3.  Update [scraper.py](file:///d:/Project/05_regulation_news/src/collectors/scraper.py) for KST fix.

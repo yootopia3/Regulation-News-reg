@@ -1,0 +1,39 @@
+# Implementation Plan: Permission to Sleep (The Final Architecture)
+
+**Goal**: A self-auditing system that detects failure at every layer (Infra, Network, Data, Logic) and reports truth.
+
+## User Review Required
+> [!IMPORTANT]
+> **New "Safety Nets" Added**:
+> 1.  **Content Integrity Check**: If a parsed article has < 50 characters of content (body), mark as **FAILED** and alert. (Prevents "Title-only" hallucinations).
+> 2.  **Keyword Safeguards (Rule-based Override)**: We cannot trust AI 100%. We will add a `critical_keywords.json`. If title contains "Tax", "Rate", "CEO", "Inspection" -> **Min Score 4**. Overrides AI.
+> 3.  **Strict Timezone Logic**: All internal logic converts to KST immediately. Rejects "future" articles (bad parse) and "old" articles (>48h) to keep Dashboard clean.
+
+## Layer 1: Infrastructure (Is it running?)
+- **Dead Man's Switch**: External monitoring (e.g., GitHub Action scheduled check or simple "Heartbeat" timestamp file check).
+- **Alert**: "Collector hasn't updated 'last_run.txt' for 6 hours!"
+
+## Layer 2: Network & Structure (Is the site working?)
+- **Smart Scraper**:
+    - **Header Check**: Verify the page has specific headers (e.g., "Board List") *before* looking for articles. If header missing -> Site Layout Changed -> **CRITICAL ALERT**.
+    - **Zero-Result Handling**: If 0 articles found BUT Header exists -> "No News Today" (Safe). If 0 articles AND Header missing -> "Broken" (Alert).
+
+## Layer 3: Data Integrity (Is the data readable?)
+- **Empty Body Guard**: During parsing, if `len(content) < 50`, retry or flag as error.
+- **Date Sanity**: Discard parse results that are wildly impossible (e.g., year 1900 or 2030).
+
+## Layer 4: Business Logic (Is the AI correct?)
+- **Keyword Overrides**:
+    - `인사`, `임원` -> Score 5 (Implemented)
+    - `세제`, `세법`, `과세` (New) -> Score 4 (Prevent "Tax = 2" issue)
+    - `검사`, `제재`, `징계` (New) -> Score 4
+- **Low Score Audit**: Periodic log of "Why did AI give this 1?" (For developer review, not alerts).
+
+## Roadmap
+1.  **Phase 1 (Immediate)**: KST Standardization & Keyword Safeguards (Fixes "Missing data" & "Wrong Scores").
+2.  **Phase 2 (Monitoring)**: `watchdog.py` & Telegram Alerts (Fixes "Silent Death").
+3.  **Phase 3 (Resilience)**: Content Integrity & Header Checks (Fixes "Partial Failures").
+
+## Verification
+- **Test 1**: Inject a dummy article with "Tax Support" title but empty body -> System should ALERT (Content Fail) or Fix Score (Keyword Guard).
+- **Test 2**: Simulate "No Runs" for 6 hours -> Telegram should ring.

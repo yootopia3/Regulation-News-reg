@@ -1,0 +1,52 @@
+name: News Collector
+
+on:
+  # DISABLED: Using v2 collector now (news_collector_v2_active.yml)
+  # schedule:
+  #   - cron: '5,35 * * * *'
+  workflow_dispatch:  # Allow manual trigger only
+
+jobs:
+  collect-and-analyze:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Debug Secrets
+      env:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      run: |
+        echo "Check Env Vars..."
+        echo "GEMINI_KEY: ${GEMINI_API_KEY:0:4}****"
+        echo "SUPABASE_URL: ${SUPABASE_URL:0:8}****"
+        if [ -z "$SUPABASE_ANON_KEY" ]; then
+          echo "SUPABASE_ANON_KEY is EMPTY!"
+        else
+          echo "SUPABASE_ANON_KEY is SET (length: ${#SUPABASE_ANON_KEY})"
+          echo "KEY prefix: ${SUPABASE_ANON_KEY:0:5}****"
+        fi
+
+    - name: Run Collector Pipeline
+      env:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        PYTHONPATH: ${{ github.workspace }}
+      run: |
+        python src/main.py

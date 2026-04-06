@@ -1,0 +1,31 @@
+# System Hardening Plan (Stage 4 Implementation)
+
+**Objective**: Synchronize the codebase (`src/`) with the finalized documentation ("The Constitution").
+**Constraint**: Strict adherence to [docs/MASTER_CONTEXT.md](file:///d:/Project/05_regulation_news/docs/MASTER_CONTEXT.md).
+
+## 1. Documentation Compliance Check (Pre-Flight)
+- [x] **Vector Search**: Confirmed "Not Implemented". (No code changes needed).
+- [x] **Auth**: Confirmed [middleware.ts](file:///d:/Project/05_regulation_news/web/middleware.ts) exists. (No changes needed).
+- [ ] **AI Models**: [settings.py](file:///d:/Project/05_regulation_news/config/settings.py) Config mismatch (Need to update to Gemini 2.5/3.0).
+- [ ] **Safeguards**: [safeguard_keywords.json](file:///d:/Project/05_regulation_news/config/safeguard_keywords.json) Missing "Department Head" (Need to add).
+- [ ] **Legacy**: [scheduler.py](file:///d:/Project/05_regulation_news/src/scheduler.py) still exists (Need to archive).
+
+## 2. Proposed Changes
+
+### 2.1 Update AI Model Strategy ([config/settings.py](file:///d:/Project/05_regulation_news/config/settings.py))
+> **Goal**: Adopt the "2025 Standard" per User Mandate.
+- **Change**: Update `MODEL_FILTER_ID` to `'gemini-2.5-flash-lite'`.
+- **Change**: Update `MODEL_ANALYZER_ID` to `'gemini-3-flash-preview'`.
+
+### 2.2 Enforce Data Integrity ([config/safeguard_keywords.json](file:///d:/Project/05_regulation_news/config/safeguard_keywords.json))
+> **Goal**: Close the FSS Personnel gap (Rule 1).
+- **Change**: Add `"부서장"` (Department Head) to `high_importance.keywords`.
+
+### 2.3 Legacy Clean-up (`src/`)
+> **Goal**: Prevent accidental usage of deprecated scheduler.
+- **Action**: Move [src/scheduler.py](file:///d:/Project/05_regulation_news/src/scheduler.py) to `archive/scheduler.py.bak`.
+- **Action**: Add comment header to [src/main.py](file:///d:/Project/05_regulation_news/src/main.py) confirming it is the ONLY entry point.
+
+## 3. Verification Plan
+- **Dry Run**: Run [scripts/debug/check_fss_personnel.py](file:///d:/Project/05_regulation_news/scripts/debug/check_fss_personnel.py) to confirm "부서장" articles are now flagged as Score 5 (Simulated).
+- **Config Check**: Verify [settings.py](file:///d:/Project/05_regulation_news/config/settings.py) reflects new Model IDs.

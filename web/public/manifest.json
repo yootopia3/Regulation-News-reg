@@ -1,0 +1,29 @@
+{
+    "name": "RegBrief - 실시간 금융 정책 브리핑",
+    "short_name": "RegBrief",
+    "description": "AI 기반 금융 규제 뉴스 대시보드",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0a0a0a",
+    "theme_color": "#5B4BFF",
+    "icons": [
+        {
+            "src": "/app_icon.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/app_icon.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/app_icon.png",
+            "sizes": "180x180",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

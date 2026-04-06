@@ -1,0 +1,111 @@
+# System Architecture (As-Built)
+
+**Version**: 1.0.0
+**Context**: MarketPulse-Reg (Regulatory News Analysis)
+**Status**: Stage 3 Complete
+
+## 1. High-Level Architecture
+The system follows a **Serverless Event-Driven** pattern using GitHub Actions as the primary execution environment.
+
+```mermaid
+graph TD
+    Trigger[GitHub Actions Cron] -->|Every 30m| Main[src/main.py]
+    Main --> Pipeline[src/pipeline.py]
+    
+    subgraph Data Collection
+        Pipeline -->|Fetch| Scraper[src/collectors/scraper.py]
+        Pipeline -->|Fetch| RSS[src/collectors/rss_parser.py]
+    end
+    
+    subgraph Analysis Layer
+        Pipeline -->|Raw Text| Analyzer[src/services/analyzer.py]
+        Analyzer -->|Gemini 2.5| Tier1[Gatekeeper]
+        Analyzer -->|Gemini 3.0| Tier2[Analyst]
+        Analyzer -->|Keywords| Safeguard[Safeguard Rules]
+    end
+    
+    subgraph Persistence & Alert
+        Pipeline -->|Insert| Supabase[src/db/client.py]
+        Pipeline -->|Notify| Telegram[src/services/notifier.py]
+    end
+```
+
+---
+
+## 2. Directory Structure (File Map)
+This map reflects the **actual** codebase, marking legacy components clearly.
+
+```
+d:\Project\05_regulation_news\
+├── .github\
+│   └── workflows\
+│       ├── news_collector.yml  # [Active] Production Cron Job
+│       └── watchdog.yml        # [Active] Health Monitor
+├── config\
+│   ├── agencies.json           # Target Agency Config
+│   ├── settings.py             # Global Settings (Models, Timeouts)
+│   └── safeguard_keywords.json # Keyword Override Rules
+├── docs\                       # Documentation Assets
+├── src\
+│   ├── collectors\
+│   │   ├── scraper.py          # HTML Scraper (FSS)
+│   │   └── rss_parser.py       # RSS Parser (FSC, MOEF, BOK)
+│   ├── db\
+│   │   └── client.py           # Supabase Connection
+│   ├── services\
+│   │   ├── analyzer.py         # 2-Tier AI Logic + Safeguards
+│   │   └── notifier.py         # Telegram Bot Logic
+│   ├── utils\
+│   │   └── logger.py           # Centralized Logging
+│   ├── main.py                 # [Entry Point] Production Runner
+│   ├── pipeline.py             # [Core] Orchestration Logic
+│   └── scheduler.py            # [LEGACY/DEPRECATED] Do Not Use
+└── web\                        # Frontend (Next.js)
+    ├── app\
+    │   ├── page.tsx            # [Secure] Main Dashboard
+    │   └── login\              # [Auth] Login Page
+    ├── components\
+    │   └── Dashboard.tsx       # UI Component
+    └── middleware.ts           # [Security] Route Protection
+```
+
+---
+
+## 3. Data Flow (Pipeline)
+1.  **Collection**: `main.py` triggers `pipeline.run()`. Scrapers fetch data from agencies.
+2.  **Deduplication**: `pipeline._is_duplicate()` checks `link` against DB.
+3.  **Processing**:
+    - **Step 1**: `analyzer.filter()` (Gemini 2.5) -> Score 0-5.
+    - **Step 2**: `analyzer._apply_keyword_safeguards()` -> Force Score 4/5 if keyword matches.
+    - **Step 3**: `analyzer.analyze()` (Gemini 3.0) -> Runs only if Score >= 3.
+4.  **Storage**: `pipeline._save_to_db()` inserts JSON payload to Supabase.
+5.  **Alerting**: `notifier.format_and_send()` sends Telegram msg ONLY if `analysis_result` exists.
+
+## 4. Key Components Detail
+
+### 4.1 Hybrid Analyzer (`src/services/analyzer.py`)
+- **Responsibility**: Encapsulates all AI interaction.
+- **Models**: Configured in `settings.py`, not hardcoded.
+- **Logic**: Enforces the "2-Tier + Safeguard" strategy.
+
+### 4.2 Supabase Client (`src/db/client.py`)
+- **Responsibility**: Singleton connection to PostgreSQL.
+### 4.2 Supabase Client (`src/db/client.py`)
+- **Responsibility**: Singleton connection to PostgreSQL.
+- **Connection Logic**:
+    - **v1.0 (Prod)**: Uses `SUPABASE_URL` & `SUPABASE_ANON_KEY`.
+    - **v2.0 (Dev/Preview)**: Uses `NEXT_PUBLIC_SUPABASE_URL_V2` & `NEXT_PUBLIC_SUPABASE_ANON_KEY_V2` if `NEXT_PUBLIC_USE_V2_DB=true`.
+
+### 4.3 Environment Configuration (Secrets Map)
+*Updated for v2.0 Dual-Environment Setup*
+
+| Variable Name | Purpose | Target (Where to Set) |
+|---------------|---------|-----------------------|
+| `NEXT_PUBLIC_SUPABASE_URL_V2` | v2 DB Endpoint | **Github Secrets** (Actions), **Vercel** (Preview) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY_V2` | v2 DB API Key | **Github Secrets** (Actions), **Vercel** (Preview) |
+| `NEXT_PUBLIC_USE_V2_DB` | v2 Switch Flag (`true`) | **Vercel** (Preview), Local `.env` |
+| `ENV_TYPE` | Backend Branch Flag (`v2`) | **Github Actions** (`news_collector_v2.yml`) |
+
+### 4.3 Web Dashboard (`web/`)
+- **Security**: Protected by `middleware.ts` (Cookie-based Auth).
+- **Visualization**: Reads directly from Supabase `articles` table.

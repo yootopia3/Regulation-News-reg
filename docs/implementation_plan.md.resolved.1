@@ -1,0 +1,48 @@
+# Implementation Plan: Pipeline Fortification (Strong)
+
+**Goal**: A bulletproof system that self-heals where possible and screams (alert) when it can't.
+
+## User Review Required
+> [!IMPORTANT]
+> **Aggressive Alerting**:
+> 1.  **Dead Man's Switch**: If NO successful collection happens for 6 hours (during business hours), send a "CRITICAL FAILURE" alert.
+> 2.  **Zero-Result Audit**: If FSS/FSC scraping returns 0 results for **3 consecutive runs**, trigger an alert (blocks temporary site glitches from spamming you, but catches broken scrapers).
+> 3.  **Explicit "Proof of Life"**: Weekly summary report on Sunday (Total articles collected this week, top keywords).
+
+## 1. Core Code Hardening (The "Ironclad" Fix)
+- **Timezone**: Force `Asia/Seoul` everywhere using `pytz` or explicit offsets. No more implicit UTC.
+- **Wait & Retry**: Increase scraper timeout and add intelligent retry (exponential backoff) for "Connection Refused" or 5xx errors.
+- **Validator**: Add a `validate_html_structure()` function. Before parsing, check if critical CSS classes exist. If not, raise `HTMLStructureChangedError` impacting only that run, but logging explicitly.
+
+## 2. Smart Monitoring (The "Watchdog")
+- **`health_check.py` Upgrade**:
+    - **Frequency**: Runs hourly.
+    - **Logic**:
+        - Check last successful run time. If > 2 hours ago -> WARNING.
+        - Check article count for today. If 0 (at 18:00 KST) -> CRITICAL.
+        - Check DB connection health.
+    - **Alerts**:
+        - 🟢 **Daily Brief**: 09:00 & 18:00 (Summary)
+        - 🔴 **Emergency**: Immediate alert if scraper fails 3x in a row or DB is unreachable.
+
+## 3. Self-Healing (The "Auto-Fix")
+- **Session Reset**: If `requests` fails with SSL/Connection error, automatically rotate User-Agent and create new session.
+- **Fallback URL**: (Optional) Add backup URL for agencies if main URL fails (e.g., RSS vs List page).
+
+## Proposed Changes
+### Backend
+#### [MODIFY] [scraper.py](file:///d:/Project/05_regulation_news/src/collectors/scraper.py)
+- Add `HTMLStructureChangedError`.
+- Implement KST enforcement.
+- Add randomized User-Agent rotation.
+
+#### [NEW] [scripts/monitor/watchdog.py](file:///d:/Project/05_regulation_news/scripts/monitor/watchdog.py)
+- The "Guard Dog" script running separately from the collector.
+- Checks GitHub Actions API to see if "News Collector" is actually running.
+
+#### [MODIFY] [.github/workflows/news_collector.yml](file:///d:/Project/05_regulation_news/.github/workflows/news_collector.yml)
+- Separate "Monitor" job that runs regardless of "Collector" success/failure.
+
+## Verification
+1.  **Simulation**: Manually trigger `watchdog.py` with fake "last run = 5 hours ago" data -> Check if Telegram alert fires.
+2.  **Broken Site Sim**: Point FSS scraper to a dummy URL -> Check if "HTMLStructureChangedError" is logged and alerted.

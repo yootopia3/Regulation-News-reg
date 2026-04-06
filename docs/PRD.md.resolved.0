@@ -1,0 +1,87 @@
+# Product Requirements Document (PRD)
+
+**Project Name**: MarketPulse-Reg (Regulatory News Analysis System)
+**Version**: 1.0.0
+**Target Database**: Supabase (PostgreSQL)
+**Status**: Active / Production Ready
+
+## 1. Introduction
+### 1.1 Purpose
+MarketPulse-Reg is a "Zero-Maintenance" regulatory news automation system. It autonomously monitors, analyzes, and reports on financial regulations that impact Korean commercial banks. Its primary goal is to **eliminate manual monitoring** by risk management teams while ensuring **zero critical misses**.
+
+### 1.2 Problem Statement
+- **Information Overload**: Hundreds of irrelevant administrative notices flood regulatory portals daily.
+- **Missed Criticals**: Human monitors may miss "stealth" regulations buried in routine announcements.
+- **Timezone Conflicts**: Previous systems failed to align global server time (UTC) with Korean business days (KST), causing "yesterday's news" errors.
+- **Reliability**: Web scrapers are fragile; layout changes or network glitches can silently stop data collection.
+
+### 1.3 Key Value Proposition (4-Layer Defense)
+To address reliability, the system implements a strict 4-layer defense strategy:
+1.  **Infrastructure Layer**: GitHub Actions Scheduled Tasks + Watchdog (Dead Man's Switch).
+2.  **Network Layer**: Smart Scraper with KST Timezone Enforcement & Anti-Blocking rotation.
+3.  **Data Layer**: Content Integrity Checks (Empty Body Detection) & Deduplication.
+4.  **Business Logic Layer**: Hybrid AI Analysis + Keyword Safeguards (Rule-based Override).
+
+---
+
+## 2. User Profiles
+### 2.1 Primary User: Risk Manager (Bank)
+- **Goal**: Identify regulatory changes that require immediate ALCO (Asset Liability Committee) agenda items.
+- **Pain Point**: "I don't trust AI if it filters out `Personnel Appointments` or `BIS Ratio` news."
+- **Need**: A dashboard that defaults to showing "Medium/High" risk items, but allows finding everything if needed.
+
+### 2.2 Secondary User: System Administrator
+- **Goal**: Ensure the pipeline is running without manually checking logs every hour.
+- **Need**: "Tell me only when it breaks." (Telegram Alerts)
+
+---
+
+## 3. System Architecture
+### 3.1 Tech Stack
+- **Backend**: Python 3.10 (Scrapers, Analyzer), Supabase (DB + Vector).
+- **Frontend**: Next.js 13 (App Router), Tailwind CSS.
+- **AI**: Google Gemini Pro (Tier 2 Analysis) / Flash-Lite (Tier 1 Filter).
+- **Orchestration**: GitHub Actions (Cron).
+
+### 3.2 Data Flow
+1.  **Collect**: Scrapers/RSS fetch data every 30 mins.
+2.  **UTC -> KST**: All dates normalized to Asia/Seoul.
+3.  **Gatekeeper (Tier 1)**: Gemini Flash-Lite filters `Relevance`.
+4.  **Safeguard Check**: Keywords e.g. "인사" force `Relevance=True` & `Score=5`.
+5.  **Analyst (Tier 2)**: Gemini Pro generates `Action Items` & `Impact Analysis`.
+6.  **Store**: Data saved to Supabase `articles` table.
+7.  **Visualize**: Frontend queries Supabase, filtered by User Preference.
+
+---
+
+## 4. Functional Specifications
+
+### 4.1 Automated Collection
+- **FSS (Financial Supervisory Service)**: Direct HTML Scraping (Board ID: `fssnews`).
+- **FSC (Financial Services Commission)**: RSS Feed.
+- **BOK/MOEF**: RSS Feed.
+- **Constraint**: Must handle "Future Dates" (erroneous parsing) and "Empty Content" gracefully.
+
+### 4.2 Intelligent Analysis
+- **Pre-Filtering**: Cost-effective filtering of non-banking news.
+- **Keyword Overrides**:
+    - **Score 5**: Personnel/Organization (Commissioner, Governor, Reshuffle).
+    - **Score 4**: Core Banking Terms (LTV, DSR, BIS, Household Debt).
+
+### 4.3 Reliability & Monitoring
+- **Watchdog Workflow**: Independent process running every 2 hours.
+- **Alert Logic**:
+    - `CRITICAL`: No new data for >6 hours (Business hours).
+    - `INFO`: Daily summary at 09:00 / 18:00 KST.
+
+### 4.4 Dashboard
+- **Authentication**: Simple Passcode protection.
+- **Default View**: `Score >= 3` (Low/Medium/High).
+- **Search/Filter**: Date Range (KST), Agency, Keyword.
+
+---
+
+## 5. Success Metrics
+- **Zero Misses**: 100% capture of "High" importance regulatory changes.
+- **Uptime**: < 6 hours of undetected downtime (guaranteed by Watchdog).
+- **Latency**: News available on dashboard within 45 mins of publication.

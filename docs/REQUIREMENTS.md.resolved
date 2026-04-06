@@ -1,0 +1,124 @@
+# MarketPulse-Reg Requirements Definition (요건 정의서)
+
+**Version**: 1.6.0 (Final Code-Match)
+**Last Updated**: 2025-12-24
+**Status**: Active
+
+## 1. Project Overview
+**MarketPulse-Reg** is an automated regulatory news monitoring system designed for Korean commercial bank risk management teams. It collects, analyzes, and filters news from key financial authorities (FSC, FSS, MOEF, BOK) to provide actionable insights.
+
+## 2. Infrastructure & Environment (인프라 요건)
+*Updated in v1.2.0 to resolve Legacy vs Production conflicts.*
+
+### 2.1 Execution Environment
+- **Primary (Production)**: **GitHub Actions** (Serverless).
+- **Secondary (Dev/Debug)**: Local Python Environment (Manual Trigger).
+- **DEPRECATED**: [src/scheduler.py](file:///d:/Project/05_regulation_news/src/scheduler.py) (Background Scheduler).
+    - *Reason*: Replaced by GitHub Actions CRON to ensure zero-maintenance uptime.
+    - *Action*: Do not use [scheduler.py](file:///d:/Project/05_regulation_news/src/scheduler.py) for production.
+
+### 2.2 Collection Schedule
+- **Schedule**: Every 30 minutes (GitHub Actions `cron: '*/30 * * * *'`).
+- **Legacy Setting**: `settings.COLLECTION_INTERVAL_MINUTES = 10` is **ignored** in Production.
+
+---
+
+## 3. Data Collection (수집 요건)
+
+### 3.1 Target Agencies
+| Code | Agency | Collection Method | Update Frequency |
+|------|--------|-------------------|------------------|
+| FSC  | Financial Services Commission | RSS / Scraper | Every 30 mins |
+| FSS  | Financial Supervisory Service | Scraper (Legacy) | Every 30 mins |
+| MOEF | Ministry of Economy & Finance | RSS | Every 30 mins |
+| BOK  | Bank of Korea | RSS | Every 30 mins |
+| **MAFRA** | ~~Ministry of Agriculture~~ | **Not Implemented** | N/A |
+
+### 3.2 Timezone & Schedule
+- **Standard Timezone**: **KST (Asia/Seoul)** (UTC+9).
+- **Backend (Scraper)**: Saves dates with explicit offset `+09:00`.
+- **Frontend (Legacy Logic)**: [Dashboard.tsx](file:///d:/Project/05_regulation_news/web/components/Dashboard.tsx) currently applies a manual `+9h` shift ([toKST](file:///d:/Project/05_regulation_news/web/components/Dashboard.tsx#207-212)).
+    - *Risk*: Potential double-shifting if Backend sends Timezone-aware strings.
+    - *Requirement*: Frontend must respect ISO 8601 offsets from DB.
+
+### 3.3 Data Integrity Safeguards (무결성 방어)
+- **Deduplication**: Strictly enforced by **URL (Link)**.
+    - If a link already exists in the `articles` table, the new collection is **skipped** entirely (No Analysis, No Alert).
+- **Empty Body Check**: If parsed content body is < 50 characters, the article is flagged as `[Short Content]` and a warning is logged (soft failure).
+- **Structure Validation**: If 0 items are found but the page HTTP status is 200, the system must check for known page elements (headers) to distinguish "No News" from "Broken Scraper".
+
+---
+
+## 4. Analysis & Scoring (분석 요건)
+
+### 4.1 AI Scoring Model (Tiered Analysis)
+The system uses a 2-Tier AI approach with 2025-Standard Models.
+
+#### 4.1.1 Tier 1: Gatekeeper (Pre-Filtering)
+- **Model**: **`gemini-2.5-flash-lite`** (Ultra-Fast 2025 Model)
+- **Input**: Title + Short Description
+- **Role**:
+    - **Relevance Check**: Determines if the news is relevant to "Korean commercial bank risk management".
+    - **Initial Scoring**: Assigns a tentative score (1-5).
+- **Filtering Rule**:
+    - If `is_relevant` is **False**, the article is **discarded immediately** (marked as Score 0/Irrelevant in DB) and does NOT proceed to Tier 2.
+    - *Exception*: Unless the title matches a **Keyword Safeguard** (see 4.3). Safeguards override this filter.
+
+#### 4.1.2 Tier 2: Analyst (Deep Dive)
+- **Model**: **`gemini-3-flash-preview`** (Advanced Reasoning 2025 Model)
+- **Input**: Full Article Content
+- **Trigger**: Only runs if Tier 1 Score >= 3 OR Keyword Safeguard triggered.
+- **Output**: 
+    - Detailed `impact_analysis` (Bank business impact).
+    - `action_items` (To-Do list for Risk Team).
+    - Refined `risk_score` (1-5).
+
+### 4.2 Scoring Criteria (Risk Levels)
+| Score | Level | Meaning | Display Rule |
+|-------|-------|---------|--------------|
+| 5     | **High** | Critical (Immediate Action) | **Always Visible** |
+| 4     | **Medium** | Monitoring Required | **Always Visible** |
+| 3     | **Low** | Routine / FYI | Visible (Default) |
+| 1-2   | Ignore | Irrelevant / Noise | **Hidden** (User Filter) |
+
+### 4.3 Keyword Safeguards (AI Override Rules)
+*Logic prevails over AI. Even if Tier 1/Tier 2 scores low (or filters out), these rules force significance.*
+
+- **Rule 1: Personnel & Organization (Score 5)**
+    - **Keywords**: `인사`, `임원`, `조직개편`, `조직 개편`, `금융위원장`, `금융감독원장`
+    - **Action**: Force `Importance Score = 5`, `Risk Level = High`.
+    
+- **Rule 2: Banking Core Regulations (Score 4)**
+    - **Keywords**: `은행`, `여신`, `수신`, `BIS`, `LCR`, `DSR`, `LTV`, `예대율`, `가계부채`, `스트레스`, `부실채권`
+    - **Action**: Force `Importance Score = 4` (minimum).
+
+---
+
+## 5. Technical Constraints & Missing Features (제약 및 미구현)
+*Identified during Forensic Audit v1.4.0*
+
+### 5.1 Vector Search (Implementation Gap)
+- **Status**: **Not Implemented (Planned v2.0)**.
+- **Description**: The system currently stores analysis only as JSON text. No vector embeddings (`text-embedding-005` etc.) or Vector DB columns (`pgvector`) exist.
+- **Impact**: "Semantic Search" (finding similar past contexts) is currently impossible. Only keyword/metadata filtering is supported.
+
+### 5.2 Model Configuration
+- **Validation**: System assumes `gemini-2.5-flash-lite` and `gemini-3-flash-preview` are valid and available in the operating region.
+
+---
+
+## 6. Monitoring & Alerting (감시 요건)
+
+### 6.1 System Watchdog
+- **Frequency**: Every 2 hours (Independent Workflow).
+- **Dead Man's Switch**:
+    - If no new articles are inserted into DB for **> 6 hours**, send **CRITICAL ALERT**.
+- **Daily Health Report**:
+    - Sent at **09:00 KST** and **18:00 KST**.
+    - Content: System Status (OK/Fail), Total Articles Collected Today.
+
+### 6.2 Notification Channels
+- **Telegram**:
+    1. **System Alerts**: Critical Failures, Daily Reports.
+    2. **News Alerts (Conditional)**: Sent **ONLY** if the article passed Tier 2 Analysis (Status `ANALYZED`, Score >= 3).
+        - *Note*: Articles filtered out by Tier 1 (Score 0-2) do **NOT** trigger alerts.

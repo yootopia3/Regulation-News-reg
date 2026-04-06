@@ -1,0 +1,38 @@
+# Documentation Update Plan
+
+**Objective**: Synchronize all project documentation with the current "System Fortified" state (4-Layer Defense, Watchdog, Safeguards).
+
+## User Review Required
+> [!NOTE]
+> This plan executes in **3 Stages**. I will pause for approval after each stage.
+> 1.  **Context & Discovery**: Analyze current vs. documented state. (Done)
+> 2.  **Core Docs (Stage 1)**: Create/Update `PRD.md` and [README.md](file:///d:/Project/05_regulation_news/README.md) to establish the new "Source of Truth".
+> 3.  **Task Tracking (Stage 2)**: Update [task.md](file:///C:/Users/orbzo/.gemini/antigravity/brain/22cb1216-058b-457d-b61c-210ee06d4342/task.md) to reflect completed stabilization and define future maintenance.
+> 4.  **Operational Guides (Stage 3)**: Create `docs/OPERATIONS.md` explaining monitoring, alerts, and manual recovery.
+
+## Stage 1: Core Documentation Update
+- **[NEW] docs/PRD.md**: Create a formal PRD (currently missing).
+    - Define "Zero-Maintenance" goals.
+    - Document the **4-Layer Defense Architecture**:
+        1.  Infrastucture (GitHub Actions + Watchdog)
+        2.  Network (Smart Scraper)
+        3.  Data Integrity (KST, Empty Body Check)
+        4.  Business Logic (AI + Keyword Safeguards)
+- **[MODIFY] README.md**:
+    - Update "Features" to include "Self-Healing" and "Watchdog".
+    - Update "Project Structure" to include `.github/workflows` and `scripts/monitor`.
+
+## Stage 2: Task & Status Sync
+- **[MODIFY] task.md**:
+    - Mark all recent stabilization tasks as [x].
+    - Add "Documentation" section.
+    - Clear out obsolete "To-Do" items.
+
+## Stage 3: Operational Manual
+- **[NEW] docs/OPERATIONS.md**:
+    - How to read Telegram alerts (CRITICAL vs WARNING).
+    - How to edit `config/safeguard_keywords.json`.
+    - How to manually trigger Watchdog.
+
+## Verification
+- User checks `PRD.md` to confirm it matches their understanding of the "Perfect System".

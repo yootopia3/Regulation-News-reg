@@ -1,0 +1,64 @@
+# MarketPulse-Reg Requirements Definition (요건 정의서)
+
+**Version**: 1.1.0 (Revised)
+**Last Updated**: 2025-12-24
+**Status**: Active
+
+## 1. Project Overview
+**MarketPulse-Reg** is an automated regulatory news monitoring system designed for Korean commercial bank risk management teams. It collects, analyzes, and filters news from key financial authorities (FSC, FSS, MOEF, BOK) to provide actionable insights.
+
+## 2. Data Collection (수집 요건)
+[Same as v1.0.0]
+
+---
+
+## 3. Analysis & Scoring (분석 요건)
+
+### 3.1 AI Scoring Model (Tiered Analysis)
+The system uses a 2-Tier AI approach to balance cost and accuracy.
+
+#### 3.1.1 Tier 1: Gatekeeper (Pre-Filtering)
+- **Model**: `gemini-2.5-flash-lite` (Fast & Cheap)
+- **Input**: Title + Short Description
+- **Role**:
+    - **Relevance Check**: Determines if the news is relevant to "Korean commercial bank risk management".
+    - **Initial Scoring**: Assigns a tentative score (1-5).
+- **Filtering Rule**:
+    - If `is_relevant` is **False**, the article is **discarded immediately** (marked as Score 0/Irrelevant in DB) and does NOT proceed to Tier 2.
+    - *Exception*: Unless the title matches a **Keyword Safeguard** (see 3.3). Safeguards override this filter.
+
+#### 3.1.2 Tier 2: Analyst (Deep Dive)
+- **Model**: `gemini-3-flash-preview` (High Reasoning)
+- **Input**: Full Article Content
+- **Trigger**: Only runs if Tier 1 Score >= 3 OR Keyword Safeguard triggered.
+- **Output**: 
+    - Detailed `impact_analysis` (Bank business impact).
+    - `action_items` (To-Do list for Risk Team).
+    - Refined `risk_score` (1-5).
+
+### 3.2 Scoring Criteria (Risk Levels)
+| Score | Level | Meaning | Display Rule |
+|-------|-------|---------|--------------|
+| 5     | **High** | Critical (Immediate Action) | **Always Visible** |
+| 4     | **Medium** | Monitoring Required | **Always Visible** |
+| 3     | **Low** | Routine / FYI | Visible (Default) |
+| 1-2   | Ignore | Irrelevant / Noise | **Hidden** (User Filter) |
+
+### 3.3 Keyword Safeguards (AI Override Rules)
+*Logic prevails over AI. Even if Tier 1/Tier 2 scores low (or filters out), these rules force significance.*
+
+- **Rule 1: Personnel & Organization (Score 5)**
+    - **Keywords**: `인사`, `임원`, `조직개편`, `조직 개편`, `금융위원장`, `금융감독원장`
+    - **Action**: Force `Importance Score = 5`, `Risk Level = High`.
+    
+- **Rule 2: Banking Core Regulations (Score 4)**
+    - **Keywords**: `은행`, `여신`, `수신`, `BIS`, `LCR`, `DSR`, `LTV`, `예대율`, `가계부채`, `스트레스`, `부실채권`
+    - **Action**: Force `Importance Score = 4` (minimum).
+
+---
+
+## 4. Monitoring & Alerting (감시 요건)
+[Same as v1.0.0]
+
+## 5. Frontend Dashboard (시각화 요건)
+[Same as v1.0.0]

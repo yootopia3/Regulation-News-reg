@@ -1,14 +1,32 @@
+# Environment
+.env
+venv/
+.venv/
+
+# Frontend
+node_modules/
+.next/
+
+# Python
+__pycache__/
+*.pyc
+*.py[cod]
+*$py.class
+
+# Logs
+*.log
+
+# Generated HTML / debug outputs
+*.html
+debug_*.html
+
 # Task outputs (generated at runtime)
 tasks/*/phase*-output.json
 
 # OS
 .DS_Store
 
-# Python
-__pycache__/
-*.pyc
-
-# IDE
+# IDE / local tools
 .vscode/
 .idea/
 .omc/

@@ -1,0 +1,143 @@
+{
+  "agencies": [
+    {
+      "code": "FSC",
+      "name": "금융위 (FSC)",
+      "category": "press_release",
+      "collection_method": "rss",
+      "url": "https://www.fsc.go.kr/about/fsc_bbs_rss/?fid=0111",
+      "base_url": "https://www.fsc.go.kr"
+    },
+    {
+      "code": "MOEF",
+      "name": "기재부 (MOEF)",
+      "category": "press_release",
+      "collection_method": "rss",
+      "url": "https://www.korea.kr/rss/dept_moef.xml",
+      "base_url": "https://www.korea.kr"
+    },
+    {
+      "code": "FSS",
+      "name": "금감원 (FSS)",
+      "category": "press_release",
+      "collection_method": "scraper",
+      "url": "https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218",
+      "base_url": "https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218",
+      "selector": {
+        "list": "table tbody tr",
+        "title": "td.title a",
+        "date": "td:nth-of-type(4)",
+        "link": "td.title a",
+        "content": ".dbdata"
+      }
+    },
+    {
+      "code": "BOK",
+      "name": "한은 (BOK)",
+      "category": "press_release",
+      "collection_method": "scraper",
+      "url": "https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=1",
+      "base_url": "https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=1",
+      "selector": {
+        "list": "li.bbsRowCls",
+        "title": "a.title",
+        "date": "span.date",
+        "link": "a.title",
+        "content": ".dbdata"
+      }
+    },
+    {
+      "code": "FSS_REG",
+      "name": "금감원 (규제개정예고)",
+      "category": "regulation_notice",
+      "collection_method": "scraper",
+      "url": "https://www.fss.or.kr/fss/job/lrgRegItnPrvntc/list.do?menuNo=200489",
+      "base_url": "https://www.fss.or.kr/fss/job/lrgRegItnPrvntc/list.do?menuNo=200489",
+      "selector": {
+        "list": "table tbody tr",
+        "title": "td.title a",
+        "date": "td:nth-of-type(3)",
+        "link": "td.title a",
+        "content": ".bd-view"
+      }
+    },
+    {
+      "code": "FSC_REG",
+      "name": "금융위 (규제변경예고)",
+      "category": "regulation_notice",
+      "collection_method": "scraper",
+      "url": "https://www.fsc.go.kr/po040301",
+      "base_url": "https://www.fsc.go.kr/po040301",
+      "selector": {
+        "list": ".board-list-wrap li",
+        "title": ".subject a",
+        "date": ".day",
+        "link": ".subject a",
+        "content": ".cont"
+      }
+    },
+    {
+      "code": "FSS_REG_INFO",
+      "name": "금감원 (최근제개정정보)",
+      "category": "regulation_notice",
+      "collection_method": "scraper",
+      "url": "https://www.fss.or.kr/fss/job/lrgRegItnInfo/list.do?menuNo=200488",
+      "base_url": "https://www.fss.or.kr/fss/job/lrgRegItnInfo/list.do?menuNo=200488",
+      "selector": {
+        "list": ".bd-list tbody tr",
+        "title": "td:nth-child(2) a",
+        "date": "td:nth-child(3)",
+        "link": "td:nth-child(2) a",
+        "content": ".bd-view"
+      }
+    },
+    {
+      "code": "FSS_SANCTION",
+      "name": "검사결과 제재",
+      "category": "sanction_notice",
+      "collection_method": "scraper",
+      "url": "https://www.fss.or.kr/fss/job/openInfo/list.do?menuNo=200476",
+      "base_url": "https://www.fss.or.kr",
+      "filter_keywords": [
+        "은행",
+        "금융지주",
+        "농협"
+      ],
+      "exclude_keywords": [
+        "저축은행"
+      ],
+      "selector": {
+        "list": ".bd-list dl",
+        "title": "dt:contains('제재대상기관') + dd",
+        "date": "dt:contains('제재조치요구일') + dd",
+        "link": "a.b-default",
+        "content": ".bd-view",
+        "pdf_link": "a[href*='hpdownload']"
+      }
+    },
+    {
+      "code": "FSS_MGMT_NOTICE",
+      "name": "경영유의사항",
+      "category": "sanction_notice",
+      "collection_method": "scraper",
+      "url": "https://www.fss.or.kr/fss/job/openInfoImpr/list.do?menuNo=200483",
+      "base_url": "https://www.fss.or.kr",
+      "filter_keywords": [
+        "은행",
+        "금융지주",
+        "농협"
+      ],
+      "exclude_keywords": [
+        "저축은행"
+      ],
+      "selector": {
+        "list": ".bd-list dl",
+        "title": "dt:contains('제재대상기관') + dd",
+        "date": "dt:contains('제재조치요구일') + dd",
+        "link": "a.b-default",
+        "content": ".bd-view",
+        "pdf_link": "a[href*='hpdownload']"
+      }
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+# MarketPulse-Reg Requirements Definition (요건 정의서)
+
+**Version**: 1.0.0
+**Last Updated**: 2025-12-24
+**Status**: Active
+
+## 1. Project Overview
+**MarketPulse-Reg** is an automated regulatory news monitoring system designed for Korean commercial bank risk management teams. It collects, analyzes, and filters news from key financial authorities (FSC, FSS, MOEF, BOK) to provide actionable insights.
+
+## 2. Data Collection (수집 요건)
+
+### 2.1 Target Agencies
+| Code | Agency | Collection Method | Update Frequency |
+|------|--------|-------------------|------------------|
+| FSC  | Financial Services Commission | RSS / Scraper | Every 30 mins |
+| FSS  | Financial Supervisory Service | Scraper (Legacy) | Every 30 mins |
+| MOEF | Ministry of Economy & Finance | RSS | Every 30 mins |
+| BOK  | Bank of Korea | RSS | Every 30 mins |
+| MAFRA| Ministry of Agriculture | RSS | Every 30 mins |
+
+### 2.2 Timezone & Schedule
+- **Standard Timezone**: **KST (Asia/Seoul)** (UTC+9).
+- **Date Handling**: All `published_at` dates must be converted to KST immediately upon collection.
+    - *Constraint*: Articles parsed with "future dates" (e.g., due to timezone offset errors) must be corrected or rejected.
+- **Collection Schedule**: Every 30 minutes via GitHub Actions.
+- **Retry Policy**:
+    - Random delay (2~5s) between requests.
+    - Automatic User-Agent rotation on blocking.
+
+### 2.3 Data Integrity Safeguards (무결성 방어)
+- **Empty Body Check**: If parsed content body is < 50 characters, the article is flagged as `[Short Content]` and a warning is logged (soft failure).
+- **Structure Validation**: If 0 items are found but the page HTTP status is 200, the system must check for known page elements (headers) to distinguish "No News" from "Broken Scraper".
+
+---
+
+## 3. Analysis & Scoring (분석 요건)
+
+### 3.1 AI Scoring Model (Tiered Analysis)
+- **Tier 1 (Filter)**: Checks relevance (True/False) and initial score (1-5).
+- **Tier 2 (Analyze)**: If Score >= 3 or specific keywords match, performs deep analysis (Impact, Action Items).
+
+### 3.2 Scoring Criteria (Risk Levels)
+| Score | Level | Meaning | Display Rule |
+|-------|-------|---------|--------------|
+| 5     | **High** | Critical (Immediate Action) | **Always Visible** |
+| 4     | **Medium** | Monitoring Required | **Always Visible** |
+| 3     | **Low** | Routine / FYI | Visible (Default) |
+| 1-2   | Ignore | Irrelevant / Noise | **Hidden** (User Filter) |
+
+### 3.3 Keyword Safeguards (AI Override Rules)
+*Logic prevails over AI. Even if AI scores low, these rules force high scores.*
+
+- **Rule 1: Personnel & Organization (Score 5)**
+    - **Keywords**: `인사`, `임원`, `조직개편`, `조직 개편`, `금융위원장`, `금융감독원장`
+    - **Action**: Force `Importance Score = 5`, `Risk Level = High`.
+    
+- **Rule 2: Banking Core Regulations (Score 4)**
+    - **Keywords**: `은행`, `여신`, `수신`, `BIS`, `LCR`, `DSR`, `LTV`, `예대율`, `가계부채`, `스트레스`, `부실채권`
+    - **Action**: Force `Importance Score = 4` (minimum).
+
+---
+
+## 4. Monitoring & Alerting (감시 요건)
+
+### 4.1 System Watchdog
+- **Frequency**: Every 2 hours (Independent Workflow).
+- **Dead Man's Switch**:
+    - If no new articles are inserted into DB for **> 6 hours**, send **CRITICAL ALERT**.
+- **Daily Health Report**:
+    - Sent at **09:00 KST** and **18:00 KST**.
+    - Content: System Status (OK/Fail), Total Articles Collected Today.
+
+### 4.2 Notification Channels
+- **Telegram**: All alerts (Critical & Routine) are sent to the configured Telegram Chat ID.
+
+---
+
+## 5. Frontend Dashboard (시각화 요건)
+
+### 5.1 Visualization
+- **Date Grouping**: Articles must be grouped by **KST Date** (e.g., Dec 24, 00:00 ~ 23:59).
+- **Filtering**:
+    - Default: Show Score 3, 4, 5.
+    - Hidden: Score 1, 2.
+    - "Unanalyzed" articles (Score Null) are treated as Low Risk (Visible) to prevent data loss.
+
+### 5.2 User Interface
+- **Status Indicator**: Show "Last Updated: [Time]" to confirm system liveness.
+- **Manual Trigger**: "Collect Now" button to force run GitHub Actions workflow.

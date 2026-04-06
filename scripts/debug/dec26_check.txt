@@ -1,0 +1,20 @@
+=== Checking for December 26 (KST) Articles ===
+
+Found 1 article(s) for Dec 26 (KST):
+------------------------------------------------------------
+
+ID: 617135b9-ccb3-4adf-b83f-75348a672fff
+Title: '25.10월말 국내은행의 원화대출 연체율 현황[잠정]
+Agency: FSS
+Published At: 2025-12-25T15:00:00+00:00
+Importance Score: 4
+Risk Level: High
+*** VISIBLE: Score 4 >= 3 or not analyzed ***
+------------------------------------------------------------
+
+Other recent articles (Dec 25 and earlier): 19
+  [FSS] 국민의 목소리가 보이스피싱 예방 정책과 홍보캠페인에 반영됩니다... (Score: N/A)
+  [FSS] 소비자 의견을 반영하여 금융상품 비교공시시스템을 개선하겠습니다.... (Score: 2)
+  [BOK] [보도자료] 2026년 통화신용정책 운영방향... (Score: 4)
+  [BOK] 2025년도 의안 제40호 - 2026년 통화신용정책 운영방향(안)... (Score: 4)
+  [FSS] 온라인 금융상품 판매 관련 다크패턴 가이드라인 마련... (Score: 3)

@@ -1,0 +1,26 @@
+# Task: Stabilize and Automate News Collection Pipeline
+
+**Objective**: Eliminate manual debugging by hardening the collection pipeline, ensuring accurate data filtering, and implementing automated health monitoring.
+
+## 1. Planning & Analysis
+- [/] Analyze root causes of recent failures (FSS missing, Timezone issues, Schedule delays)
+- [ ] Draft comprehensive `implementation_plan.md` for zero-maintenance operation
+- [ ] Define "Success Criteria" for daily operations
+
+## 2. Infrastructure Hardening
+- [ ] **Timezone Standardization**: Enforce KST (UTC+9) explicitly in all scrapers and DB writes to prevent "yesterday's news" issues.
+- [ ] **Scraper Resilience**: Implement "Zero-Result Warning". If a scraper finds 0 items, flag as potential error (vs just "no news").
+- [ ] **Fail-Safe**: Ensure `FORCE_COLLECT_AGENCIES` is a configuration, not a code patch.
+
+## 3. Monitoring & Alerting
+- [ ] **Health Check Action**: Create a daily/hourly "Health Report" sent via Telegram.
+    - Content: "Today's Articles: [FSC: 3, FSS: 0, BOK: 2]. Last Run: 20 mins ago."
+- [ ] **Staleness Alert**: If no new data for >12 hours on a weekday, send "CRITICAL: No Data" alert.
+
+## 4. Frontend Verification
+- [ ] **Data Freshness UI**: Display "Last Collected: [Time]" on the dashboard so the user *knows* if it's running.
+- [ ] **Visual Validation**: Verify all "Key Agencies" have data for the current date (KST).
+
+## 5. Final Verification
+- [ ] **Dry Run**: Force trigger full pipeline and verify DB contents.
+- [ ] **User Sign-off**: Confirm 24-hour stability.

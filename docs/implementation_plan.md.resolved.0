@@ -1,0 +1,55 @@
+# Implementation Plan: Pipeline Stabilization & Zero-Maintenance
+
+**Goal**: Ensure the Regulation News Collector runs autonomously, accurately, and visibly without user intervention.
+
+## User Review Required
+> [!IMPORTANT]
+> **Telegram Alerts**: To provide "Zero-Maintenance" confidence, I propose adding a **Daily Health Report** via Telegram. This will tell you every morning/evening: "System is healthy, collected X articles." Do you agree to this addition?
+
+## 1. Timezone Standardization (The "Missing Day" Fix)
+Currently, mismatched UTC/KST handling causes articles to appear on the wrong day or be skipped by "today's news" filters.
+- **Action**: Enforce `Asia/Seoul` timezone in:
+    - [src/collectors/scraper.py](file:///d:/Project/05_regulation_news/src/collectors/scraper.py) (Parsing dates)
+    - [src/pipeline.py](file:///d:/Project/05_regulation_news/src/pipeline.py) (DB timestamps)
+    - [web/components/Dashboard.tsx](file:///d:/Project/05_regulation_news/web/components/Dashboard.tsx) (Display grouping - *Already Applied*)
+
+## 2. Scraper Resilience (The "Silent Failure" Fix)
+If the FSS website changes its layout, the scraper currently might just return 0 articles implies "no news".
+- **Action**: Implement **Minimum Layout Check**.
+    - If a scraper matches 0 items but the HTTP status is 200, check for a "specific known element" (e.g., footer, menu). If that exists but news list is empty -> "No News". If known element is missing -> "BROKEN SELECTOR" -> **Alert**.
+
+## 3. Monitoring & Reporting (The "Peace of Mind" Fix)
+User shouldn't have to debug to know if it works.
+- **Action**: Add `scripts/monitor/daily_health_check.py`.
+    - Runs at 09:00 and 18:00 KST.
+    - Checks:
+        1.  Did the collector run in the last hour?
+        2.  Are there >0 articles for today (across all agencies)?
+        3.  Are there any FAILED analysis rows?
+    - Output: Sends a Telegram message summary.
+
+## 4. Frontend Visibility
+- **Action**: Add a "System Status" indicator in the Dashboard footer.
+    - "Last Update: 10 mins ago (Status: OK)"
+    - This connects to the `check-collection-status` API we built.
+
+## Proposed Changes
+### Backend / Collection
+#### [MODIFY] [scraper.py](file:///d:/Project/05_regulation_news/src/collectors/scraper.py)
+- Explicit KST timezone conversion for parsed dates.
+- Add "Selector Validation" logic (warn if 0 items found).
+
+#### [NEW] [daily_health_check.py](file:///d:/Project/05_regulation_news/scripts/monitor/daily_health_check.py)
+- Script to query DB stats and send Telegram report.
+
+#### [MODIFY] [news_collector.yml](file:///d:/Project/05_regulation_news/.github/workflows/news_collector.yml)
+- Add step to run `daily_health_check.py` after collection.
+
+### Frontend
+#### [MODIFY] [Dashboard.tsx](file:///d:/Project/05_regulation_news/web/components/Dashboard.tsx)
+- Add "Data Freshness" indicator.
+
+## Verification Plan
+1.  **Force Fail Test**: Intentionally break a selector and verify the "Broken Selector" alert fires.
+2.  **Timezone Check**: Verify an article published at "23:00 UTC" shows as "Tomorrow" in Dashboard.
+3.  **Report Check**: Confirm Telegram receives the daily health summary.
