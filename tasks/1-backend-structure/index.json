@@ -47,7 +47,9 @@
     {
       "phase": 6,
       "name": "pipeline-slim",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-04-06T14:38:17+0900",
+      "completed_at": "2026-04-06T14:42:00+0900"
     },
     {
       "phase": 7,

@@ -4,8 +4,8 @@ import logging
 import random
 import time
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
-from urllib.parse import urljoin
+from typing import Dict, List, Optional, Tuple
+from urllib.parse import urljoin, urlparse, parse_qs
 
 from bs4 import BeautifulSoup
 
@@ -20,6 +20,23 @@ logger = logging.getLogger(__name__)
 
 MAX_PAGES = 10
 CUTOFF_DAYS = 30
+
+
+def extract_sanction_key(link: str) -> Tuple[Optional[str], Optional[str]]:
+    """Extract ``(examMgmtNo, emOpenSeq)`` from an FSS sanction link.
+
+    FSS sanction URLs contain varying date params so identity must be
+    derived from the ``examMgmtNo``/``emOpenSeq`` query pair. Returns
+    ``(None, None)`` when either identifier is missing (e.g. PDF links).
+    """
+    try:
+        parsed = urlparse(link)
+        params = parse_qs(parsed.query)
+        exam_id = params.get('examMgmtNo', [None])[0]
+        seq = params.get('emOpenSeq', [None])[0]
+        return exam_id, seq
+    except Exception:
+        return None, None
 
 
 def fetch_sanction_items(agency_config: Dict) -> List[Dict]:
