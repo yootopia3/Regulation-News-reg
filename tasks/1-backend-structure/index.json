@@ -1,0 +1,63 @@
+{
+  "project": "reg_brief",
+  "task": "backend-structure",
+  "prompt": "초기 MVP에서 그대로 자란 백엔드 구조를 안전하게 리팩토링한다. 동작 변경 0건, DB 스키마 변경 0건, 프론트 제외, 잡파일 정리 보류. pipeline/scraper/analyzer/settings/db client의 책임 분해와 모듈화, 개발자 원칙 준수가 목표.",
+  "totalPhases": 7,
+  "build_command": "python -c 'from src.pipeline import Pipeline; from src.services.analyzer import HybridAnalyzer'",
+  "commit_prefix": "refactor",
+  "branch_prefix": "refactor",
+  "push_on_complete": false,
+  "created_at": "2026-04-06T13:30:00+0900",
+  "phases": [
+    {
+      "phase": 1,
+      "name": "design-doc",
+      "status": "completed",
+      "started_at": "2026-04-06T14:05:08+0900",
+      "completed_at": "2026-04-06T14:09:43+0900"
+    },
+    {
+      "phase": 2,
+      "name": "settings-and-constants",
+      "status": "completed",
+      "started_at": "2026-04-06T14:28:11+0900",
+      "completed_at": "2026-04-06T14:31:30+0900"
+    },
+    {
+      "phase": 3,
+      "name": "db-client-lazy",
+      "status": "completed",
+      "started_at": "2026-04-06T14:31:30+0900",
+      "completed_at": "2026-04-06T14:32:48+0900"
+    },
+    {
+      "phase": 4,
+      "name": "analyzer-decompose",
+      "status": "completed",
+      "started_at": "2026-04-06T14:32:49+0900",
+      "completed_at": "2026-04-06T14:35:44+0900"
+    },
+    {
+      "phase": 5,
+      "name": "scraper-decompose",
+      "status": "completed",
+      "started_at": "2026-04-06T14:35:45+0900",
+      "completed_at": "2026-04-06T14:38:16+0900"
+    },
+    {
+      "phase": 6,
+      "name": "pipeline-slim",
+      "status": "completed",
+      "started_at": "2026-04-06T14:38:17+0900",
+      "completed_at": "2026-04-06T14:40:27+0900"
+    },
+    {
+      "phase": 7,
+      "name": "regression-verify",
+      "status": "completed",
+      "started_at": "2026-04-06T14:40:28+0900",
+      "completed_at": "2026-04-06T14:42:35+0900"
+    }
+  ],
+  "completed_at": "2026-04-06T14:42:35+0900"
+}

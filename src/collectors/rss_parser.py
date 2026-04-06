@@ -43,7 +43,7 @@ def fetch_rss_feed(agency: Dict) -> List[Dict]:
     print(f"Fetching RSS for {agency.get('name', 'Unknown')}...")
     
     # Use custom headers to avoid blocking
-    from config import settings
+    from src.config import settings
     headers = {
         'User-Agent': settings.USER_AGENT
     }
