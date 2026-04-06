@@ -1,9 +1,16 @@
 import feedparser
 import json
+import logging
 import os
 from datetime import datetime, timezone, timedelta
 from email.utils import parsedate_to_datetime
 from typing import List, Dict, Optional
+
+logger = logging.getLogger(__name__)
+
+# Warn if a feed's most recent entry is older than this many days. Operational
+# guard against "looks-alive but dead source" regressions (see Round 2 MOEF).
+RSS_STALE_WARN_DAYS = 14
 
 # Load config
 CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'config', 'agencies.json')
@@ -64,6 +71,7 @@ def fetch_rss_feed(agency: Dict) -> List[Dict]:
         return []
     
     parsed_items = []
+    real_dates: List[datetime] = []
     if not feed.entries:
         print(f"  > No entries found in feed.")
 
@@ -89,15 +97,35 @@ def fetch_rss_feed(agency: Dict) -> List[Dict]:
         # Get ID (support 'code' or 'id')
         agency_id = agency.get('code') or agency.get('id')
         
+        if published_at:
+            real_dates.append(published_at)
+
         item = {
             'agency': agency_id,
             'title': title,
             'link': link,
-            'published_at': published_at.isoformat() if published_at else datetime.now(KST).isoformat(), 
+            'published_at': published_at.isoformat() if published_at else datetime.now(KST).isoformat(),
             'source_published_at_str': published
         }
         parsed_items.append(item)
-        
+
+    # Stale-source guard: warn (do not mutate behavior) if the freshest real
+    # entry is older than RSS_STALE_WARN_DAYS. Reuses the same parsed datetimes
+    # the items carry — including the FSC `%Y-%m-%d %H:%M:%S` fallback path —
+    # so it stays in sync with whatever parse logic above accepts. Items that
+    # fell through to "now" (parse failure) are excluded so they cannot mask a
+    # genuinely dead source. Catches the Round 2 MOEF failure mode where a
+    # renamed/abandoned slug keeps responding 200 with old items.
+    if real_dates:
+        latest = max(real_dates)
+        age_days = (datetime.now(KST) - latest).days
+        if age_days > RSS_STALE_WARN_DAYS:
+            logger.warning(
+                f"[STALE RSS] {agency.get('code') or agency.get('id')} "
+                f"latest entry is {age_days}d old ({latest.date().isoformat()}); "
+                f"source URL may be dead: {target_url}"
+            )
+
     return parsed_items
 
 def collect_all_rss() -> List[Dict]:

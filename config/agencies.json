@@ -13,7 +13,7 @@
       "name": "기재부 (MOEF)",
       "category": "press_release",
       "collection_method": "rss",
-      "url": "https://www.korea.kr/rss/dept_moef.xml",
+      "url": "https://www.korea.kr/rss/dept_mofe.xml",
       "base_url": "https://www.korea.kr"
     },
     {
