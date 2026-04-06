@@ -5,6 +5,7 @@ from datetime import datetime
 from src.collectors.rss_parser import collect_all_rss
 from src.collectors.scraper import ContentScraper
 from src.config.agency_codes import AgencyCode, SANCTION_AGENCY_CODES
+from src.db.client import get_supabase_client
 from src.utils.logger import setup_logger
 
 logger = logging.getLogger(__name__)
@@ -46,8 +47,7 @@ class Pipeline:
 
     def _init_db(self):
         try:
-            from src.db.client import supabase
-            return supabase
+            return get_supabase_client()
         except Exception as e:
             logger.error(f"Supabase client not available: {e}")
             import traceback
