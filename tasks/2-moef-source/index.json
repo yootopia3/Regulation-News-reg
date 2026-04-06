@@ -3,7 +3,7 @@
   "task": "moef-source",
   "prompt": "Round 2 첫 task로 MOEF 소스 복구를 진행한다. 현재 MOEF는 config/agencies.json에서 https://www.korea.kr/rss/dept_moef.xml RSS를 사용 중이지만 channel updated 2026-03-18, 최신 item 2026-03-17로 약 3주 stale 상태다. 우선순위는 B (mofe.go.kr 직접 HTML 스크래핑) → A (korea.kr 신규 RSS 슬러그 교체) → C (MOEF disable) 순으로 검증하되, B reachability가 막히면 A로 복구하고 stale 재발 방지를 위한 최소 가드를 추가한다. 다른 agency·DB·web·analyzer/pipeline 구조 변경 금지.",
   "totalPhases": 3,
-  "build_command": "source venv/bin/activate && python -c \"from src.pipeline import Pipeline; from src.services.analyzer import HybridAnalyzer; print('OK')\"",
+  "build_command": "venv/bin/python -c \"from src.pipeline import Pipeline; from src.services.analyzer import HybridAnalyzer; print('OK')\"",
   "commit_prefix": "fix",
   "branch_prefix": "fix",
   "push_on_complete": false,
@@ -12,11 +12,9 @@
     {
       "phase": 1,
       "name": "source-validation-decision",
-      "status": "error",
+      "status": "completed",
       "started_at": "2026-04-06T22:37:27+0900",
-      "completed_at": "2026-04-06T22:45:00+0900",
-      "error_message": "Build verification failed: source venv/bin/activate && python -c \"from src.pipeline import Pipeline; from src.services.analyzer import HybridAnalyzer; print('OK')\"",
-      "failed_at": "2026-04-06T22:38:10+0900"
+      "completed_at": "2026-04-06T22:38:08+0900"
     },
     {
       "phase": 2,

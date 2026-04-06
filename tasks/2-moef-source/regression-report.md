@@ -24,7 +24,7 @@
 ## 3. 검증 결과
 | 검증 | 명령 | 결과 |
 |---|---|---|
-| Import smoke | `source venv/bin/activate && python -c "from src.pipeline import Pipeline; from src.services.analyzer import HybridAnalyzer; print('OK')"` | `OK` (비고: bare `python -c ...`은 system Python으로 떨어져 `ModuleNotFoundError: No module named 'feedparser'`로 실패함 — venv 활성화 필수) |
+| Import smoke | `venv/bin/python -c "from src.pipeline import Pipeline; from src.services.analyzer import HybridAnalyzer; print('OK')"` | `OK` (비고1: bare `python -c ...`은 system Python으로 떨어져 `ModuleNotFoundError: No module named 'feedparser'`로 실패. 비고2: `source venv/bin/activate && python ...`은 `subprocess.run(shell=True)`가 쓰는 dash에서 `source: not found`로 깨져 runner build verify가 실패한다 — runner build_command 자리에서는 반드시 `venv/bin/python` 직접 호출.) |
 | MOEF targeted fetch | `fetch_rss_feed(MOEF)` 50건, latest age ≤ 7일 | 50건, 최신 `2026-04-06T16:18:00+09:00`, **age 0d** |
 | Stale guard — dead URL | `fetch_rss_feed({url:'.../dept_moef.xml'})` | `WARNING:src.collectors.rss_parser:[STALE RSS] MOEF_OLD latest entry is 20d old (2026-03-17); source URL may be dead: https://www.korea.kr/rss/dept_moef.xml` |
 | Stale guard — live URL | `fetch_rss_feed({url:'.../dept_mofe.xml'})` | WARNING 미발화 (정상) |

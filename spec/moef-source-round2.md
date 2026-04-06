@@ -47,8 +47,9 @@
 
 ## AC
 1. `config/agencies.json` MOEF URL이 `dept_mofe.xml`로 교체되어 있다.
-2. 다음 import smoke가 통과한다 (venv 활성화 필수 — bare `python`은 system Python으로 떨어져 `feedparser` 등 의존성 부재로 실패한다).
-   - `source venv/bin/activate && python -c "from src.pipeline import Pipeline; from src.services.analyzer import HybridAnalyzer; print('OK')"`
+2. 다음 import smoke가 통과한다 (반드시 `venv/bin/python` 또는 `source venv/bin/activate` 경유. bare `python`은 system Python으로 떨어져 `feedparser` 등 의존성 부재로 실패한다).
+   - `venv/bin/python -c "from src.pipeline import Pipeline; from src.services.analyzer import HybridAnalyzer; print('OK')"`
+   - 비고: `source ...` 형태는 bash 빌트인이라 `subprocess.run(shell=True)`(=`/bin/sh`=dash)에서는 `source: not found`로 깨진다. runner의 `build_command`처럼 shell-portable이 필요한 자리에서는 `venv/bin/python`을 직접 호출한다.
 3. MOEF targeted verify가 통과한다.
    - `fetch_rss_feed`가 50건 이상 반환하고, 가장 최근 `published_at`이 7일 이내이다.
 4. 다른 agency 설정 diff 0, web/db/scripts/.github diff 0.
