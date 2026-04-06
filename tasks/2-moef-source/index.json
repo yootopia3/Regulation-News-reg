@@ -19,7 +19,10 @@
     {
       "phase": 2,
       "name": "implementation",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-04-06T22:40:19+0900",
+      "completed_at": "2026-04-06T22:45:00+0900",
+      "note": "Implementation (MOEF url → dept_mofe.xml + RSS stale guard) was already merged in phase 1 commit bfb6b11. AC1 import smoke, AC2 scope, AC4 targeted fetch (50 items, age 0d) all pass against current HEAD. AC3 diff guard verified against bfb6b11~1..bfb6b11 (exactly the expected -dept_moef.xml/+dept_mofe.xml two-line change)."
     },
     {
       "phase": 3,
