@@ -66,41 +66,76 @@ class Pipeline:
     # Cycle-scoped dedup caches
     # ------------------------------------------------------------------
     def _load_existing_links(self) -> Set[str]:
-        """Return the set of all ``link`` values already stored in ``articles``."""
-        if not self.supabase:
-            return set()
-        try:
-            res = self.supabase.table('articles').select('link').execute()
-            return {row['link'] for row in (res.data or []) if row.get('link')}
-        except Exception as e:
-            logger.error(f"Failed to load existing links: {e}")
-            return set()
+        """Return the set of all ``link`` values already stored in ``articles``.
 
-    def _load_sanction_keys(self) -> Set[SanctionKey]:
-        """Load existing sanction identity tuples for all sanction agencies."""
+        Supabase/PostgREST enforces a server-side ``max-rows`` cap (default
+        1000) on every select. A single ``.execute()`` therefore never returns
+        the full table once it grows past 1000 rows, which silently broke
+        dedup. Page through the table in fixed-size windows until the last
+        batch comes back short.
+        """
         if not self.supabase:
             return set()
-        keys: Set[SanctionKey] = set()
-        for agency_code in SANCTION_AGENCY_CODES:
-            try:
+        links: Set[str] = set()
+        page_size = 1000
+        start = 0
+        try:
+            while True:
                 res = (
                     self.supabase
                     .table('articles')
                     .select('link')
-                    .eq('agency', agency_code)
+                    .range(start, start + page_size - 1)
                     .execute()
                 )
-            except Exception as e:
-                logger.error(f"Failed to load sanction keys for {agency_code}: {e}")
-                continue
+                batch = res.data or []
+                for row in batch:
+                    link = row.get('link')
+                    if link:
+                        links.add(link)
+                if len(batch) < page_size:
+                    break
+                start += page_size
+        except Exception as e:
+            logger.error(f"Failed to load existing links: {e}")
+        return links
 
-            for row in (res.data or []):
-                link = row.get('link')
-                if not link:
-                    continue
-                exam_id, seq = extract_sanction_key(link)
-                if exam_id and seq:
-                    keys.add((str(agency_code), exam_id, seq))
+    def _load_sanction_keys(self) -> Set[SanctionKey]:
+        """Load existing sanction identity tuples for all sanction agencies.
+
+        Paginated for the same reason as ``_load_existing_links``.
+        """
+        if not self.supabase:
+            return set()
+        keys: Set[SanctionKey] = set()
+        page_size = 1000
+        for agency_code in SANCTION_AGENCY_CODES:
+            start = 0
+            while True:
+                try:
+                    res = (
+                        self.supabase
+                        .table('articles')
+                        .select('link')
+                        .eq('agency', agency_code)
+                        .range(start, start + page_size - 1)
+                        .execute()
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to load sanction keys for {agency_code}: {e}")
+                    break
+
+                batch = res.data or []
+                for row in batch:
+                    link = row.get('link')
+                    if not link:
+                        continue
+                    exam_id, seq = extract_sanction_key(link)
+                    if exam_id and seq:
+                        keys.add((str(agency_code), exam_id, seq))
+                if len(batch) < page_size:
+                    break
+                start += page_size
         return keys
 
     def _load_last_crawled(self, scraper_agencies: List[Dict]) -> Dict[str, datetime]:
