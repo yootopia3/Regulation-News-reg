@@ -59,7 +59,7 @@ def fetch_rss_feed(agency: Dict) -> List[Dict]:
     if not target_url:
         return []
 
-    print(f"Fetching RSS for {agency.get('name', 'Unknown')}...")
+    logger.info(f"Fetching RSS for {agency.get('name', 'Unknown')}...")
     
     # Use custom headers to avoid blocking
     from src.config import settings
@@ -88,29 +88,29 @@ def fetch_rss_feed(agency: Dict) -> List[Dict]:
                 )
                 time.sleep(sleep_s)
                 continue
-            print(f"  > Error processing URL {target_url} after {attempt} attempts: {e}")
+            logger.warning(f"  > Error processing URL {target_url} after {attempt} attempts: {e}")
             return []
         except Exception as e:
             # HTTP errors / parser errors / other — do NOT retry. If the server
             # actually answered with 4xx/5xx that is its final word and hammering
             # the endpoint risks getting blocklisted.
-            print(f"  > Error processing URL {target_url}: {e}")
+            logger.error(f"  > Error processing URL {target_url}: {e}")
             return []
 
     if response is None:
-        print(f"  > Error processing URL {target_url}: {last_err}")
+        logger.error(f"  > Error processing URL {target_url}: {last_err}")
         return []
 
     # Parse XML content
     feed = feedparser.parse(response.content)
 
     if hasattr(feed, 'bozo') and feed.bozo:
-        print(f"  > Warning: Feed parsing issue for {agency.get('name')}: {feed.bozo_exception}")
-    
+        logger.warning(f"  > Warning: Feed parsing issue for {agency.get('name')}: {feed.bozo_exception}")
+
     parsed_items = []
     real_dates: List[datetime] = []
     if not feed.entries:
-        print(f"  > No entries found in feed.")
+        logger.warning(f"  > No entries found in feed.")
 
     for entry in feed.entries:
         # Extract fields
@@ -173,15 +173,15 @@ def collect_all_rss() -> List[Dict]:
         try:
             items = fetch_rss_feed(agency)
             all_items.extend(items)
-            print(f"  > Found {len(items)} items.")
+            logger.info(f"  > Found {len(items)} items.")
         except Exception as e:
-            print(f"  > Error fetching {agency['name']}: {e}")
+            logger.error(f"  > Error fetching {agency['name']}: {e}")
             
     return all_items
 
 if __name__ == "__main__":
     # Test execution
     items = collect_all_rss()
-    print(f"\nTotal collected: {len(items)}")
+    logger.info(f"\nTotal collected: {len(items)}")
     for item in items[:5]: # Show top 5
-        print(item)
+        logger.info(item)

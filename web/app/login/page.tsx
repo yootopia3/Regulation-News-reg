@@ -8,16 +8,29 @@ export default function LoginPage() {
     const [error, setError] = useState('')
     const router = useRouter()
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        // Hardcoded passcode for Pilot
-        if (passcode === '1234') {
-            // Set cookie (valid for 1 day)
-            document.cookie = "auth_token=valid; path=/; max-age=86400"
-            router.push('/')
-            router.refresh()
-        } else {
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ passcode }),
+            })
+
+            if (res.ok) {
+                router.push('/')
+                router.refresh()
+                return
+            }
+
+            if (res.status === 500) {
+                setError('Authentication is not configured. Contact administrator.')
+                return
+            }
+
+            setError('Invalid Passcode')
+        } catch {
             setError('Invalid Passcode')
         }
     }

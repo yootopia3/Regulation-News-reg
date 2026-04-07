@@ -1,3 +1,7 @@
+-- STALE WARNING: This file may not match the live production database.
+-- The application code currently writes a `category` field that is not
+-- declared here. Verify against the live database before applying.
+
 -- MarketPulse Regulation News v2.0 Schema Setup
 -- Run this in Supabase SQL Editor
 

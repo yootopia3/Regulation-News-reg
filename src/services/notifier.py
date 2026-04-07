@@ -1,3 +1,5 @@
+import logging
+
 import requests
 
 from src.config.settings import (
@@ -6,6 +8,8 @@ from src.config.settings import (
     get_telegram_chat_id,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class TelegramNotifier:
     def __init__(self):
@@ -13,7 +17,7 @@ class TelegramNotifier:
         self._bot_token = get_telegram_bot_token()
         self._chat_id = get_telegram_chat_id()
         if not self._bot_token or not self._chat_id:
-            print("Warning: Telegram credentials not set.")
+            logger.warning("Telegram credentials not set.")
             self.enabled = False
         else:
             self.enabled = True
@@ -21,7 +25,7 @@ class TelegramNotifier:
 
     def send_message(self, message: str):
         if not self.enabled:
-            print("Telegram notification disabled (missing credentials).")
+            logger.warning("Telegram notification disabled (missing credentials).")
             return
 
         try:
@@ -30,11 +34,11 @@ class TelegramNotifier:
                 "text": message,
                 "parse_mode": "Markdown" # Or HTML
             }
-            response = requests.post(self.base_url, data=payload, timeout=20, verify=False) # Debug: verify=False
+            response = requests.post(self.base_url, data=payload, timeout=20)
             response.raise_for_status()
-            print("Telegram message sent successfully.")
+            logger.info("Telegram message sent successfully.")
         except Exception as e:
-            print(f"Error sending Telegram message details: {type(e).__name__}: {e}")
+            logger.error(f"Error sending Telegram message details: {type(e).__name__}: {e}")
 
     def format_and_send(self, agency_name: str, title: str, link: str, analysis: dict):
         if not analysis:

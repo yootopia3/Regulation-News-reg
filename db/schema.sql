@@ -1,3 +1,8 @@
+-- STALE WARNING: This file may not match the live production database.
+-- The application code paths in src/pipeline.py and src/collectors/ may
+-- write rows whose shape this file does not describe. Verify against the
+-- live database before applying this file to any environment.
+
 -- Enable the pg_cron extension if needed for scheduling within DB (optional, but good to have)
 -- CREATE EXTENSION IF NOT EXISTS pg_cron;
 

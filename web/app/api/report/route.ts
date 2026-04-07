@@ -3,24 +3,36 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 
-// Initialize Supabase (V2 - Production Database)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL_V2!
-// Use Service Role Key for server-side updates (bypasses RLS)
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_V2!
-const supabase = createClient(supabaseUrl, supabaseKey)
-
-// Initialize Gemini
-const apiKey = process.env.GEMINI_API_KEY
-if (!apiKey) {
-    console.error("❌ GEMINI_API_KEY is missing in environment variables!")
+function getEnv() {
+    return {
+        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL_V2,
+        serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+        anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_V2,
+        geminiApiKey: process.env.GEMINI_API_KEY,
+    }
 }
-const genAI = new GoogleGenerativeAI(apiKey || '')
 
 export async function POST(req: Request) {
     try {
-        if (!apiKey) {
+        const env = getEnv()
+
+        if (!env.supabaseUrl) {
+            return NextResponse.json({ error: 'Server Misconfiguration: SUPABASE_URL missing' }, { status: 500 })
+        }
+        if (!env.serviceRoleKey && !env.anonKey) {
+            return NextResponse.json({ error: 'Server Misconfiguration: Supabase key missing' }, { status: 500 })
+        }
+        if (!env.geminiApiKey) {
             return NextResponse.json({ error: 'Server Misconfiguration: API Key missing' }, { status: 500 })
         }
+
+        if (!env.serviceRoleKey && env.anonKey) {
+            console.warn("[/api/report] using anon key fallback — RLS update policy is required for write operations")
+        }
+
+        const key = env.serviceRoleKey || env.anonKey
+        const supabase = createClient(env.supabaseUrl, key as string)
+        const genAI = new GoogleGenerativeAI(env.geminiApiKey)
 
         const { articleId, title, content, agency } = await req.json()
 

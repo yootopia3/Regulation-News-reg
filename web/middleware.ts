@@ -1,22 +1,30 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { verifySession } from '@/lib/auth'
 
-export function middleware(request: NextRequest) {
-    // Check for auth cookie
-    const authCookie = request.cookies.get('auth_token')
+const SESSION_COOKIE_NAME = 'mp_session'
+
+export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl
 
-    // Allow access to login page and public assets
+    // Whitelist: login page, login API, Next internals, static files
     if (
-        pathname.startsWith('/login') ||
+        pathname === '/login' ||
+        pathname.startsWith('/login/') ||
+        pathname === '/api/auth/login' ||
         pathname.startsWith('/_next') ||
-        pathname.includes('.') // public files like images
+        pathname.includes('.')
     ) {
         return NextResponse.next()
     }
 
-    // If no auth cookie, redirect to login
-    if (!authCookie || authCookie.value !== 'valid') {
+    const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME)
+    const payload = await verifySession(sessionCookie?.value)
+
+    if (!payload) {
+        if (pathname.startsWith('/api/')) {
+            return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+        }
         return NextResponse.redirect(new URL('/login', request.url))
     }
 
@@ -24,5 +32,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+    matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 }

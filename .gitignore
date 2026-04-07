@@ -1,5 +1,6 @@
 # Environment
 .env
+web/.env.local
 venv/
 .venv/
 
