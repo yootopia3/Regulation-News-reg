@@ -43,6 +43,20 @@ def parse_filter_response(text: str) -> Optional[Dict[str, Any]]:
         return None
 
 
+def _unwrap_if_list(obj: Any) -> Any:
+    """Return the first element if ``obj`` is a non-empty list, else ``obj``.
+
+    Gemini occasionally wraps the analysis response (or one of its sections)
+    in a single-element JSON array — e.g. ``[{...}]`` instead of ``{...}``,
+    or ``"content": [{...}]`` instead of ``"content": {...}``. The downstream
+    code expects dict access, so unwrap once at each level we touch.
+    Returns ``obj`` unchanged for any other type.
+    """
+    if isinstance(obj, list) and obj:
+        return obj[0]
+    return obj
+
+
 def parse_analyze_response(text: str, model_name: str) -> Optional[Dict[str, Any]]:
     """Parse the Tier 2 analyst JSON response and map to DB schema."""
     if not text:
@@ -53,19 +67,35 @@ def parse_analyze_response(text: str, model_name: str) -> Optional[Dict[str, Any
         clean_text = text.replace('```json', '').replace('```', '').strip()
         data = _load_first_json(clean_text)
 
-        # Transform to DB schema format. ``TypeError`` is caught in addition
-        # to ``KeyError`` because Gemini occasionally returns ``content`` /
-        # ``importance`` / ``classification`` as a list instead of a dict,
-        # which makes ``data["content"]["key_points"]`` raise
-        # ``TypeError: list indices must be integers or slices, not str``.
+        # Tolerate Gemini wrapping the whole response in a single-element
+        # array. Without this, ``data["content"]`` raises
+        # ``TypeError: list indices must be integers or slices, not str``
+        # and the analysis silently degrades to ANALYSIS_FAILED.
+        data = _unwrap_if_list(data)
+        if not isinstance(data, dict):
+            logger.error(
+                f"Unexpected analysis response type {type(data).__name__}, "
+                f"Text: {text[:100]}"
+            )
+            return None
+
+        # Same defensive unwrap for each top-level section, in case Gemini
+        # wraps a section instead of (or in addition to) the root.
+        content = _unwrap_if_list(data.get("content", {}))
+        importance = _unwrap_if_list(data.get("importance", {}))
+        classification = _unwrap_if_list(data.get("classification", {}))
+
+        # Transform to DB schema format. KeyError/TypeError still caught for
+        # genuinely malformed responses (missing required keys, wrong nested
+        # shapes the unwrap above can't fix).
         return {
-            "summary": data["content"]["key_points"],
-            "impact_analysis": data["content"]["impact_analysis"],
-            "action_items": data["content"]["action_items"],
-            "risk_level": data["importance"]["level"],
-            "risk_score": data["importance"]["score"],
-            "risk_tags": data["classification"]["risk_tags"],
-            "pillars": data["classification"]["pillars"],
+            "summary": content["key_points"],
+            "impact_analysis": content["impact_analysis"],
+            "action_items": content["action_items"],
+            "risk_level": importance["level"],
+            "risk_score": importance["score"],
+            "risk_tags": classification["risk_tags"],
+            "pillars": classification["pillars"],
             "analyzed_by": model_name  # Keep track of which model was used
         }
     except (json.JSONDecodeError, KeyError, TypeError) as e:
