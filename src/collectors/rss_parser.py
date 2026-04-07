@@ -2,6 +2,7 @@ import feedparser
 import json
 import logging
 import os
+import time
 from datetime import datetime, timezone, timedelta
 from email.utils import parsedate_to_datetime
 from typing import List, Dict, Optional
@@ -11,6 +12,17 @@ logger = logging.getLogger(__name__)
 # Warn if a feed's most recent entry is older than this many days. Operational
 # guard against "looks-alive but dead source" regressions (see Round 2 MOEF).
 RSS_STALE_WARN_DAYS = 14
+
+# Conservative retry policy for transient TCP-level failures (e.g. fsc.go.kr
+# intermittently sends RST during TLS handshake from datacenter IPs). Designed
+# to be friendly to the source so we are not mistaken for a bot:
+#   - At most 3 total attempts (1 initial + 2 retries)
+#   - Only retry on connection-level errors (ConnectionError/Timeout). HTTP
+#     status errors are NOT retried — if the server actually responded, that
+#     answer is final.
+#   - Backoff between attempts (no rapid hammering).
+RSS_FETCH_MAX_ATTEMPTS = 3
+RSS_FETCH_RETRY_BACKOFF_SECONDS = (3.0, 5.0)  # sleep before retry #1, retry #2
 
 # Load config
 CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'config', 'agencies.json')
@@ -55,20 +67,45 @@ def fetch_rss_feed(agency: Dict) -> List[Dict]:
         'User-Agent': settings.USER_AGENT
     }
 
-    try:
-        import requests
-        response = requests.get(target_url, headers=headers, timeout=settings.SCRAPER_TIMEOUT)
-        response.raise_for_status()
-        
-        # Parse XML content
-        feed = feedparser.parse(response.content)
-        
-        if hasattr(feed, 'bozo') and feed.bozo:
-             print(f"  > Warning: Feed parsing issue for {agency.get('name')}: {feed.bozo_exception}")
+    import requests
 
-    except Exception as e:
-        print(f"  > Error processing URL {target_url}: {e}")
+    response = None
+    last_err: Optional[Exception] = None
+    for attempt in range(1, RSS_FETCH_MAX_ATTEMPTS + 1):
+        try:
+            response = requests.get(target_url, headers=headers, timeout=settings.SCRAPER_TIMEOUT)
+            response.raise_for_status()
+            break  # success
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            # Transient TCP/TLS-level failure — retry with backoff (max 3 total).
+            last_err = e
+            if attempt < RSS_FETCH_MAX_ATTEMPTS:
+                sleep_s = RSS_FETCH_RETRY_BACKOFF_SECONDS[attempt - 1]
+                logger.warning(
+                    f"  > Transient fetch error for {agency.get('name')} "
+                    f"(attempt {attempt}/{RSS_FETCH_MAX_ATTEMPTS}): {type(e).__name__}. "
+                    f"Retrying in {sleep_s}s..."
+                )
+                time.sleep(sleep_s)
+                continue
+            print(f"  > Error processing URL {target_url} after {attempt} attempts: {e}")
+            return []
+        except Exception as e:
+            # HTTP errors / parser errors / other — do NOT retry. If the server
+            # actually answered with 4xx/5xx that is its final word and hammering
+            # the endpoint risks getting blocklisted.
+            print(f"  > Error processing URL {target_url}: {e}")
+            return []
+
+    if response is None:
+        print(f"  > Error processing URL {target_url}: {last_err}")
         return []
+
+    # Parse XML content
+    feed = feedparser.parse(response.content)
+
+    if hasattr(feed, 'bozo') and feed.bozo:
+        print(f"  > Warning: Feed parsing issue for {agency.get('name')}: {feed.bozo_exception}")
     
     parsed_items = []
     real_dates: List[datetime] = []
