@@ -47,6 +47,14 @@
       "status": "completed",
       "created_at": "2026-04-08T16:52:52+0900",
       "completed_at": "2026-04-08T17:08:48+0900"
+    },
+    {
+      "id": 7,
+      "name": "round5-gemini-sdk",
+      "dir": "7-round5-gemini-sdk",
+      "status": "completed",
+      "created_at": "2026-04-08T18:56:50+0900",
+      "completed_at": "2026-04-08T19:24:23+0900"
     }
   ]
 }

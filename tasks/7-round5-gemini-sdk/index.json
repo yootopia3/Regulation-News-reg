@@ -1,0 +1,28 @@
+{
+  "project": "reg_brief",
+  "task": "round5-gemini-sdk",
+  "prompt": "Round 5 — Gemini Python SDK migration. 2축 작업: (1) requirements.txt 에서 google-generativeai>=0.7.0 을 google-genai>=1.0.0 로 교체 (다른 의존성 라인 불변). (2) src/services/analyzer/gemini_client.py 내부를 신 SDK (from google import genai, from google.genai import types, genai.Client(api_key=...), client.models.generate_content(model=..., contents=..., config=types.GenerateContentConfig(response_mime_type='application/json')), getattr(response, 'text', None)) 로 재작성. GeminiClient.__init__(api_key) 및 call_json(model_name, prompt, max_retries=3) -> Optional[str] 공개 시그니처와 성공→raw JSON string / 실패→None 시맨틱을 bit-for-bit 보존 (hybrid.py 의 fallback 경로가 None 리턴에 의존). 재시도/에러 분기(429/RESOURCE_EXHAUSTED 백오프 재시도, 404/NOT_FOUND 즉시 None, 기타 예외 5초 sleep 후 재시도, max_retries 소진→None) 는 현행 문자열 매칭 방식 그대로 유지. src/services/analyzer/hybrid.py 수정 없음. scripts/archive/** 수정 없음. prompts/ 내용·모델 ID 정책·report API·frontend SDK·secrets rotate·analyzer 파이프라인 구조 변경 없음. docs sync phase 없음 (live docs/spec 에 google-generativeai 표기 0건, historical docs/spec/tasks 및 scripts/archive 는 스냅샷 원칙으로 동결). Phase 1: 순서 고정 (1) requirements.txt 교체 → (2) pip install -r requirements.txt → (3) gemini_client.py 재작성. pip uninstall -y google-generativeai 금지 (namespace package 공존 가능). build_command 에는 pip install·compileall·네트워크 일체 금지. Phase 2: tests/unit/analyzer/test_gemini_client.py 신설, mock 경계는 src.services.analyzer.gemini_client.genai / .types / .time.sleep, 실 네트워크 0 / 실 대기 0, 7 개 케이스 (성공, 429 재시도 후 성공, 404 즉시 None, 기타 예외 max_retries 소진 None, response.text 없음 None, GenerateContentConfig 인자 검증, hybrid None 계약).",
+  "totalPhases": 2,
+  "build_command": "python3 -c \"from src.services.analyzer.gemini_client import GeminiClient; from src.services.analyzer import HybridAnalyzer\" && python3 -m pytest tests/unit/analyzer -q",
+  "commit_prefix": "refactor",
+  "branch_prefix": "refactor",
+  "push_on_complete": false,
+  "created_at": "2026-04-08T18:56:50+0900",
+  "phases": [
+    {
+      "phase": 1,
+      "name": "sdk-swap-wrapper",
+      "status": "completed",
+      "started_at": "2026-04-08T19:21:23+0900",
+      "completed_at": "2026-04-08T19:22:47+0900"
+    },
+    {
+      "phase": 2,
+      "name": "wrapper-regression-tests",
+      "status": "completed",
+      "started_at": "2026-04-08T19:22:49+0900",
+      "completed_at": "2026-04-08T19:24:21+0900"
+    }
+  ],
+  "completed_at": "2026-04-08T19:24:23+0900"
+}

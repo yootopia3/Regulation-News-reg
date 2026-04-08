@@ -4,8 +4,8 @@ import logging
 import time
 from typing import Optional
 
-import google.generativeai as genai
-from google.generativeai.types import GenerationConfig
+from google import genai
+from google.genai import types
 
 logger = logging.getLogger(__name__)
 
@@ -14,24 +14,25 @@ class GeminiClient:
     """Thin wrapper around the Gemini SDK with retry/backoff."""
 
     def __init__(self, api_key: str):
-        genai.configure(api_key=api_key)
+        self._client = genai.Client(api_key=api_key)
 
     def call_json(self, model_name: str, prompt: str, max_retries: int = 3) -> Optional[str]:
-        """Call Gemini API with retry logic."""
+        """Call Gemini API with retry logic. Returns raw JSON string or None."""
         base_delay = 10
-        model = genai.GenerativeModel(model_name)
+        config = types.GenerateContentConfig(
+            response_mime_type="application/json"
+        )
 
         for attempt in range(max_retries):
             try:
-                response = model.generate_content(
-                    prompt,
-                    generation_config=GenerationConfig(
-                        response_mime_type="application/json"
-                    )
+                response = self._client.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                    config=config,
                 )
-
-                if response.text:
-                    return response.text
+                text = getattr(response, "text", None)
+                if text:
+                    return text
                 return None
 
             except Exception as e:
@@ -42,12 +43,9 @@ class GeminiClient:
                     time.sleep(delay)
                 elif "404" in error_str or "NOT_FOUND" in error_str:
                     logger.error(f"Model {model_name} not found")
-                    # Fallback instantly if model name is wrong
                     return None
                 else:
                     logger.error(f"API Error ({model_name}): {error_str[:200]}")
-                    # If it's a critical error, maybe don't retry immediately or handle differently
-                    # But for now, we try/catch loop
                     time.sleep(5)
 
         logger.error("Failed after max retries")
