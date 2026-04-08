@@ -4,7 +4,7 @@ import { verifySession } from '@/lib/auth'
 
 const SESSION_COOKIE_NAME = 'mp_session'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl
 
     // Whitelist: login page, login API, Next internals, static files

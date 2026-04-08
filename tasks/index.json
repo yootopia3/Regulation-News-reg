@@ -39,6 +39,14 @@
       "status": "completed",
       "created_at": "2026-04-08T14:35:00+0900",
       "completed_at": "2026-04-08T15:11:40+0900"
+    },
+    {
+      "id": 6,
+      "name": "round4-upgrades",
+      "dir": "6-round4-upgrades",
+      "status": "completed",
+      "created_at": "2026-04-08T16:52:52+0900",
+      "completed_at": "2026-04-08T17:08:48+0900"
     }
   ]
 }

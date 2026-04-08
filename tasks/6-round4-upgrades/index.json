@@ -1,0 +1,35 @@
+{
+  "project": "reg_brief",
+  "task": "round4-upgrades",
+  "prompt": "Round 4 — 작은 deprecation cleanup 라운드. 3축: (1) GitHub Actions workflow 4개에서 actions/checkout@v4 → @v5 (총 6회) + actions/setup-python@v5 → @v6 (총 4회) mechanical replace, 그 외 trigger/schedule/env/secrets/job 구조/python-version/setup-node@v4 변경 금지. (2) Next.js 16 proxy file convention 반영: web/middleware.ts → web/proxy.ts atomic rename + 함수명 middleware → proxy. matcher/화이트리스트/mp_session 쿠키/verifySession/401 JSON/login redirect/next/server import 1:1 유지. (3) docs/ARCHITECTURE.md만 표기 sync (middleware.ts → proxy.ts 3곳). 동작 변경 0, 인증 로직 변경 0, secrets rotate 0, Gemini SDK migration 제외, dashboard/pipeline/scraper/dedup 작업 제외, 다른 docs/spec/tasks/archive 손대지 않음. Phase 1 검증은 외부 패키지 설치/네트워크/환경변수 의존 없이 grep 카운트 + git diff 형상만으로 수행.",
+  "totalPhases": 3,
+  "build_command": "cd web && npm run build",
+  "commit_prefix": "refactor",
+  "branch_prefix": "refactor",
+  "push_on_complete": false,
+  "created_at": "2026-04-08T16:52:52+0900",
+  "phases": [
+    {
+      "phase": 1,
+      "name": "gh-actions-upgrade",
+      "status": "completed",
+      "started_at": "2026-04-08T17:04:15+0900",
+      "completed_at": "2026-04-08T17:05:40+0900"
+    },
+    {
+      "phase": 2,
+      "name": "nextjs-proxy-rename",
+      "status": "completed",
+      "started_at": "2026-04-08T17:05:48+0900",
+      "completed_at": "2026-04-08T17:06:57+0900"
+    },
+    {
+      "phase": 3,
+      "name": "docs-arch-sync",
+      "status": "completed",
+      "started_at": "2026-04-08T17:07:03+0900",
+      "completed_at": "2026-04-08T17:08:42+0900"
+    }
+  ],
+  "completed_at": "2026-04-08T17:08:48+0900"
+}

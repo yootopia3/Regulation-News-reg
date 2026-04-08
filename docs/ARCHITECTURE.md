@@ -92,7 +92,7 @@ reg_brief/
     │   ├── prompts/report.ts   # buildReportPrompt() — report prompt template
     │   └── validation/report.ts # /api/report request schema
     ├── __tests__/              # vitest suites (api + lib)
-    └── middleware.ts           # Route protection (mp_session cookie guards /api/*)
+    └── proxy.ts                # Route protection (mp_session cookie guards /api/*)
 ```
 
 Tests live in `tests/unit/**` (pytest) and `web/__tests__/**` (vitest); both
@@ -159,7 +159,7 @@ requires only a JSON edit.
 | `SESSION_SECRET` | HMAC key for `mp_session` cookie | **Vercel** (Web), Local `.env` |
 
 ### 4.4 Web Dashboard (`web/`)
-- **Security**: Protected by `middleware.ts` (Cookie-based Auth). The
+- **Security**: Protected by `proxy.ts` (Cookie-based Auth). The
   `mp_session` cookie also gates all `/api/*` routes.
 - **Visualization**: Reads directly from Supabase `articles` table.
 - **`/api/report`**: Accepts only `{ articleId }` in the request body
@@ -174,7 +174,7 @@ requires only a JSON edit.
 passcode는 `/api/auth/login` route 에서 서버측 `APP_PASSCODE` 환경변수와
 비교되며, 일치하면 `SESSION_SECRET` 으로 서명된 세션 쿠키가 발급된다.
 쿠키 발급/검증 로직은 `web/lib/auth.ts` 에 있고, 보호 대상 route는
-`middleware.ts` 가 동일 헬퍼를 사용해 검사한다.
+`proxy.ts` 가 동일 헬퍼를 사용해 검사한다.
 
 ### 4.6 Schema status
 현재 애플리케이션 코드와 `db/schema.sql` / `scripts/v2_schema_setup.sql`
