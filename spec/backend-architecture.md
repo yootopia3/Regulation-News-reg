@@ -12,7 +12,6 @@ src/
 ├── __init__.py
 ├── main.py                    (21 LOC)   CLI entry. Pipeline 1회 실행 후 종료.
 ├── pipeline.py                (236 LOC)  수집→중복체크→본문→분석→DB→알림 오케스트레이션.
-├── scheduler.py               (36 LOC)   APScheduler BlockingScheduler. 주기적 Pipeline 실행.
 ├── collectors/
 │   ├── rss_parser.py          (122 LOC)  RSS feedparser 래퍼 + 모듈 전역 CONFIG_PATH.
 │   └── scraper.py             (453 LOC)  HTML 리스트/본문 스크래퍼 + 제재 스크래퍼 + 날짜파서.
@@ -39,8 +38,6 @@ config/
   `_is_duplicate`, `_is_sanction_duplicate`(URL 파라미터 `examMgmtNo`/`emOpenSeq` 파싱),
   `_save_to_db`, `run`, `_process_single_item` 포함. 'FSS_SANCTION' / 'FSS_MGMT_NOTICE'
   분기 리터럴이 3회 등장.
-- `src/scheduler.py`: APScheduler 기반 주기 실행. `settings.COLLECTION_INTERVAL_MINUTES`
-  사용.
 - `src/collectors/rss_parser.py`: 모듈 전역 `CONFIG_PATH` 계산 + `load_agencies()`
   (모듈 전역 함수), `parse_date`(RFC 822), `fetch_rss_feed`(method/url 필드 호환),
   `collect_all_rss`. `print()` 로깅 혼재.
@@ -75,7 +72,6 @@ config/
 src/
 ├── main.py                    CLI entry (현행 유지).
 ├── pipeline.py                슬림 오케스트레이터. 수집→중복체크→본문→분석→DB→알림.
-├── scheduler.py               (현행 유지).
 ├── config/                    ← NEW (src 하위. 기존 루트 config/ 와 공존)
 │   ├── __init__.py            재-export 창구.
 │   ├── settings.py            상수 + 단일 env 로더 진입점(load_dotenv 1회).
@@ -155,7 +151,7 @@ pipeline ─┬→ services/
   심볼을 import 금지.
 - `services/`, `collectors/`, `db/` 끼리의 수평 import 금지. 필요한 데이터는
   `pipeline`이 주입한다.
-- `pipeline`은 `main` / `scheduler`를 import 금지.
+- `pipeline`은 `main`을 import 금지.
 
 ## 5. Agency 코드 Enum 계획
 

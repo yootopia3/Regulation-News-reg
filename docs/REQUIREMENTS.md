@@ -13,12 +13,9 @@
 ### 2.1 Execution Environment
 - **Primary (Production)**: **GitHub Actions** (Serverless).
 - **Secondary (Dev/Debug)**: Local Python Environment (Manual Trigger).
-- **DEPRECATED**: `src/scheduler.py` (Background Scheduler).
-    - *Reason*: Replaced by GitHub Actions CRON to ensure zero-maintenance uptime.
-    - *Action*: Do not use `scheduler.py` for production.
 
 ### 2.2 Collection Schedule
-- **Schedule**: Every 30 minutes (GitHub Actions `cron: '*/30 * * * *'`).
+- **Schedule**: Triggered externally by cron-job.org via GitHub `workflow_dispatch` on `news_collector_v2_active.yml`. The GitHub Actions `schedule:` block in the workflow is intentionally disabled — see workflow comment. The exact interval is configured in cron-job.org outside this repo.
 - **Legacy Setting**: `settings.COLLECTION_INTERVAL_MINUTES = 10` is **ignored** in Production.
 
 ---
@@ -148,7 +145,6 @@ The system uses a 2-Tier AI approach with 2025-Standard Models.
 ### 7.3 Development Infrastructure
 - **Environment Separation**: Strict separation between v1.0 (Prod) and v2.0 (Dev).
     - **Database**: Dedicated v2.0 Supabase Project.
-    - **Codebase**: Dedicated `feat/v2.0-upgrade` branch.
 - **Data Strategy**: **Full Mirroring**.
     - v2.0 DB must contain ALL historical data from v1.0.
     - **Auto-Collection ON**: v2.0 must run its own independent collection schedule (every 30m) to simulate full production behavior.

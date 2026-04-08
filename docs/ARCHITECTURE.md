@@ -9,7 +9,8 @@ The system follows a **Serverless Event-Driven** pattern using GitHub Actions as
 
 ```mermaid
 graph TD
-    Trigger[GitHub Actions Cron] -->|Periodic| Main[src/main.py]
+    Trigger[External Cron · cron-job.org] -->|workflow_dispatch| GHA[news_collector_v2_active.yml]
+    GHA --> Main[src/main.py]
     Main --> Pipeline[src/pipeline.py]
     
     subgraph Data Collection
@@ -39,7 +40,7 @@ This map reflects the **actual** codebase after round 1 refactor.
 reg_brief/
 ├── .github/
 │   └── workflows/
-│       └── news_collector_v2_active.yml  # Production trigger (workflow_dispatch)
+│       └── news_collector_v2_active.yml  # Production collector (triggered by external cron-job.org via workflow_dispatch)
 ├── config/
 │   ├── agencies.json           # Target Agency Config (single source of truth)
 │   └── safeguard_keywords.json # Keyword Override Rules
@@ -75,8 +76,7 @@ reg_brief/
 │   ├── utils/
 │   │   └── logger.py           # Centralized Logging
 │   ├── main.py                 # [Entry Point] Production Runner
-│   ├── pipeline.py             # [Core] Orchestration Logic
-│   └── scheduler.py            # [LEGACY/UNUSED]
+│   └── pipeline.py             # [Core] Orchestration Logic
 └── web/                        # Frontend (Next.js)
     ├── app/
     │   ├── page.tsx            # Live entry → DashboardV2

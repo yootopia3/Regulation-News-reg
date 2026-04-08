@@ -1,8 +1,8 @@
 # MarketPulse-Reg: Project Constitution (Master Context)
 
-**Version**: 1.0.0
+**Version**: 1.1.0
 **Enforcement**: Absolute
-**Last Updated**: 2025-12-24
+**Last Updated**: 2026-04-08
 
 ## ⚠️ CRITICAL INSTRUCTION FOR AI AGENTS
 **BEFORE** writing any code, migrating files, or answering architecture questions, you **MUST** read the following documents in order. They represent the "Forensic Truth" of this system.
@@ -15,8 +15,8 @@ The codebase (`src/`) is the reality, but these documents defined the Rules of E
 | Document | Purpose | Key Constraints (Non-Negotiable) |
 |----------|---------|-----------------------------------|
 | **[REQUIREMENTS.md](./REQUIREMENTS.md)** | **The Law** | • **AI Models**: Gemini 2.5 (T1) / 3.0 (T2) only.<br>• **Vector**: Not Implemented (Do not hallucinate it).<br>• **Dedup**: URL-based. |
-| **[PRD.md](./PRD.md)** | **The Vision** | • **Infrastructure**: GitHub Actions ONLY (No Scheduler).<br>• **Dashboard**: Requires Auth (Middleware).<br>• **Zero-Maintenance**: Watchdog must run every 2h. |
-| **[ARCHITECTURE.md](./ARCHITECTURE.md)** | **The Structure** | • **Modules**: `pipeline.py` is King.<br>• **Legacy**: `scheduler.py` is dead code.<br>• **Flow**: Scraper -> Analyzer -> Supabase -> Telegram. |
+| **[PRD.md](./PRD.md)** | **The Vision** | • **Compute**: GitHub Actions for compute (`workflow_dispatch` triggered by external cron-job.org). No in-repo Python scheduler, no GitHub Actions `schedule:` block for the collector.<br>• **Dashboard**: Requires Auth (Middleware).<br>• **Zero-Maintenance**: Watchdog must run every 2h. |
+| **[ARCHITECTURE.md](./ARCHITECTURE.md)** | **The Structure** | • **Modules**: `pipeline.py` is King.<br>• **Flow**: Scraper -> Analyzer -> Supabase -> Telegram. |
 | **[SCHEMA.md](./SCHEMA.md)** | **The Data** | • **JSONB**: `analysis_result` structure is fixed.<br>• **Time**: All dates must be **KST (UTC+9)** isoformat. |
 
 ---
@@ -40,7 +40,6 @@ The codebase (`src/`) is the reality, but these documents defined the Rules of E
 ## 3. How to Apply These Rules
 1.  **Check Config**: Before answering "What keywords are triggered?", read `config/safeguard_keywords.json`.
 2.  **Check Schema**: Before writing SQL, read `docs/SCHEMA.md`.
-3.  **Check Legacy**: Before editing `scheduler.py`, stop. It is deprecated.
-4.  **v2.0 Upgrade**: When working on `feat/v2.0-upgrade`, you MUST use the v2.0 Environment Variables and Database. DO NOT touch v1.0 Production Data.
+3.  **Trigger Reality**: Collector is triggered by external cron-job.org via `workflow_dispatch` on `news_collector_v2_active.yml`. Watchdog uses GitHub Actions native cron (`0 */2 * * *`). The collector has no in-repo Python scheduler and no GitHub Actions `schedule:` block.
 
 > **"This document is the bridge between the User's Intent and the System's Reality."**

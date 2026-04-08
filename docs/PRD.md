@@ -2,7 +2,7 @@
 
 **Project Name**: MarketPulse-Reg (Regulatory News Analysis System)
 **Version**: 2.0.0 (Forensic-Aligned)
-**Status**: Stage 2 Complete
+**Status**: Round 3 Cleanup Complete
 **Target User**: Risk Management Team (Korean Commercial Banks)
 
 ## 1. Product Vision
@@ -15,9 +15,9 @@ To build a fully automated regulatory surveillance system that operates independ
 To overcome the fragility of traditional scrapers, we implement a multi-layered defense system:
 
 1.  **Infrastructure Layer (Serverless)**
-    - **Architecture**: 100% GitHub Actions (No idle servers).
+    - **Architecture**: GitHub Actions for compute, triggered via `workflow_dispatch` by external cron-job.org (no idle servers).
     - **Uptime**: Guaranteed by 'Watchdog' (Dead Man's Switch) monitoring.
-    - **Legacy Removal**: Deprecated `scheduler.py` to prevent zombie processes.
+    - **Legacy Removal**: `src/scheduler.py` removed in Round 3 (was deprecated in Round 0).
 
 2.  **Network Layer (Stealth)**
     - **Resilience**: Smart rotation of User-Agents and random delays.
@@ -79,7 +79,7 @@ To overcome the fragility of traditional scrapers, we implement a multi-layered 
 
 ## 5. Deployment & Operations
 - **Repository**: `orbzodiac84/Regulation-News-reg`
-- **CI/CD**: GitHub Actions (`news_collector.yml`, `watchdog.yml`).
+- **CI/CD**: GitHub Actions. Active production collector: `news_collector_v2_active.yml` (triggered by external cron-job.org via `workflow_dispatch`). Watchdog: `watchdog.yml` (GitHub Actions native cron, every 2h). `news_collector.yml` is the v1 legacy file, retained for history but disabled.
 - **Database**: Supabase (PostgreSQL).
 - **Secrets Management**: GitHub Secrets (`GEMINI_API_KEY`, `SUPABASE_KEY`).
 

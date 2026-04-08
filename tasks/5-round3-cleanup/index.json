@@ -1,0 +1,42 @@
+{
+  "project": "reg_brief",
+  "task": "round3-cleanup",
+  "prompt": "Round 3 정리 라운드 — Round 1/2 이후 남은 housekeeping. 4개 축: (1) 죽은 코드 src/scheduler.py + apscheduler 의존성 제거, (2) scripts/ 루트 one-shot 파일 archive 이동 + reanalyze_null_articles.py 루트 중복 삭제, (3) docs/spec stale sweep — implementation_plan/task archive 이동 + MASTER_CONTEXT/PRD/REQUIREMENTS/ARCHITECTURE/spec patch (scheduler 제거 반영 + feat/v2.0-upgrade 브랜치 언급 제거 + 운영 트리거 현실 정정: external cron-job.org → workflow_dispatch, watchdog만 GH native cron + Last Updated), (4) GH Actions Node 20 deprecation 대응 — actions/checkout@v3→@v4, actions/setup-python@v4→@v5 + Round 3 finalization (round3-summary.md 신설, PRD Status 마무리). 동작 변경 0, DB 스키마 변경 0, 분석 결과 JSON 키 변경 0, 프롬프트 문장 변경 0, 트리거 메커니즘 변경 0. scripts/admin/**, scripts/monitor/**, scripts/v2_schema_setup.sql은 건드리지 않는다.",
+  "totalPhases": 4,
+  "build_command": "python3 -c \"from src.pipeline import Pipeline; from src.services.analyzer import HybridAnalyzer\"",
+  "commit_prefix": "refactor",
+  "branch_prefix": "refactor",
+  "push_on_complete": false,
+  "created_at": "2026-04-08T14:35:00+0900",
+  "phases": [
+    {
+      "phase": 1,
+      "name": "scheduler-removal",
+      "status": "completed",
+      "started_at": "2026-04-08T14:58:56+0900",
+      "completed_at": "2026-04-08T15:00:54+0900"
+    },
+    {
+      "phase": 2,
+      "name": "scripts-cleanup",
+      "status": "completed",
+      "started_at": "2026-04-08T15:03:33+0900",
+      "completed_at": "2026-04-08T15:05:02+0900"
+    },
+    {
+      "phase": 3,
+      "name": "docs-stale-sweep",
+      "status": "completed",
+      "started_at": "2026-04-08T15:05:03+0900",
+      "completed_at": "2026-04-08T15:09:13+0900"
+    },
+    {
+      "phase": 4,
+      "name": "gh-actions-upgrade",
+      "status": "completed",
+      "started_at": "2026-04-08T15:09:14+0900",
+      "completed_at": "2026-04-08T15:11:39+0900"
+    }
+  ],
+  "completed_at": "2026-04-08T15:11:40+0900"
+}
