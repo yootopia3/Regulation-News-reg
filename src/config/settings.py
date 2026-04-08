@@ -20,15 +20,45 @@ AGENCIES_JSON_PATH: Path = CONFIG_DIR / "agencies.json"
 SAFEGUARD_KEYWORDS_PATH: Path = CONFIG_DIR / "safeguard_keywords.json"
 
 # --- Model Configuration for 2-Tier Hybrid Analysis ---
+#
+# Runtime consumers MUST use the getters below (`get_model_filter_id()`,
+# `get_model_analyzer_id()`, `get_model_analyzer_fallback()`) so that values
+# set by `load_env()` at program entry are actually honored. The module-level
+# constants just below are kept as backward-compatible aliases for any legacy
+# importer; they freeze at import time and therefore ignore any .env override
+# that `load_env()` applies later. Do not rely on them in new code.
 
-# Tier 1: Gatekeeper (Fast, cheap filtering)
-MODEL_FILTER_ID = "gemini-2.5-flash-lite"
+_DEFAULT_FILTER_MODEL = "gemini-2.5-flash-lite"
+_DEFAULT_ANALYZER_MODEL = "gemini-3-flash-preview"
+_DEFAULT_ANALYZER_FALLBACK_MODEL = "gemini-1.5-pro"
 
-# Tier 2: Analyst (Deep analysis for important news)
-MODEL_ANALYZER_ID = "gemini-3-flash-preview"
+# Tier 1: Gatekeeper (Fast, cheap filtering) -- DEPRECATED constant.
+MODEL_FILTER_ID = os.environ.get("GEMINI_FILTER_MODEL", _DEFAULT_FILTER_MODEL)
 
-# Fallback if Tier 2 model unavailable
-MODEL_ANALYZER_FALLBACK = "gemini-1.5-pro"
+# Tier 2: Analyst (Deep analysis for important news) -- DEPRECATED constant.
+MODEL_ANALYZER_ID = os.environ.get("GEMINI_ANALYZER_MODEL", _DEFAULT_ANALYZER_MODEL)
+
+# Fallback if Tier 2 model unavailable -- DEPRECATED constant.
+MODEL_ANALYZER_FALLBACK = os.environ.get(
+    "GEMINI_ANALYZER_FALLBACK_MODEL", _DEFAULT_ANALYZER_FALLBACK_MODEL
+)
+
+
+def get_model_filter_id() -> str:
+    """Return the Tier 1 gatekeeper model ID, read fresh from env each call."""
+    return os.environ.get("GEMINI_FILTER_MODEL", _DEFAULT_FILTER_MODEL)
+
+
+def get_model_analyzer_id() -> str:
+    """Return the Tier 2 analyst model ID, read fresh from env each call."""
+    return os.environ.get("GEMINI_ANALYZER_MODEL", _DEFAULT_ANALYZER_MODEL)
+
+
+def get_model_analyzer_fallback() -> str:
+    """Return the Tier 2 fallback model ID, read fresh from env each call."""
+    return os.environ.get(
+        "GEMINI_ANALYZER_FALLBACK_MODEL", _DEFAULT_ANALYZER_FALLBACK_MODEL
+    )
 
 # Importance threshold to trigger Tier 2 analysis
 # Only articles with importance_score >= this value get deep analysis

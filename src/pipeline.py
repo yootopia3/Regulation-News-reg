@@ -6,7 +6,8 @@ from typing import Dict, List, Optional, Set, Tuple
 from src.collectors.rss_parser import collect_all_rss
 from src.collectors.sanction_scraper import extract_sanction_key
 from src.collectors.scraper import ContentScraper
-from src.config.agency_codes import AgencyCode, ArticleCategory, SANCTION_AGENCY_CODES
+from src.config.agency_codes import AgencyCode, ArticleCategory
+from src.config.agency_loader import get_sanction_codes, is_sanction_agency
 from src.db.client import get_supabase_client
 
 logger = logging.getLogger(__name__)
@@ -109,7 +110,7 @@ class Pipeline:
             return set()
         keys: Set[SanctionKey] = set()
         page_size = 1000
-        for agency_code in SANCTION_AGENCY_CODES:
+        for agency_code in get_sanction_codes():
             start = 0
             while True:
                 try:
@@ -146,7 +147,7 @@ class Pipeline:
         from dateutil import parser
         for agency in scraper_agencies:
             agency_id = agency.get('code') or agency.get('id')
-            if not agency_id or agency_id in SANCTION_AGENCY_CODES:
+            if not agency_id or is_sanction_agency(agency_id):
                 continue
             try:
                 res = (
@@ -210,7 +211,7 @@ class Pipeline:
     ) -> bool:
         agency_id = item['agency']
         link = item['link']
-        if agency_id in SANCTION_AGENCY_CODES:
+        if is_sanction_agency(agency_id):
             exam_id, seq = extract_sanction_key(link)
             if exam_id and seq:
                 return (str(agency_id), exam_id, seq) in sanction_keys
@@ -307,13 +308,14 @@ class Pipeline:
         # 2. Scraper Collection (non-sanction)
         for agency in scraper_agencies:
             agency_id = agency.get('code') or agency.get('id')
-            if agency_id in SANCTION_AGENCY_CODES:
+            if is_sanction_agency(agency_id):
                 continue
             all_items.extend(self._collect_scraper(agency, last_crawled))
 
         # 3. Sanction Notice Collection (separate handling)
+        sanction_codes = get_sanction_codes()
         sanction_targets = [
-            a for a in self.agency_map.values() if a.get('code') in SANCTION_AGENCY_CODES
+            a for a in self.agency_map.values() if a.get('code') in sanction_codes
         ]
         for agency in sanction_targets:
             all_items.extend(self._collect_sanction(agency))

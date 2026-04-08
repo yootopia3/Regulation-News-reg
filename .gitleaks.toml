@@ -1,0 +1,10 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allow placeholder values in example env files"
+paths = [
+    '''^\.env\.example$''',
+    '''^web/\.env\.local\.example$''',
+    '''^docs/secret-rotation-checklist\.md$''',
+]

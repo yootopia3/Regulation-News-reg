@@ -10,7 +10,7 @@ from urllib.parse import urljoin, urlparse, parse_qs
 from bs4 import BeautifulSoup
 
 from src.config import settings
-from src.config.agency_codes import SANCTION_AGENCY_CODES
+from src.config.agency_loader import is_sanction_agency
 from src.collectors import http
 from src.collectors.date_parser import KST, parse_date
 
@@ -49,7 +49,7 @@ def fetch_sanction_items(agency_config: Dict) -> List[Dict]:
     """
     code = agency_config.get('code', '')
 
-    if code not in SANCTION_AGENCY_CODES:
+    if not is_sanction_agency(code):
         return []
 
     base_url = agency_config.get('url')

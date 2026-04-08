@@ -32,11 +32,6 @@ class AgencyCode(str, Enum):
         return self.value
 
 
-SANCTION_AGENCY_CODES: frozenset = frozenset(
-    {AgencyCode.FSS_SANCTION, AgencyCode.FSS_MGMT_NOTICE}
-)
-
-
 class ArticleCategory(str, Enum):
     PRESS_RELEASE = "press_release"
     REGULATION_NOTICE = "regulation_notice"

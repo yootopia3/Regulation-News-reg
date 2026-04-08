@@ -59,8 +59,9 @@ reg_brief/
 │   │   ├── rss_parser.py       # RSS parsing
 │   │   └── scraper.py          # Facade
 │   ├── config/
-│   │   ├── settings.py         # Constants + env loading
-│   │   └── agency_codes.py     # Agency code constants
+│   │   ├── settings.py         # Constants + env loading (Gemini model IDs via env)
+│   │   ├── agency_codes.py     # Agency code constants (enum)
+│   │   └── agency_loader.py    # Runtime-derived agency metadata (sanction codes)
 │   ├── db/
 │   │   └── client.py           # Supabase Connection
 │   ├── services/
@@ -87,9 +88,16 @@ reg_brief/
     │   └── dashboard/
     │       └── DashboardV2.tsx # Live entry component
     ├── lib/
-    │   └── auth.ts             # HMAC session cookie helpers
-    └── middleware.ts           # Route protection
+    │   ├── auth.ts             # HMAC session cookie helpers
+    │   ├── prompts/report.ts   # buildReportPrompt() — report prompt template
+    │   └── validation/report.ts # /api/report request schema
+    ├── __tests__/              # vitest suites (api + lib)
+    └── middleware.ts           # Route protection (mp_session cookie guards /api/*)
 ```
+
+Tests live in `tests/unit/**` (pytest) and `web/__tests__/**` (vitest); both
+are executed on PRs by `.github/workflows/ci.yml` (`python-test`,
+`web-test`, `gitleaks` jobs).
 
 The configured agency count is the length of the `agencies` array in
 `config/agencies.json` (single source of truth).
@@ -119,7 +127,18 @@ signatures.
 - `result_mapper.py` — maps raw model output to internal result shape.
 - `safeguards.py` — keyword-based score override rules.
 
-Models are configured in `src/config/settings.py`, not hardcoded.
+Backend Gemini model IDs are env-driven via `src/config/settings.py`:
+`GEMINI_FILTER_MODEL` (Tier 1), `GEMINI_ANALYZER_MODEL` (Tier 2), and
+`GEMINI_ANALYZER_FALLBACK_MODEL` (Tier 2 fallback). Defaults live in
+`settings.py`. The frontend `/api/report` route uses a separate
+`GEMINI_REPORT_MODEL` env (default in `web/app/api/report/route.ts`).
+
+### 4.1.1 Sanction agency derivation
+`SANCTION_AGENCY_CODES` is no longer a hardcoded frozenset. It is derived
+at runtime by `src/config/agency_loader.get_sanction_codes()` from the
+`category` field of `config/agencies.json` (entries with
+`category == "sanction_notice"`). Adding a new sanction source therefore
+requires only a JSON edit.
 
 ### 4.2 Supabase Client (`src/db/client.py`)
 - **Responsibility**: Singleton connection to PostgreSQL.
@@ -140,8 +159,15 @@ Models are configured in `src/config/settings.py`, not hardcoded.
 | `SESSION_SECRET` | HMAC key for `mp_session` cookie | **Vercel** (Web), Local `.env` |
 
 ### 4.4 Web Dashboard (`web/`)
-- **Security**: Protected by `middleware.ts` (Cookie-based Auth).
+- **Security**: Protected by `middleware.ts` (Cookie-based Auth). The
+  `mp_session` cookie also gates all `/api/*` routes.
 - **Visualization**: Reads directly from Supabase `articles` table.
+- **`/api/report`**: Accepts only `{ articleId }` in the request body
+  (schema in `web/lib/validation/report.ts`). The server then loads
+  `title`, `content`, and `agency` from Supabase by id — clients cannot
+  inject prompt content. The Gemini prompt is built by
+  `buildReportPrompt()` in `web/lib/prompts/report.ts`, and the model id
+  is taken from `GEMINI_REPORT_MODEL`.
 
 ### 4.5 Authentication
 프론트엔드 인증은 서명된 `mp_session` HMAC 쿠키 기반이다. 사용자가 입력한

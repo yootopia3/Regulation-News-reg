@@ -1,0 +1,70 @@
+{
+  "project": "reg_brief",
+  "task": "round2-hygiene",
+  "prompt": "Round 2 리팩토링 — 저장소 위생 + 시크릿 대응 + /api/report 입력 무결성 + 다중 소스 3축(모델 ID / report prompt / sanction rule) 단일화 + 최소 테스트 하네스(pytest + vitest) 도입. Round 1(spec/refactor-round1.md)이 out-of-scope로 미뤘던 docs/·루트 dump·scripts/debug/·web/ orphan 정리를 포함하되, 전역 ignore 패턴·history rewrite·성능 개선·web 대분해·pipeline 추가 구조 변경은 다음 라운드로 미룬다. 동작 변경 0건, DB 스키마 변경 0건, 프롬프트 문장 변경 0건.",
+  "totalPhases": 8,
+  "build_command": "python3 -c \"from src.pipeline import Pipeline; from src.services.analyzer import HybridAnalyzer\"",
+  "commit_prefix": "refactor",
+  "branch_prefix": "refactor",
+  "push_on_complete": false,
+  "created_at": "2026-04-08T10:25:00+0900",
+  "phases": [
+    {
+      "phase": 1,
+      "name": "repo-hygiene",
+      "status": "completed",
+      "started_at": "2026-04-08T11:04:25+0900",
+      "completed_at": "2026-04-08T11:06:02+0900"
+    },
+    {
+      "phase": 2,
+      "name": "secret-tooling",
+      "status": "completed",
+      "started_at": "2026-04-08T11:06:03+0900",
+      "completed_at": "2026-04-08T11:07:09+0900"
+    },
+    {
+      "phase": 3,
+      "name": "python-test-harness",
+      "status": "completed",
+      "started_at": "2026-04-08T11:07:10+0900",
+      "completed_at": "2026-04-08T11:09:56+0900"
+    },
+    {
+      "phase": 4,
+      "name": "web-test-harness",
+      "status": "completed",
+      "started_at": "2026-04-08T11:09:57+0900",
+      "completed_at": "2026-04-08T11:12:31+0900"
+    },
+    {
+      "phase": 5,
+      "name": "api-report-integrity",
+      "status": "completed",
+      "started_at": "2026-04-08T11:12:32+0900",
+      "completed_at": "2026-04-08T11:15:31+0900"
+    },
+    {
+      "phase": 6,
+      "name": "sanction-rule-derivation",
+      "status": "completed",
+      "started_at": "2026-04-08T11:15:32+0900",
+      "completed_at": "2026-04-08T11:18:30+0900"
+    },
+    {
+      "phase": 7,
+      "name": "model-id-env",
+      "status": "completed",
+      "started_at": "2026-04-08T11:18:31+0900",
+      "completed_at": "2026-04-08T11:20:27+0900"
+    },
+    {
+      "phase": 8,
+      "name": "docs-sync",
+      "status": "completed",
+      "started_at": "2026-04-08T11:20:28+0900",
+      "completed_at": "2026-04-08T11:22:34+0900"
+    }
+  ],
+  "completed_at": "2026-04-08T11:22:35+0900"
+}

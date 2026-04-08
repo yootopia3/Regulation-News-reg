@@ -36,10 +36,7 @@ export default function ReportModal({ isOpen, onClose, article }: ReportModalPro
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    articleId: article.id,
-                    title: article.title,
-                    content: article.content || article.title, // Fallback if content missing
-                    agency: article.agency
+                    articleId: String(article.id),
                 })
             })
 

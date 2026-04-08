@@ -7,10 +7,10 @@ from typing import Any, Dict, Optional
 from src.config.settings import (
     API_CALL_DELAY,
     IMPORTANCE_THRESHOLD,
-    MODEL_ANALYZER_FALLBACK,
-    MODEL_ANALYZER_ID,
-    MODEL_FILTER_ID,
     get_gemini_api_key,
+    get_model_analyzer_fallback,
+    get_model_analyzer_id,
+    get_model_filter_id,
     load_env,
 )
 from src.services.analyzer.gemini_client import GeminiClient
@@ -31,13 +31,18 @@ class HybridAnalyzer:
     """2-Tier Hybrid Analyzer with Gatekeeper + Analyst pipeline."""
 
     def __init__(self):
+        # load_env() must run BEFORE reading model IDs so that values from
+        # `.env` actually take effect. The model IDs are read via getters
+        # (not module-level constants), because the constants in
+        # `src.config.settings` freeze at import time, which happens above
+        # this call and thus predates `.env` loading.
         load_env()
         self._client = GeminiClient(get_gemini_api_key())
         self._safeguard_rules = load_safeguard_keywords()
 
-        self.filter_model = MODEL_FILTER_ID
-        self.analyzer_model = MODEL_ANALYZER_ID
-        self.analyzer_fallback = MODEL_ANALYZER_FALLBACK
+        self.filter_model = get_model_filter_id()
+        self.analyzer_model = get_model_analyzer_id()
+        self.analyzer_fallback = get_model_analyzer_fallback()
         self.importance_threshold = IMPORTANCE_THRESHOLD
 
     def filter(self, title: str, description: str, agency_name: str) -> Optional[Dict[str, Any]]:
