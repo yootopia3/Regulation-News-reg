@@ -1,0 +1,36 @@
+name: SSL Matrix Check (Round 6 Phase 2)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ssl-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run SSL matrix probe
+        run: python3 scripts/ssl_matrix_check.py
+
+      - name: Upload SSL matrix result
+        uses: actions/upload-artifact@v4
+        with:
+          name: ssl-matrix-ci-result
+          path: logs/ssl_matrix_local.json
+          retention-days: 14
