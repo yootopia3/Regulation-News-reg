@@ -55,6 +55,31 @@
       "status": "completed",
       "created_at": "2026-04-08T18:56:50+0900",
       "completed_at": "2026-04-08T19:24:23+0900"
+    },
+    {
+      "id": 8,
+      "name": "round6-backend-safety",
+      "dir": "8-round6-backend-safety",
+      "status": "completed",
+      "created_at": "2026-04-08T20:30:00+0900",
+      "blocked_at": "2026-04-09T13:54:02+0900",
+      "completed_at": "2026-04-09T15:11:17+0900"
+    },
+    {
+      "id": 9,
+      "name": "round7-dashboard-decomposition",
+      "dir": "9-round7-dashboard-decomposition",
+      "status": "completed",
+      "created_at": "2026-04-08T20:30:00+0900",
+      "completed_at": "2026-04-09T16:48:42+0900"
+    },
+    {
+      "id": 10,
+      "name": "round8-hardening",
+      "dir": "10-round8-hardening",
+      "status": "completed",
+      "created_at": "2026-04-08T20:30:00+0900",
+      "completed_at": "2026-04-09T17:09:50+0900"
     }
   ]
 }

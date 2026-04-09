@@ -10,6 +10,7 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 
 from src.config import settings
+from src.config.agency_loader import get_ssl_verify
 from src.collectors import http
 from src.collectors.date_parser import KST, parse_date
 from src.collectors.pagination import build_page_url
@@ -65,7 +66,7 @@ def fetch_list_items(
 
         try:
             time.sleep(random.uniform(settings.SCRAPER_RETRY_DELAY_MIN, settings.SCRAPER_RETRY_DELAY_MAX))
-            response = http.fetch(current_url)
+            response = http.fetch(current_url, verify=get_ssl_verify(agency_config.get('code')))
 
             soup = BeautifulSoup(response.content, 'html.parser')
             rows = soup.select(list_selector)

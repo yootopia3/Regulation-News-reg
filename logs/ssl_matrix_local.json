@@ -1,0 +1,132 @@
+{
+  "run_at_kst": "2026-04-08T23:12:09+09:00",
+  "environment": {
+    "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "python": "3.12.3",
+    "requests": "2.33.1",
+    "certifi_ca_bundle": "/home/pacer/projects/reg_brief/venv/lib/python3.12/site-packages/certifi/cacert.pem"
+  },
+  "results": [
+    {
+      "code": "FSC",
+      "collection_method": "rss",
+      "url": "https://www.fsc.go.kr/about/fsc_bbs_rss/?fid=0111",
+      "ok": false,
+      "status_code": null,
+      "elapsed_sec": 0.211,
+      "final_url": null,
+      "error_type": "ConnectionError",
+      "error_msg": "('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer'))"
+    },
+    {
+      "code": "MOEF",
+      "collection_method": "rss",
+      "url": "https://www.korea.kr/rss/dept_mofe.xml",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_sec": 0.472,
+      "final_url": "https://www.korea.kr/rss/dept_mofe.xml",
+      "error_type": null,
+      "error_msg": null
+    },
+    {
+      "code": "FSS",
+      "collection_method": "scraper",
+      "url": "https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_sec": 0.979,
+      "final_url": "https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218",
+      "error_type": null,
+      "error_msg": null
+    },
+    {
+      "code": "BOK",
+      "collection_method": "scraper",
+      "url": "https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=1",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_sec": 0.641,
+      "final_url": "https://www.bok.or.kr/portal/singl/newsData/listCont.do?menuNo=201263&pageIndex=1",
+      "error_type": null,
+      "error_msg": null
+    },
+    {
+      "code": "FSS_REG",
+      "collection_method": "scraper",
+      "url": "https://www.fss.or.kr/fss/job/lrgRegItnPrvntc/list.do?menuNo=200489",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_sec": 0.892,
+      "final_url": "https://www.fss.or.kr/fss/job/lrgRegItnPrvntc/list.do?menuNo=200489",
+      "error_type": null,
+      "error_msg": null
+    },
+    {
+      "code": "FSC_REG",
+      "collection_method": "scraper",
+      "url": "https://www.fsc.go.kr/po040301",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_sec": 0.834,
+      "final_url": "https://www.fsc.go.kr/po040301",
+      "error_type": null,
+      "error_msg": null
+    },
+    {
+      "code": "FSS_REG_INFO",
+      "collection_method": "scraper",
+      "url": "https://www.fss.or.kr/fss/job/lrgRegItnInfo/list.do?menuNo=200488",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_sec": 0.803,
+      "final_url": "https://www.fss.or.kr/fss/job/lrgRegItnInfo/list.do?menuNo=200488",
+      "error_type": null,
+      "error_msg": null
+    },
+    {
+      "code": "FSS_SANCTION",
+      "collection_method": "scraper",
+      "url": "https://www.fss.or.kr/fss/job/openInfo/list.do?menuNo=200476",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_sec": 0.693,
+      "final_url": "https://www.fss.or.kr/fss/job/openInfo/list.do?menuNo=200476",
+      "error_type": null,
+      "error_msg": null
+    },
+    {
+      "code": "FSS_SANCTION",
+      "collection_method": "scraper",
+      "url": "https://www.fss.or.kr",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_sec": 1.393,
+      "final_url": "https://www.fss.or.kr/fss/main/main.do?menuNo=200000",
+      "error_type": null,
+      "error_msg": null
+    },
+    {
+      "code": "FSS_MGMT_NOTICE",
+      "collection_method": "scraper",
+      "url": "https://www.fss.or.kr/fss/job/openInfoImpr/list.do?menuNo=200483",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_sec": 0.991,
+      "final_url": "https://www.fss.or.kr/fss/job/openInfoImpr/list.do?menuNo=200483",
+      "error_type": null,
+      "error_msg": null
+    },
+    {
+      "code": "FSS_MGMT_NOTICE",
+      "collection_method": "scraper",
+      "url": "https://www.fss.or.kr",
+      "ok": true,
+      "status_code": 200,
+      "elapsed_sec": 1.441,
+      "final_url": "https://www.fss.or.kr/fss/main/main.do?menuNo=200000",
+      "error_type": null,
+      "error_msg": null
+    }
+  ]
+}

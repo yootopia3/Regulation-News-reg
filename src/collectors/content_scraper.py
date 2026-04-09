@@ -8,6 +8,7 @@ from typing import Dict, Optional
 from bs4 import BeautifulSoup
 
 from src.config import settings
+from src.config.agency_loader import get_ssl_verify
 from src.collectors import http
 
 
@@ -24,7 +25,7 @@ def fetch_content(url: str, agency_config: Dict) -> Optional[str]:
     try:
         time.sleep(random.uniform(settings.SCRAPER_RETRY_DELAY_MIN, settings.SCRAPER_RETRY_DELAY_MAX))
 
-        response = http.fetch(url)
+        response = http.fetch(url, verify=get_ssl_verify(agency_config.get('code')))
 
         soup = BeautifulSoup(response.content, 'html.parser')
 

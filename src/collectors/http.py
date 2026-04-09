@@ -44,12 +44,24 @@ def get_session() -> requests.Session:
     return _session
 
 
-def fetch(url: str, *, timeout: Optional[int] = None) -> requests.Response:
-    """Perform a GET request via the cached session with standard defaults."""
+def fetch(
+    url: str,
+    *,
+    timeout: Optional[int] = None,
+    verify: Optional[bool] = None,
+) -> requests.Response:
+    """Perform a GET request via the cached session with standard defaults.
+
+    ``verify=None`` (default) falls back to ``settings.SSL_VERIFY``. Callers
+    that know the agency code should pass
+    ``verify=agency_loader.get_ssl_verify(code)`` so that per-agency opt-outs
+    in ``config/agencies.json`` are honored.
+    """
+    effective_verify = settings.SSL_VERIFY if verify is None else verify
     response = get_session().get(
         url,
         timeout=timeout or settings.SCRAPER_TIMEOUT,
-        verify=settings.SSL_VERIFY,
+        verify=effective_verify,
     )
     response.raise_for_status()
     return response

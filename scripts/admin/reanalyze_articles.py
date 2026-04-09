@@ -10,7 +10,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 
 from src.db.client import supabase
 from src.services.analyzer import HybridAnalyzer
-from config.settings import MODEL_ANALYZER_ID, MODEL_ANALYZER_FALLBACK
+from src.utils.preserve import preserve_selected_keys
+from src.config.settings import get_model_analyzer_id, get_model_analyzer_fallback
 from dotenv import load_dotenv
 
 # Load env vars
@@ -32,7 +33,7 @@ async def reanalyze_all():
     # If huge, need cursor pagination.
     
     # We select ID, Title, Content, Agency to re-analyze
-    res = supabase.table('articles').select('id, title, content, agency').execute()
+    res = supabase.table('articles').select('id, title, content, agency, analysis_result').execute()
     articles = res.data
     
     if not articles:
@@ -58,8 +59,9 @@ async def reanalyze_all():
             
             if result:
                 # 3. Update DB (updated_at removed as column likely missing)
+                preserved = preserve_selected_keys(article.get('analysis_result'), result)
                 update_data = {
-                    "analysis_result": result
+                    "analysis_result": preserved
                 }
                 
                 supabase.table('articles').update(update_data).eq('id', article['id']).execute()

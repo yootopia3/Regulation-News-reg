@@ -1,0 +1,35 @@
+{
+  "project": "reg_brief",
+  "task": "round8-hardening",
+  "prompt": "Round 8 hardening — spec/refactor-round6-roadmap.md §7.3 의 cleanup 묶음. 3 축: (1) Deprecated 상수 (MODEL_FILTER_ID / MODEL_ANALYZER_ID / MODEL_ANALYZER_FALLBACK) 제거 — 유일 consumer 인 scripts/admin/reanalyze_articles.py 를 getter (get_model_analyzer_id 등) 로 교체, tests/unit/config/test_settings_env.py 도 정리. (2) src/collectors/sanction_scraper.py 의 MAX_PAGES=10, CUTOFF_DAYS=30 에 근거 docstring 추가 — 값 변경 금지. (3) web/__tests__/lib/auth.test.ts + web/__tests__/proxy.test.ts 신설 — signSession/verifySession 라운드트립, 만료/변조 토큰 거부, proxy 화이트리스트 / 401 JSON / redirect 케이스. scripts/admin/reanalyze_articles.py 외 다른 scripts/admin/* 파일은 건드리지 않는다. /api/report rate limit 은 이번 라운드 대상 아님 (별도 micro-task 후보). Task 10 은 Task 8, 9 완료 후 진행.",
+  "totalPhases": 3,
+  "build_command": "python3 -m pytest tests/unit -q && cd web && npm run build && npm run test",
+  "commit_prefix": "refactor",
+  "branch_prefix": "refactor",
+  "push_on_complete": false,
+  "created_at": "2026-04-08T20:30:00+0900",
+  "phases": [
+    {
+      "phase": 1,
+      "name": "deprecated-constants-removal",
+      "status": "completed",
+      "started_at": "2026-04-09T17:03:59+0900",
+      "completed_at": "2026-04-09T17:06:06+0900"
+    },
+    {
+      "phase": 2,
+      "name": "magic-number-docstrings",
+      "status": "completed",
+      "started_at": "2026-04-09T17:06:17+0900",
+      "completed_at": "2026-04-09T17:07:09+0900"
+    },
+    {
+      "phase": 3,
+      "name": "auth-proxy-tests",
+      "status": "completed",
+      "started_at": "2026-04-09T17:07:19+0900",
+      "completed_at": "2026-04-09T17:09:40+0900"
+    }
+  ],
+  "completed_at": "2026-04-09T17:09:50+0900"
+}

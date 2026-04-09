@@ -1,0 +1,70 @@
+{
+  "project": "reg_brief",
+  "task": "round6-backend-safety",
+  "prompt": "Round 6 backend-safety — spec/refactor-round6-roadmap.md 의 tier A (P0 SSL/pdf_url/Pipeline DI + 최소 통합 테스트) 를 구현한다. 4 축: (1) SSL 검증 정책 opt-in 전환 — 즉시 코드 변경 금지. 먼저 로컬 환경 + GitHub-hosted Linux/datacenter 환경 두 곳에서 각 agency 에 대해 verify=True 성공 여부를 조사하여 spec/round6/ssl-matrix.md 매트릭스 작성. 결과 기반으로 SSL_VERIFY 기본값 True 전환 + config/agencies.json 의 opt-out 대상 agency 에만 ssl_verify: false 필드 추가 + http.fetch() 시그니처에 verify kwarg 도입 + rss_parser.py 도 동일 채널 경유. (2) pdf_url 데이터 손실 복구 — sanction_scraper 가 생성하는 pdf_url 을 _save_item 경로에서 analysis_result.pdf_url 로 merge. analyzer 가 None 반환해도 pdf_url 은 유실되지 않는다. DB 스키마 변경 0건. 재분석/백필 경로 (scripts/admin/reanalyze_articles.py, scripts/admin/run_backfill_safe.py) 도 같은 task 안에서 기존 pdf_url 을 preserve. (3) Pipeline DI 진입점 — Pipeline.__init__ 에 optional keyword-only 파라미터 (analyzer, notifier, db, scraper) 추가. 기본 동작은 기존 try/except import 경로 그대로. src/main.py 수정 없음. (4) 최소 통합 테스트 — tests/unit/pipeline/test_run.py (Pipeline DI 기반 run() 레벨) + tests/unit/collectors/test_rss_parser.py (parse_date, retry, stale warning) 신설. 동작 변경 0 원칙. DB 스키마 변경 0건. Gemini 프롬프트 변경 0건. Telegram 포맷 변경 0건. /api/report 손대지 않음. 기존 테스트 전부 통과.",
+  "totalPhases": 8,
+  "build_command": "python3 -c \"from src.pipeline import Pipeline; from src.services.analyzer import HybridAnalyzer\" && python3 -m pytest tests/unit -q",
+  "commit_prefix": "refactor",
+  "branch_prefix": "refactor",
+  "push_on_complete": false,
+  "created_at": "2026-04-08T20:30:00+0900",
+  "phases": [
+    {
+      "phase": 1,
+      "name": "ssl-matrix-local",
+      "status": "completed",
+      "started_at": "2026-04-08T23:10:17+0900",
+      "completed_at": "2026-04-08T23:14:13+0900"
+    },
+    {
+      "phase": 2,
+      "name": "ssl-matrix-ci-workflow",
+      "status": "completed",
+      "started_at": "2026-04-08T23:14:22+0900",
+      "completed_at": "2026-04-08T23:16:07+0900"
+    },
+    {
+      "phase": 3,
+      "name": "ssl-opt-in-implementation",
+      "status": "completed",
+      "started_at": "2026-04-09T14:57:12+0900",
+      "completed_at": "2026-04-09T15:00:50+0900"
+    },
+    {
+      "phase": 4,
+      "name": "pdf-url-persist-in-save",
+      "status": "completed",
+      "started_at": "2026-04-09T15:00:52+0900",
+      "completed_at": "2026-04-09T15:02:05+0900"
+    },
+    {
+      "phase": 5,
+      "name": "pdf-url-preserve-in-reanalyze",
+      "status": "completed",
+      "started_at": "2026-04-09T15:02:08+0900",
+      "completed_at": "2026-04-09T15:04:09+0900"
+    },
+    {
+      "phase": 6,
+      "name": "pipeline-di-refactor",
+      "status": "completed",
+      "started_at": "2026-04-09T15:04:12+0900",
+      "completed_at": "2026-04-09T15:05:42+0900"
+    },
+    {
+      "phase": 7,
+      "name": "pipeline-run-test",
+      "status": "completed",
+      "started_at": "2026-04-09T15:05:45+0900",
+      "completed_at": "2026-04-09T15:09:25+0900"
+    },
+    {
+      "phase": 8,
+      "name": "rss-parser-test",
+      "status": "completed",
+      "started_at": "2026-04-09T15:09:28+0900",
+      "completed_at": "2026-04-09T15:11:14+0900"
+    }
+  ],
+  "completed_at": "2026-04-09T15:11:17+0900"
+}

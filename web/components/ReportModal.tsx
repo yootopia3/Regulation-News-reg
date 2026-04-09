@@ -4,16 +4,12 @@
 import { useState, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { X, Download, Printer } from 'lucide-react'
+import type { Article } from './dashboard/NewsCard'
 
 interface ReportModalProps {
     isOpen: boolean
     onClose: () => void
-    article: {
-        id: number
-        title: string
-        content?: string
-        agency: string
-    } | null
+    article: Article | null
 }
 
 export default function ReportModal({ isOpen, onClose, article }: ReportModalProps) {

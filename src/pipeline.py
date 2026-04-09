@@ -17,15 +17,23 @@ SanctionKey = Tuple[str, str, str]
 
 
 class Pipeline:
-    def __init__(self, config_path):
+    def __init__(
+        self,
+        config_path,
+        *,
+        analyzer=None,
+        notifier=None,
+        db=None,
+        scraper=None,
+    ):
         self.config_path = config_path
         self.agency_map = self._load_agency_map()
 
         # Initialize Services
-        self.analyzer = self._init_analyzer()
-        self.notifier = self._init_notifier()
-        self.supabase = self._init_db()
-        self.scraper = ContentScraper()
+        self.analyzer = analyzer if analyzer is not None else self._init_analyzer()
+        self.notifier = notifier if notifier is not None else self._init_notifier()
+        self.supabase = db if db is not None else self._init_db()
+        self.scraper = scraper if scraper is not None else ContentScraper()
 
     # ------------------------------------------------------------------
     # Initialization helpers
@@ -255,13 +263,27 @@ class Pipeline:
         if not self.supabase:
             return
         try:
+            analysis_result = item.get('analysis_result')
+            pdf_url = item.get('pdf_url')
+            if pdf_url:
+                if isinstance(analysis_result, dict):
+                    # New dict; do not mutate the original (shared with _notify_item).
+                    analysis_result = {**analysis_result, 'pdf_url': pdf_url}
+                else:
+                    if analysis_result is not None:
+                        logger.warning(
+                            "  > analysis_result has unexpected type %s; replacing with pdf_url-only dict.",
+                            type(analysis_result).__name__,
+                        )
+                    analysis_result = {'pdf_url': pdf_url}
+
             data = {
                 "agency": item['agency'],
                 "title": item['title'],
                 "link": item['link'],
                 "published_at": item.get('published_at') or datetime.now().isoformat(),
                 "content": item.get('content') or "",
-                "analysis_result": item.get('analysis_result'),
+                "analysis_result": analysis_result,
                 "category": item.get('category', ArticleCategory.PRESS_RELEASE),
             }
             self.supabase.table("articles").insert(data).execute()

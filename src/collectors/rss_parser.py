@@ -63,17 +63,20 @@ def fetch_rss_feed(agency: Dict) -> List[Dict]:
     
     # Use custom headers to avoid blocking
     from src.config import settings
+    from src.config.agency_loader import get_ssl_verify
     headers = {
         'User-Agent': settings.USER_AGENT
     }
 
     import requests
 
+    verify = get_ssl_verify(agency.get('code') or agency.get('id'))
+
     response = None
     last_err: Optional[Exception] = None
     for attempt in range(1, RSS_FETCH_MAX_ATTEMPTS + 1):
         try:
-            response = requests.get(target_url, headers=headers, timeout=settings.SCRAPER_TIMEOUT)
+            response = requests.get(target_url, headers=headers, timeout=settings.SCRAPER_TIMEOUT, verify=verify)
             response.raise_for_status()
             break  # success
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:

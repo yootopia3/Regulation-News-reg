@@ -1,0 +1,57 @@
+{
+  "project": "reg_brief",
+  "task": "round7-dashboard-decomposition",
+  "prompt": "Round 7 Dashboard 분해 — spec/refactor-round6-roadmap.md §7.2 대로 web/components/dashboard/DashboardV2.tsx (592 LOC, nested Sidebar closure, god component) 를 스몰 스텝으로 분해한다. 6 축: (1) 상수 추출 (constants.ts: pressAgencies/regulationAgencies/sanctionAgencies/각 이름 매핑), (2) AgencyIcon 컴포넌트 추출 (10개 SVG 를 code prop 받는 switch 컴포넌트), (3) NEW 뱃지 계산 훅 추출 (useHasNewByCategory, 죽은 countNewArticles import 제거), (4) Sidebar 분리 (nested closure → sibling component, 모든 state/handler 는 props), (5) ReportModal 타입 narrowing (`as any` 제거), (6) Dashboard render smoke test (vitest + jsdom + @testing-library/react). 각 phase 는 `cd web && npm run build && npm run test` 통과가 AC. 시각적 회귀는 수동 체크리스트 (회귀 체크리스트는 spec/refactor-round6-roadmap.md §9.2 참조). 백엔드 / api / spec 수정 금지. 컴포넌트 값/마크업 한 글자도 바꾸지 마라 — 순수 구조 개선. Task 9 는 Task 8 완료 이후에 진행하는 것이 권장되나 코드 종속성은 없다.",
+  "totalPhases": 6,
+  "build_command": "cd web && npm run build && npm run test",
+  "commit_prefix": "refactor",
+  "branch_prefix": "refactor",
+  "push_on_complete": false,
+  "created_at": "2026-04-08T20:30:00+0900",
+  "phases": [
+    {
+      "phase": 1,
+      "name": "constants-extraction",
+      "status": "completed",
+      "started_at": "2026-04-09T16:32:39+0900",
+      "completed_at": "2026-04-09T16:34:21+0900"
+    },
+    {
+      "phase": 2,
+      "name": "agency-icon-component",
+      "status": "completed",
+      "started_at": "2026-04-09T16:34:28+0900",
+      "completed_at": "2026-04-09T16:37:13+0900"
+    },
+    {
+      "phase": 3,
+      "name": "new-badge-hook",
+      "status": "completed",
+      "started_at": "2026-04-09T16:37:20+0900",
+      "completed_at": "2026-04-09T16:38:37+0900"
+    },
+    {
+      "phase": 4,
+      "name": "sidebar-extraction",
+      "status": "completed",
+      "started_at": "2026-04-09T16:38:44+0900",
+      "completed_at": "2026-04-09T16:44:41+0900",
+      "notes": "manual visual check required"
+    },
+    {
+      "phase": 5,
+      "name": "report-modal-type-fix",
+      "status": "completed",
+      "started_at": "2026-04-09T16:44:49+0900",
+      "completed_at": "2026-04-09T16:46:36+0900"
+    },
+    {
+      "phase": 6,
+      "name": "dashboard-render-smoke-test",
+      "status": "completed",
+      "started_at": "2026-04-09T16:46:44+0900",
+      "completed_at": "2026-04-09T16:48:34+0900"
+    }
+  ],
+  "completed_at": "2026-04-09T16:48:42+0900"
+}

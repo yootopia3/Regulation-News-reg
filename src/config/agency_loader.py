@@ -41,3 +41,26 @@ def is_sanction_agency(code) -> bool:
     Accepts ``str`` and ``AgencyCode`` (which subclasses ``str``).
     """
     return str(code) in get_sanction_codes()
+
+
+def get_ssl_verify(code) -> bool:
+    """Return the effective TLS-verify flag for the given agency code.
+
+    Per-agency opt-out is expressed as ``"ssl_verify": false`` in
+    ``config/agencies.json``. When the field is absent (or the code is
+    unknown) we fall back to the module-level default
+    ``src.config.settings.SSL_VERIFY``. Deliberately uncached so that a
+    runtime override of ``settings.SSL_VERIFY`` (e.g. from tests) is
+    observed on the next call.
+    """
+    from src.config import settings
+
+    if code is None:
+        return settings.SSL_VERIFY
+    code_str = str(code)
+    for agency in load_agencies():
+        if agency.get("code") == code_str:
+            if "ssl_verify" in agency:
+                return bool(agency["ssl_verify"])
+            break
+    return settings.SSL_VERIFY

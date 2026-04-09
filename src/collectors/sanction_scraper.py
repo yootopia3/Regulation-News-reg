@@ -10,7 +10,7 @@ from urllib.parse import urljoin, urlparse, parse_qs
 from bs4 import BeautifulSoup
 
 from src.config import settings
-from src.config.agency_loader import is_sanction_agency
+from src.config.agency_loader import get_ssl_verify, is_sanction_agency
 from src.collectors import http
 from src.collectors.date_parser import KST, parse_date
 
@@ -18,7 +18,16 @@ from src.collectors.date_parser import KST, parse_date
 logger = logging.getLogger(__name__)
 
 
+# Hard ceiling on sanction list pagination. FSS 의 검사결과 제재 / 경영유의사항
+# 페이지는 한 번의 search window (sdate~edate, default 30 일) 안에서
+# 보통 5~10 페이지를 넘지 않는다. 10 으로 캡 두어 사이트 레이아웃 변경이나
+# 필터 누락으로 인한 무한 루프를 차단한다 (방어적 ceiling).
 MAX_PAGES = 10
+
+# Lookback window for the sanction search query (sdate=today-CUTOFF_DAYS).
+# 제재 공시는 저빈도 + 백필이 잦아서 일반 보도자료(7 일) 보다 길게 본다.
+# 30 일은 새 게시물을 놓치지 않으면서 전체 아카이브를 매번 다시 긁지 않을
+# 수 있는 minimum 윈도다 (round 1 §2 회귀 정책과 일치).
 CUTOFF_DAYS = 30
 
 
@@ -80,7 +89,7 @@ def fetch_sanction_items(agency_config: Dict) -> List[Dict]:
 
         try:
             time.sleep(random.uniform(1.0, 2.0))
-            response = http.fetch(page_url)
+            response = http.fetch(page_url, verify=get_ssl_verify(code))
 
             soup = BeautifulSoup(response.content, 'html.parser')
 
