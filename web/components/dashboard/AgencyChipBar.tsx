@@ -33,7 +33,7 @@ export default function AgencyChipBar({ currentCategory, selectedAgency, onSelec
     const inactiveClass = 'text-gray-400 font-medium hover:text-gray-600'
 
     return (
-        <div className="sticky top-[88px] z-40 h-[44px] bg-white border-b border-gray-200 flex items-center px-4 gap-5 overflow-x-auto scrollbar-hide">
+        <div className="sticky top-[88px] z-40 h-[44px] bg-[#F5F7FA] border-b border-gray-200 flex items-center px-4 gap-5 overflow-x-auto scrollbar-hide">
             <button
                 onClick={() => handleChipClick(null)}
                 className={`whitespace-nowrap pb-2 pt-1 text-sm transition-all duration-200 flex-shrink-0 ${selectedAgency === null ? activeClass : inactiveClass}`}
