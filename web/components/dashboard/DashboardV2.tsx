@@ -11,6 +11,7 @@ import DateSection from './DateSection'
 import ReportModal from '@/components/ReportModal' // Reuse existing modal
 import NewsCard, { Article } from './NewsCard'
 import Sidebar from './Sidebar'
+import AgencyChipBar from './AgencyChipBar'
 import {
     pressAgencies,
     regulationAgencies,
@@ -225,6 +226,13 @@ export default function DashboardV2() {
                             </button>
                         </div>
                     </div>
+
+                    {/* Agency Chip Bar (sticky filter) */}
+                    <AgencyChipBar
+                        currentCategory={currentCategory}
+                        selectedAgency={selectedAgency}
+                        onSelectAgency={setSelectedAgency}
+                    />
 
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-20 space-y-4">
