@@ -1,79 +1,132 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+`reg_brief` — 한국 금융 규제기관(FSC, FSS, MOEF 등)의 보도자료와 제재
+공시를 수집·분석해 텔레그램과 웹 대시보드로 브리핑하는 시스템. 백엔드는
+Python (Pipeline + Hybrid Analyzer + Supabase), 프론트엔드는 Next.js,
+실행은 GitHub Actions + 외부 cron-job.org.
 
-## What This Is
+## 기능추가 작업 절차 (superpowers 기반)
 
-AI 기반 프로젝트 하네스. 두 가지 모드를 지원한다.
+기능추가는 superpowers 절차를 기본으로 따른다.
 
-- **신규 프로젝트**: `templates/1-초기기획.md` ~ `7-구현시작.md`의 7단계 흐름.
-- **기존 코드 리팩토링**: `templates/refactor-start.md` 1장으로 시작 → 곧장 SKILL.md 흐름.
+**full 절차가 필요한 경우:**
+- 새 기능 추가
+- 구조 변경 (디렉토리, 모듈 경계, 데이터 흐름)
+- 외부 연동 추가 (API, DB 테이블, 서드파티)
+- schema / API contract / 운영 동작에 영향이 있는 변경
 
-두 모드 모두 phase runner(`_runner/run-phases.py`)가 Claude Code 세션을 순차 실행하여 각 phase를 자동 완료한다.
+→ brainstorming → writing-plans → executing-plans
+→ verification-before-completion
+→ requesting-code-review / receiving-code-review
 
-## Workflow
+주요 변경 완료 후 review lane은 별도 단계로 둔다. 작성 pass와 검토
+pass를 같은 context에서 self-approve하지 않는다.
 
-### 신규 프로젝트
-1. **기획 (1~5단계)**: `templates/1-초기기획.md`~`5-기술결정정리.md`를 채워 AI와 대화하며 기획/설계 확정.
-2. **문서화 (6단계)**: `templates/6-문서화.md`로 `spec/`에 설계 문서 생성.
-3. **구현 (7단계)**: `plan-and-build` skill 사용. 구현 계획을 phase로 분할 → task 파일 생성 → runner로 자동 실행.
+**축약 또는 직접 수정이 허용되는 경우:**
+- 국소 버그 수정 (명백한 1-file fix)
+- 사소한 문서 수정
+- 이미 plan이 합의된 범위 안의 minor 조정
 
-### 리팩토링
-1. `templates/refactor-start.md`를 채워 목적, 현재 동작, 회귀 체크리스트, 우선순위, AC를 정의.
-2. `plan-and-build` skill 흐름으로 진입: `spec/`, 기존 `docs/`, 소스 코드를 함께 읽고 사용자와 논의.
-3. 합의 후 `prompts/task-create.md`에 따라 task/phase 파일 생성. `commit_prefix: "refactor"`, `branch_prefix: "refactor"`, `push_on_complete: false` 권장.
-4. runner 실행.
+→ 수정 후 verification은 여전히 필수. evidence 없는 success 주장 금지.
 
-## Commands
+작업 단위가 2개 이상의 독립 sub-project로 분해되면, 각각 별도
+brainstorm → plan → execute 사이클로 돌린다.
 
-```bash
-# Phase runner 실행
-python3 _runner/run-phases.py <task-dir>
-# 예: python3 _runner/run-phases.py 0-mvp
+작업 도중 새로운 함정/제약을 발견하면 "시행착오 일지" 섹션에 사용자
+합의 후 추가한다.
 
-# 에러 발생 시: tasks/{task-dir}/index.json에서 해당 phase status를 "pending"으로 변경 후 재실행
-python3 _runner/run-phases.py 0-mvp
-```
+## 문서 우선순위
 
-## Task Structure
+정보가 충돌할 때의 우선순위. 위가 높다:
 
-```
-tasks/
-  index.json              # 전체 task 목록 (id, name, dir, status)
-  {id}-{name}/
-    index.json            # phase 목록 + 상태 + build_command + (선택) commit/branch_prefix, push_on_complete
-    phase{N}.md           # 각 phase의 자기완결적 구현 지시서
-    phase{N}-output.json  # runner가 생성하는 실행 결과 (gitignored)
-```
+1. **코드** (실제 구현이 진실)
+2. **`docs/ARCHITECTURE.md`** — as-built 구조 (round6-8 sync 완료)
+3. **`docs/SCHEMA.md`** — DB 컬럼, JSONB shape, 인덱스
+   **`docs/REQUIREMENTS.md`** — Gemini 모델, 수집 주기, 운영 제약
+4. **`docs/PRD.md`** / **`docs/MASTER_CONTEXT.md`** — 제품 맥락·제약
+   참고용. 구현 사실은 이 문서들보다 위 1-3이 우선.
 
-## Phase File Conventions
+**읽기 트리거** — 아래 영역을 건드리기 전에 해당 문서를 먼저 읽어라:
 
-- 각 `phase{N}.md`는 **독립 Claude 세션이 단독으로 실행**한다. 이전 대화 참조 금지, 필요한 정보를 전부 파일 안에 명시.
-- runner는 `phase{N}.md`만 프롬프트에 임베딩한다. 관련 문서(`spec/`, `docs/`, 소스)는 phase 파일 안에 경로로 명시하면 Claude 세션이 직접 읽는다.
-- 필수 섹션: 사전 준비(문서/소스 경로 + 이전 phase 산출물), 작업 내용(시그니처 수준 지시), AC(실행 가능한 커맨드), AC 검증 방법, 주의사항.
-- scope 최소화: 하나의 phase에서 하나의 레이어/모듈만 다룬다.
+| 건드리는 영역 | 먼저 읽을 문서 |
+|---|---|
+| DB 컬럼 / JSONB shape / SQL / dedup 키 | `docs/SCHEMA.md` |
+| Gemini 모델 / 수집 주기 / timezone / safeguard 규칙 | `docs/REQUIREMENTS.md` |
+| 모듈 경계 / 데이터 흐름 / 인프라 | `docs/ARCHITECTURE.md` |
+| 제품 방향 / 사용자 시나리오 / 비즈니스 제약 | `docs/PRD.md` |
 
-## Runner Behavior (`_runner/run-phases.py`)
+## 프로젝트 지도
 
-- `{branch_prefix}-{task-name}` 브랜치를 자동 생성/체크아웃 (`branch_prefix` 기본 `feat`).
-- phase마다 `claude -p --dangerously-skip-permissions --output-format json`으로 실행.
-- 사전 docs commit은 `tasks/`, `spec/` 중 **존재하는 경로만** 스테이징.
-- 2단계 커밋: Claude fallback (`{commit_prefix}(...)`, 기본 `feat`) + runner housekeeping (`chore(...)`).
-- `build_command` (index.json에 설정) 실행으로 빌드 검증. 실패 시 error 처리.
-- 완료 후 push: `push_on_complete` 플래그로 가드 (기본 `true`). 인증/브랜치 정책 사고 방지를 위해 리팩토링 task에서는 `false` 권장.
-- Exit codes: 0=성공, 1=에러, 2=blocked (사용자 개입 필요).
-- Phase 타임아웃: 30분.
+상세 as-built 구조는 `docs/ARCHITECTURE.md`를 본다.
 
-## Key Rules for Phase Execution
+최상위:
+- `src/` — 백엔드 (collectors, services/analyzer, db, pipeline)
+- `web/` — Next.js 프론트엔드 (dashboard + 인증된 API)
+- `tests/` — pytest (`tests/unit/**`); `web/__tests__/**` — vitest
+- `docs/` — ARCHITECTURE / PRD / SCHEMA / REQUIREMENTS / MASTER_CONTEXT
+- `spec/` — 라운드별 refactor spec / 로드맵
+- `scripts/` — admin / monitor / archive 유틸
+- `config/` — `agencies.json` (단일 진실원), `safeguard_keywords.json`
+- `.github/workflows/` — collector + watchdog + ci + ssl-matrix-check
+- `tasks/`, `templates/`, `_runner/` — legacy harness; 기능추가에서는 사용하지 않음
 
-- 기존 동작을 깨지 마라. 리팩토링이라면 동작은 동일하게 유지.
-- View/UI에 비즈니스 로직 금지.
-- 문자열 리터럴 대신 enum/상수 사용.
-- 이전 phase의 네이밍 패턴을 따를 것.
-- 중복 코드 금지 — 기존 코드 재사용 또는 공통 유틸 추출.
-- 커밋 형식: `{commit_prefix}({task-name}): phase {N} — {phase-name}`
+## 능력 경계선
 
-## Git Convention
+- **Gemini API**: backend `GEMINI_FILTER_MODEL` / `GEMINI_ANALYZER_MODEL`
+  / `GEMINI_ANALYZER_FALLBACK_MODEL`, frontend `GEMINI_REPORT_MODEL`
+  env. 호출 진입점은 `src/services/analyzer/gemini_client.py`
+  (google-genai SDK) 와 `web/app/api/report/route.ts`. 새 호출이
+  필요하면 새 wrapper를 만들지 말고 기존 wrapper를 확장.
+- **Supabase**: `src/db/client.py` 싱글톤. 키 정책은
+  `docs/secret-rotation-checklist.md`.
+- **Telegram**: `src/services/notifier.py`. 외부 알림은 이 모듈 재사용.
+- **Scrapers**: `src/collectors/` 아래 http / date_parser / pagination
+  / list_scraper / content_scraper / sanction_scraper / rss_parser.
+  새 사이트 추가 시 기존 helper 재사용 가능 여부부터 확인.
+- **Agency 단일 진실원**: `config/agencies.json`. 새 기관 / 카테고리 /
+  SSL 옵트아웃은 코드 수정 없이 JSON으로만 (`agency_loader`가 파생).
+- **테스트**: `pytest tests/`, `cd web && npm test`. CI는
+  `.github/workflows/ci.yml`. 새 코드는 단위 테스트 동반 필수.
+- **Admin**: `scripts/admin/` — 파괴적 작업은 사용자 confirm 후.
+- **운영 트리거**: collector는 외부 cron-job.org →
+  `workflow_dispatch`(`news_collector_v2_active.yml`). watchdog만
+  GHA native cron (2h).
 
-- `gh_user` 설정 시 GitHub 계정으로 커밋 author 자동 설정 (`_runner/_utils.py`의 `resolve_gh_env`).
-- 완료 후 자동 push는 `push_on_complete=true`인 경우에만 `origin/{branch_prefix}-{task-name}`으로 수행.
+## 시행착오 일지
+
+production에서 한 번 겪은 함정. 새 코드 작성 시 미리 차단.
+
+### T1. Gemini 응답 list-wrapping (`f17eb55`)
+**증상**: Gemini가 `[{...}]` 또는 `{"content": [{...}]}` 형태로 응답
+→ dict 가정 parser가 `TypeError` → silent `ANALYSIS_FAILED` (~3% 발생).
+**규칙**: Gemini 응답 파싱 전에 root + 각 top-level section에
+list-unwrap 가드 적용 (`_unwrap_if_list` 패턴).
+
+### T2. Supabase PostgREST max-rows=1000 (`8dda069`)
+**증상**: `select().execute()` 한 번으로 전체 행을 가져온다고 믿으면
+1000행에서 silent truncate → dedup 누락 → unique violation crash.
+**규칙**: 전체 행 조회는 반드시 1000행 윈도 페이지네이션
+(`_load_existing_links` 패턴).
+
+### T3. `str, Enum`의 `__str__` Python 3.11+ 변경 (`86b71cf`)
+**증상**: `str(AgencyCode.FSS_SANCTION)` → `"AgencyCode.FSS_SANCTION"`.
+supabase-py `.eq()` 0행 매치 → sanction dedup 빈 캐시 → unique violation.
+**규칙**: str 직렬화 경로에 들어가는 enum은 `__str__` 명시 override.
+`StrEnum`은 workflow Python 3.10 pin이라 사용 불가.
+
+### T4. gitleaks `generic-api-key` false positive (`ecc0fe0`)
+**증상**: docstring에 high-entropy literal 예시 → gitleaks가 CI를 차단.
+**규칙**: 시크릿스러운 예시는 prose로 변수명만 지시 (`TEST_SECRET`),
+실제 값은 fixture/beforeEach에서 정의.
+
+## 코딩 원칙
+
+- **기존 동작을 깨지 마라.** 기능추가라도 기존 경로의 입출력은 동일
+  유지. 변경이 필요하면 사용자 합의 후.
+- **View / UI에 비즈니스 로직 금지.** lib / hook / 백엔드로 분리.
+- **문자열 리터럴 대신 enum / 상수.** 기존 enum 확장 또는 새 enum.
+  (T3 주의.)
+- **이전 코드의 네이밍 패턴을 따른다.** 새 패턴 도입은 사용자 합의 후.
+- **중복 코드 금지.** 기존 helper 재사용 또는 공통 유틸 추출.
+- **방어적 코드는 시스템 boundary에서만.** 내부 함수에 validation /
+  try-except 남발 금지.
