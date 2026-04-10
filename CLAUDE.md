@@ -119,13 +119,16 @@ supabase-py `.eq()` 0행 매치 → sanction dedup 빈 캐시 → unique violati
 **규칙**: 시크릿스러운 예시는 prose로 변수명만 지시 (`TEST_SECRET`),
 실제 값은 fixture/beforeEach에서 정의.
 
-### T5. 새 agency 추가 시 DB CHECK constraint + link scheme 확인 (`5578620`, `5c1658c`)
+### T5. 새 agency 추가 시 DB CHECK constraint + display URL 확인 (`5578620`, `9132a4b`)
 **증상**: `config/agencies.json`과 frontend만 업데이트하고 live DB의
 `articles_agency_check` constraint를 빠뜨려 모든 insert가 `23514`로 실패.
-추가로 RSS가 `http://` URL을 주면 301 리다이렉트에서 모바일 페이지가 깨짐.
+또한 MAFRA `/bbs/` URL은 사이트 네비게이션 없는 raw CMS 페이지여서 모바일
+렌더링이 깨짐 — `enc` deep-link로 display URL을 별도 생성해야 함
+(`web/utils/mafraLink.ts`). DB에는 scrape/dedup용 canonical `/bbs/` URL 유지.
 **규칙**: agency 추가 시 체크리스트: (1) `agencies.json` (2) `agency_codes.py`
-(3) live DB constraint (4) frontend constants/components (5) RSS link scheme
-확인. `db/schema.sql`과 `scripts/admin/update_agency_constraint.py`도 동기화.
+(3) live DB constraint (4) frontend constants/components (5) 원문 URL이
+단독으로 정상 렌더링되는지 확인, 안 되면 display URL 변환 필요.
+`db/schema.sql`과 `scripts/admin/update_agency_constraint.py`도 동기화.
 
 ## 코딩 원칙
 
