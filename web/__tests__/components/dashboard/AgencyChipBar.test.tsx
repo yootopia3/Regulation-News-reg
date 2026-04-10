@@ -1,4 +1,8 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
+import { render, screen, cleanup } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+
+afterEach(cleanup)
 
 describe('chipLabels', () => {
     it('maps all press agencies to Korean short names', async () => {
@@ -30,5 +34,125 @@ describe('chipLabels', () => {
         }
         expect(chipLabels['FSS_SANCTION']).toBe('제재')
         expect(chipLabels['FSS_MGMT_NOTICE']).toBe('경영유의')
+    })
+})
+
+describe('AgencyChipBar rendering', () => {
+    it('renders "전체" + 5 press agency chips for press_release category', async () => {
+        const AgencyChipBar = (await import('@/components/dashboard/AgencyChipBar')).default
+        render(
+            <AgencyChipBar
+                currentCategory="press_release"
+                selectedAgency={null}
+                onSelectAgency={() => {}}
+            />
+        )
+        expect(screen.getByText('전체')).toBeInTheDocument()
+        expect(screen.getByText('금융위')).toBeInTheDocument()
+        expect(screen.getByText('금감원')).toBeInTheDocument()
+        expect(screen.getByText('기재부')).toBeInTheDocument()
+        expect(screen.getByText('한은')).toBeInTheDocument()
+        expect(screen.getByText('농식품부')).toBeInTheDocument()
+        expect(screen.getAllByRole('button')).toHaveLength(6)
+    })
+
+    it('renders "전체" + 3 regulation chips for regulation_notice category', async () => {
+        const AgencyChipBar = (await import('@/components/dashboard/AgencyChipBar')).default
+        render(
+            <AgencyChipBar
+                currentCategory="regulation_notice"
+                selectedAgency={null}
+                onSelectAgency={() => {}}
+            />
+        )
+        expect(screen.getByText('전체')).toBeInTheDocument()
+        expect(screen.getAllByRole('button')).toHaveLength(4)
+    })
+
+    it('renders "전체" + 2 sanction chips for sanction_notice category', async () => {
+        const AgencyChipBar = (await import('@/components/dashboard/AgencyChipBar')).default
+        render(
+            <AgencyChipBar
+                currentCategory="sanction_notice"
+                selectedAgency={null}
+                onSelectAgency={() => {}}
+            />
+        )
+        expect(screen.getByText('전체')).toBeInTheDocument()
+        expect(screen.getAllByRole('button')).toHaveLength(3)
+    })
+})
+
+describe('AgencyChipBar toggle logic', () => {
+    it('calls onSelectAgency with agency code when a chip is clicked', async () => {
+        const onSelectAgency = vi.fn()
+        const AgencyChipBar = (await import('@/components/dashboard/AgencyChipBar')).default
+        render(
+            <AgencyChipBar
+                currentCategory="press_release"
+                selectedAgency={null}
+                onSelectAgency={onSelectAgency}
+            />
+        )
+        await userEvent.click(screen.getByText('금융위'))
+        expect(onSelectAgency).toHaveBeenCalledWith('FSC')
+    })
+
+    it('calls onSelectAgency(null) when the same chip is clicked again (toggle off)', async () => {
+        const onSelectAgency = vi.fn()
+        const AgencyChipBar = (await import('@/components/dashboard/AgencyChipBar')).default
+        render(
+            <AgencyChipBar
+                currentCategory="press_release"
+                selectedAgency="FSC"
+                onSelectAgency={onSelectAgency}
+            />
+        )
+        await userEvent.click(screen.getByText('금융위'))
+        expect(onSelectAgency).toHaveBeenCalledWith(null)
+    })
+
+    it('calls onSelectAgency(null) when "전체" chip is clicked', async () => {
+        const onSelectAgency = vi.fn()
+        const AgencyChipBar = (await import('@/components/dashboard/AgencyChipBar')).default
+        render(
+            <AgencyChipBar
+                currentCategory="press_release"
+                selectedAgency="FSC"
+                onSelectAgency={onSelectAgency}
+            />
+        )
+        await userEvent.click(screen.getByText('전체'))
+        expect(onSelectAgency).toHaveBeenCalledWith(null)
+    })
+})
+
+describe('AgencyChipBar active state', () => {
+    it('applies active class to the selected agency chip', async () => {
+        const AgencyChipBar = (await import('@/components/dashboard/AgencyChipBar')).default
+        render(
+            <AgencyChipBar
+                currentCategory="press_release"
+                selectedAgency="FSC"
+                onSelectAgency={() => {}}
+            />
+        )
+        const fscButton = screen.getByText('금융위')
+        expect(fscButton.className).toContain('bg-gray-900')
+        const allButton = screen.getByText('전체')
+        expect(allButton.className).not.toContain('bg-gray-900')
+    })
+
+    it('applies active class to "전체" when selectedAgency is null', async () => {
+        const AgencyChipBar = (await import('@/components/dashboard/AgencyChipBar')).default
+        render(
+            <AgencyChipBar
+                currentCategory="press_release"
+                selectedAgency={null}
+                onSelectAgency={() => {}}
+            />
+        )
+        const allButton = screen.getByText('전체')
+        expect(allButton.className).toContain('bg-gray-900')
     })
 })
