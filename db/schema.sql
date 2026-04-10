@@ -9,7 +9,7 @@
 -- Create the articles table
 CREATE TABLE IF NOT EXISTS public.articles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    agency TEXT NOT NULL CHECK (agency IN ('FSC', 'FSS', 'MOEF', 'BOK', 'MAFRA')),
+    agency TEXT NOT NULL CHECK (agency IN ('FSC', 'FSS', 'MOEF', 'BOK', 'FSS_REG', 'FSC_REG', 'FSS_REG_INFO', 'FSS_SANCTION', 'FSS_MGMT_NOTICE', 'MAFRA')),
     title TEXT NOT NULL,
     link TEXT NOT NULL UNIQUE,
     published_at TIMESTAMPTZ NOT NULL,
