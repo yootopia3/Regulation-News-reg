@@ -118,7 +118,13 @@ export default function DashboardV2() {
             filtered = filtered.filter(a => a.agency === selectedAgency)
         }
 
-        // B. Filter by Search Query
+        // B. Filter out low-score articles (star_rating or importance_score <= 2)
+        filtered = filtered.filter(a => {
+            const score = a.star_rating ?? a.analysis_result?.importance_score ?? 3
+            return score > 2
+        })
+
+        // C. Filter by Search Query
         if (searchQuery) {
             const lowerQ = searchQuery.toLowerCase()
             filtered = filtered.filter(a =>
