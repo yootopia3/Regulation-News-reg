@@ -28,4 +28,17 @@ export const sanctionAgencyNames: Record<string, string> = {
   'FSS_MGMT_NOTICE': '경영유의사항',
 }
 
+export const chipLabels: Record<string, string> = {
+  MOEF: '기재부',
+  FSC: '금융위',
+  FSS: '금감원',
+  BOK: '한은',
+  MAFRA: '농식품부',
+  FSC_REG: '금융위',
+  FSS_REG: '금감원(세칙)',
+  FSS_REG_INFO: '금감원(제개정)',
+  FSS_SANCTION: '제재',
+  FSS_MGMT_NOTICE: '경영유의',
+}
+
 export type DashboardCategory = 'press_release' | 'regulation_notice' | 'sanction_notice'
