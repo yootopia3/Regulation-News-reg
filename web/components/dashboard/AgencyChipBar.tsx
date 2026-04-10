@@ -29,28 +29,26 @@ export default function AgencyChipBar({ currentCategory, selectedAgency, onSelec
         }
     }
 
-    const activeClass = 'bg-indigo-500/15 text-indigo-700 ring-1 ring-indigo-200'
-    const inactiveClass = 'text-gray-500 hover:text-gray-900 bg-transparent'
+    const activeClass = 'text-gray-900 font-bold border-b-2 border-gray-900'
+    const inactiveClass = 'text-gray-400 font-medium hover:text-gray-600'
 
     return (
-        <div className="sticky top-[88px] z-40 h-[52px] bg-[#F5F7FA]/95 backdrop-blur-sm flex items-center justify-center px-4">
-            <div className="bg-white p-1 rounded-full flex items-center border border-gray-200 shadow-sm overflow-x-auto scrollbar-hide">
+        <div className="sticky top-[88px] z-40 h-[44px] bg-white border-b border-gray-200 flex items-center px-4 gap-5 overflow-x-auto scrollbar-hide">
+            <button
+                onClick={() => handleChipClick(null)}
+                className={`whitespace-nowrap pb-2 pt-1 text-sm transition-all duration-200 flex-shrink-0 ${selectedAgency === null ? activeClass : inactiveClass}`}
+            >
+                전체
+            </button>
+            {agencies.map(code => (
                 <button
-                    onClick={() => handleChipClick(null)}
-                    className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold transition-all duration-200 flex-shrink-0 ${selectedAgency === null ? activeClass : inactiveClass}`}
+                    key={code}
+                    onClick={() => handleChipClick(code)}
+                    className={`whitespace-nowrap pb-2 pt-1 text-sm transition-all duration-200 flex-shrink-0 ${selectedAgency === code ? activeClass : inactiveClass}`}
                 >
-                    전체
+                    {chipLabels[code] ?? code}
                 </button>
-                {agencies.map(code => (
-                    <button
-                        key={code}
-                        onClick={() => handleChipClick(code)}
-                        className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold transition-all duration-200 flex-shrink-0 ${selectedAgency === code ? activeClass : inactiveClass}`}
-                    >
-                        {chipLabels[code] ?? code}
-                    </button>
-                ))}
-            </div>
+            ))}
         </div>
     )
 }
