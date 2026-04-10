@@ -138,9 +138,9 @@ describe('AgencyChipBar active state', () => {
             />
         )
         const fscButton = screen.getByText('금융위')
-        expect(fscButton.className).toContain('bg-gray-900')
+        expect(fscButton.className).toContain('bg-indigo-500/15')
         const allButton = screen.getByText('전체')
-        expect(allButton.className).not.toContain('bg-gray-900')
+        expect(allButton.className).not.toContain('bg-indigo-500/15')
     })
 
     it('applies active class to "전체" when selectedAgency is null', async () => {
@@ -153,6 +153,6 @@ describe('AgencyChipBar active state', () => {
             />
         )
         const allButton = screen.getByText('전체')
-        expect(allButton.className).toContain('bg-gray-900')
+        expect(allButton.className).toContain('bg-indigo-500/15')
     })
 })
