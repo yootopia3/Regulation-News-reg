@@ -43,6 +43,7 @@ export default function NewsCard({ article, onGenerateReport }: NewsCardProps) {
         if (agency.includes('FSC')) return 'bg-green-100 text-green-700'
         if (agency.includes('BOK')) return 'bg-purple-100 text-purple-700'
         if (agency.includes('MOEF')) return 'bg-orange-100 text-orange-700'
+        if (agency.includes('MAFRA')) return 'bg-emerald-100 text-emerald-700'
         return 'bg-gray-100 text-gray-600'
     }
 
@@ -58,7 +59,8 @@ export default function NewsCard({ article, onGenerateReport }: NewsCardProps) {
             'FSC': '금융위',
             'FSS': '금감원',
             'MOEF': '기재부',
-            'BOK': '한은'
+            'BOK': '한은',
+            'MAFRA': '농식품부'
         }
         return map[code] || code
     }

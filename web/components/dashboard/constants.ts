@@ -1,5 +1,5 @@
 // Category codes used throughout the dashboard sidebar/feed.
-export const pressAgencies = ['MOEF', 'FSC', 'FSS', 'BOK'] as const
+export const pressAgencies = ['MOEF', 'FSC', 'FSS', 'BOK', 'MAFRA'] as const
 export const regulationAgencies = ['FSC_REG', 'FSS_REG', 'FSS_REG_INFO'] as const
 export const sanctionAgencies = ['FSS_SANCTION', 'FSS_MGMT_NOTICE'] as const
 
@@ -14,6 +14,7 @@ export const agencyNames: Record<string, string> = {
   'FSC': '금융위원회',
   'FSS': '금융감독원',
   'BOK': '한국은행',
+  'MAFRA': '농식품부',
 }
 
 export const regAgencyNames: Record<string, string> = {
