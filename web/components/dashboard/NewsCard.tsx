@@ -2,6 +2,7 @@
 import React, { useState } from 'react'
 import { ChevronDown, ChevronUp, FileText, ExternalLink, Sparkles } from 'lucide-react'
 import StarRating from './StarRating'
+import { getMafraDisplayLink } from '@/utils/mafraLink'
 
 // Type definition (Match DB schema mostly)
 export interface Article {
@@ -79,13 +80,6 @@ export default function NewsCard({ article, onGenerateReport }: NewsCardProps) {
     });
 
     const subCat = getSubCategory(article.agency);
-
-    // MAFRA /bbs/ URLs lack site navigation; rewrite to wrapper URL for proper mobile rendering.
-    const getDisplayLink = (link: string, agency: string) => {
-        if (agency !== 'MAFRA') return link
-        const match = link.match(/\/bbs\/home\/792\/(\d+)\/artclView\.do/)
-        return match ? `https://www.mafra.go.kr/home/5109/subview.do?artcl_no=${match[1]}` : link
-    }
 
     return (
         <div
@@ -166,7 +160,7 @@ export default function NewsCard({ article, onGenerateReport }: NewsCardProps) {
                         {/* Actions */}
                         <div className="grid grid-cols-2 gap-2 mt-2">
                             <a
-                                href={getDisplayLink(article.link, article.agency)}
+                                href={getMafraDisplayLink(article.link, article.agency)}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold transition-all hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300 hover:shadow-sm active:scale-95 group"
