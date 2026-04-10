@@ -138,6 +138,17 @@
         "content": ".bd-view",
         "pdf_link": "a[href*='hpdownload']"
       }
+    },
+    {
+      "code": "MAFRA",
+      "name": "농식품부 (MAFRA)",
+      "category": "press_release",
+      "collection_method": "rss",
+      "url": "https://www.mafra.go.kr/bbs/home/792/rssList.do?row=50",
+      "base_url": "https://www.mafra.go.kr",
+      "selector": {
+        "content": ".view_contents"
+      }
     }
   ]
 }
