@@ -119,6 +119,8 @@ def fetch_rss_feed(agency: Dict) -> List[Dict]:
         # Extract fields
         title = entry.get('title', '').strip()
         link = entry.get('link', '').strip()
+        if link.startswith('http://'):
+            link = 'https://' + link[7:]
         
         # Date parsing - try 'published' first, then 'updated' as fallback
         published = entry.get('published', '') or entry.get('updated', '')
