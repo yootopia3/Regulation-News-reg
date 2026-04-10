@@ -41,7 +41,7 @@ export default function DateSection({ dateTitle, articles, onGenerateReport, def
             {/* Sticky Date Header (Clickable Accordion - Card Style) */}
             <div
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="sticky top-28 z-30 mb-3 cursor-pointer select-none group"
+                className="sticky top-[140px] z-30 mb-3 cursor-pointer select-none group"
             >
                 <div className={`
                     relative flex items-center justify-between px-6 py-4 
