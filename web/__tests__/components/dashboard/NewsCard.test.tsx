@@ -25,19 +25,19 @@ function renderCard(article: Partial<Article> = {}) {
 }
 
 describe('NewsCard time display', () => {
-    it('shows KST HH:mm without 수집 label for source rows', () => {
+    it('shows KST HH:mm for source rows', () => {
         renderCard({ published_at_source: 'source' })
 
         expect(screen.getByText('09:05')).toBeInTheDocument()
         expect(screen.queryByText('수집')).not.toBeInTheDocument()
     })
 
-    it('shows created_at KST HH:mm and 수집 label for collected fallback rows', () => {
+    it('shows created_at KST HH:mm for collected fallback rows without a source label', () => {
         renderCard({ published_at_source: 'collected_fallback' })
 
         expect(screen.getByText('12:15')).toBeInTheDocument()
         expect(screen.queryByText('09:05')).not.toBeInTheDocument()
-        expect(screen.getByText('수집')).toBeInTheDocument()
+        expect(screen.queryByText('수집')).not.toBeInTheDocument()
     })
 
     it('uses published_at KST HH:mm for null or missing published_at_source rows with a source time', () => {
@@ -49,7 +49,7 @@ describe('NewsCard time display', () => {
         expect(screen.getByText('09:05')).toBeInTheDocument()
     })
 
-    it('uses created_at and 수집 label for legacy rows whose published_at is KST midnight', () => {
+    it('uses created_at for legacy rows whose published_at is KST midnight', () => {
         renderCard({
             published_at: '2026-05-03T15:00:00.000Z',
             created_at: '2026-05-04T03:15:00.000Z',
@@ -58,7 +58,7 @@ describe('NewsCard time display', () => {
 
         expect(screen.getByText('12:15')).toBeInTheDocument()
         expect(screen.queryByText('00:00')).not.toBeInTheDocument()
-        expect(screen.getByText('수집')).toBeInTheDocument()
+        expect(screen.queryByText('수집')).not.toBeInTheDocument()
     })
 
     it('keeps NEW badge tied to article.isNew', () => {
@@ -67,7 +67,7 @@ describe('NewsCard time display', () => {
         expect(screen.getByText('NEW')).toBeInTheDocument()
     })
 
-    it('does not render invalid time text, placeholder, or 수집 label for invalid dates', () => {
+    it('does not render invalid time text, placeholder, or source label for invalid dates', () => {
         renderCard({
             title: '날짜가 없어도 렌더링되는 기사',
             published_at: '',
@@ -104,8 +104,7 @@ describe('NewsCard mobile layout', () => {
 
         const children = Array.from(right.children)
         expect(children[0]).toHaveTextContent('12:15')
-        expect(children[1]).toHaveTextContent('수집')
-        expect(children[2].querySelectorAll('svg')).toHaveLength(5)
-        expect(children[3].tagName.toLowerCase()).toBe('svg')
+        expect(children[1].querySelectorAll('svg')).toHaveLength(5)
+        expect(children[2].tagName.toLowerCase()).toBe('svg')
     })
 })

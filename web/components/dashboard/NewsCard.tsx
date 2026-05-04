@@ -129,11 +129,6 @@ export default function NewsCard({ article, onGenerateReport }: NewsCardProps) {
                                 {displayTime.timeText}
                             </span>
                         )}
-                        {displayTime.label === '수집' && (
-                            <span className="text-[10px] font-bold text-gray-400 leading-none">
-                                수집
-                            </span>
-                        )}
                         <StarRating score={score} size={12} />
                         {isExpanded ? <ChevronUp size={16} className="text-gray-300" /> : <ChevronDown size={16} className="text-gray-300" />}
                     </div>

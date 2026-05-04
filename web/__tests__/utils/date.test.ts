@@ -21,19 +21,17 @@ describe('getArticleDisplayTime', () => {
             published_at_source: 'source',
         })).toEqual({
             timeText: '10:30',
-            label: null,
             source: 'published',
         })
     })
 
-    it('uses created_at and returns 수집 label for collected fallback rows', () => {
+    it('uses created_at for collected fallback rows', () => {
         expect(getArticleDisplayTime({
             published_at: '2026-05-04T01:30:00.000Z',
             created_at: '2026-05-04T03:15:00.000Z',
             published_at_source: 'collected_fallback',
         })).toEqual({
             timeText: '12:15',
-            label: '수집',
             source: 'collected',
         })
     })
@@ -45,7 +43,6 @@ describe('getArticleDisplayTime', () => {
             published_at_source: 'collected_fallback',
         })).toEqual({
             timeText: '13:20',
-            label: '수집',
             source: 'collected',
         })
     })
@@ -57,7 +54,6 @@ describe('getArticleDisplayTime', () => {
             published_at_source: 'collected_fallback',
         })).toEqual({
             timeText: '',
-            label: null,
             source: 'unknown',
         })
     })
@@ -69,7 +65,6 @@ describe('getArticleDisplayTime', () => {
             published_at_source: null,
         })).toEqual({
             timeText: '12:00',
-            label: '수집',
             source: 'collected',
         })
     })
@@ -81,7 +76,6 @@ describe('getArticleDisplayTime', () => {
             published_at_source: 'unexpected',
         })).toEqual({
             timeText: '14:45',
-            label: null,
             source: 'published',
         })
     })

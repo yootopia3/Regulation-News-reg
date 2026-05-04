@@ -14,7 +14,6 @@ export type PublishedAtSource = 'source' | 'collected_fallback' | null | undefin
 
 export type ArticleDisplayTime = {
     timeText: string
-    label: '발행' | '수집' | null
     source: 'published' | 'collected' | 'unknown'
 }
 
@@ -57,7 +56,6 @@ export function formatKSTTime(dateStr?: string | null): string {
 function unknownDisplayTime(): ArticleDisplayTime {
     return {
         timeText: '',
-        label: null,
         source: 'unknown',
     }
 }
@@ -68,7 +66,6 @@ function publishedDisplayTime(dateStr?: string | null): ArticleDisplayTime {
 
     return {
         timeText,
-        label: null,
         source: 'published',
     }
 }
@@ -82,7 +79,6 @@ function collectedDisplayTime(article: {
 
     return {
         timeText,
-        label: '수집',
         source: 'collected',
     }
 }
