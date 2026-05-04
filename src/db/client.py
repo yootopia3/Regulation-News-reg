@@ -10,7 +10,12 @@ from typing import Any, Optional
 
 from supabase import create_client, Client
 
-from src.config.settings import load_env, get_supabase_url, get_supabase_anon_key
+from src.config.settings import (
+    load_env,
+    get_supabase_url,
+    get_supabase_anon_key,
+    get_supabase_service_role_key,
+)
 
 _client: Optional[Client] = None
 
@@ -21,7 +26,7 @@ def get_supabase_client() -> Client:
     if _client is None:
         load_env()
         url = get_supabase_url()
-        key = get_supabase_anon_key()
+        key = get_supabase_service_role_key() or get_supabase_anon_key()
         _client = create_client(url, key)
     return _client
 

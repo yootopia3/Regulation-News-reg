@@ -89,6 +89,20 @@ def test_is_gemini_enabled_false_values(monkeypatch):
         assert is_gemini_enabled() is False
 
 
+def test_get_supabase_service_role_key_optional(monkeypatch):
+    monkeypatch.delenv("SUPABASE_SERVICE_ROLE_KEY", raising=False)
+    from src.config.settings import get_supabase_service_role_key
+
+    assert get_supabase_service_role_key() is None
+
+
+def test_get_supabase_service_role_key_env_override(monkeypatch):
+    monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "service-role-test")
+    from src.config.settings import get_supabase_service_role_key
+
+    assert get_supabase_service_role_key() == "service-role-test"
+
+
 def test_getters_honor_load_env_called_after_import(tmp_path):
     """Regression test for the Round 2 follow-up fix.
 

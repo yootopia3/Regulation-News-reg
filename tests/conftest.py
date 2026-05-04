@@ -14,5 +14,10 @@ sys.path.insert(0, str(PROJECT_ROOT))
 # Defensive env isolation: even though no test in this suite reads secrets,
 # scrub them at import time so an accidental network/SDK call cannot
 # authenticate using developer-machine credentials.
-for _var in ("GEMINI_API_KEY", "SUPABASE_URL", "SUPABASE_ANON_KEY"):
+for _var in (
+    "GEMINI_API_KEY",
+    "SUPABASE_URL",
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+):
     os.environ.pop(_var, None)

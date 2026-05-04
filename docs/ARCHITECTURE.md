@@ -158,8 +158,10 @@ per-agency TLS verify 정책을 단일 진실원(`config/agencies.json`)에서 �
 ### 4.2 Supabase Client (`src/db/client.py`)
 - **Responsibility**: Singleton connection to PostgreSQL.
 - **Connection Logic**:
-    - **v1.0 (Prod)**: Uses `SUPABASE_URL` & `SUPABASE_ANON_KEY`.
-    - **v2.0 (Dev/Preview)**: Uses `NEXT_PUBLIC_SUPABASE_URL_V2` & `NEXT_PUBLIC_SUPABASE_ANON_KEY_V2` if `NEXT_PUBLIC_USE_V2_DB=true`.
+    - Backend collectors use `SUPABASE_URL`.
+    - Write-capable backend paths prefer `SUPABASE_SERVICE_ROLE_KEY`.
+    - If `SUPABASE_SERVICE_ROLE_KEY` is absent, the client falls back to `SUPABASE_ANON_KEY` for local/development compatibility. Hardened production RLS does not allow anon writes.
+    - Frontend dashboard clients use the `NEXT_PUBLIC_*` Supabase URL/key pair through `web/utils/supabase/client.ts`.
 
 ### 4.3 Environment Configuration (Secrets Map)
 *Updated for v2.0 Dual-Environment Setup*
@@ -168,6 +170,8 @@ per-agency TLS verify 정책을 단일 진실원(`config/agencies.json`)에서 �
 |---------------|---------|-----------------------|
 | `NEXT_PUBLIC_SUPABASE_URL_V2` | v2 DB Endpoint | **Github Secrets** (Actions), **Vercel** (Preview) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY_V2` | v2 DB API Key | **Github Secrets** (Actions), **Vercel** (Preview) |
+| `SUPABASE_SERVICE_ROLE_KEY_V2` | v2 service role key mapped to `SUPABASE_SERVICE_ROLE_KEY` in the collector workflow | **Github Secrets** (Actions) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Backend/server write key used by Python collectors and `/api/report` | **Vercel** (Web), Local `.env`, mapped from `SUPABASE_SERVICE_ROLE_KEY_V2` in Actions |
 | `NEXT_PUBLIC_USE_V2_DB` | v2 Switch Flag (`true`) | **Vercel** (Preview), Local `.env` |
 | `ENV_TYPE` | Backend Branch Flag (`v2`) | **Github Actions** (`news_collector_v2.yml`) |
 | `GEMINI_ENABLED` | Enables Gemini analysis/reporting only when explicitly true | **Github Actions**, **Vercel**, Local `.env` |

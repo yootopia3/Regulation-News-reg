@@ -1,72 +1,131 @@
--- STALE WARNING: This file may not match the live production database.
--- The application code currently writes a `category` field that is not
--- declared here. Verify against the live database before applying.
+-- MarketPulse Regulation News v2.0 schema setup reference.
+-- 비파괴 초기 구성용 스크립트다. 운영 DB 변경은 db/migrations의 개별
+-- migration을 검토하고 적용한다.
 
--- MarketPulse Regulation News v2.0 Schema Setup
--- Run this in Supabase SQL Editor
+CREATE EXTENSION IF NOT EXISTS vector;
 
--- 0. Install required extensions
-create extension if not exists vector;
+CREATE TABLE IF NOT EXISTS public.articles (
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    title text NOT NULL,
+    link text NOT NULL,
+    agency text NOT NULL,
+    content text,
+    published_at timestamp with time zone NOT NULL,
+    published_at_source text,
+    analysis_result jsonb,
+    embedding vector(1536),
+    view_count integer NOT NULL DEFAULT 0,
+    star_rating integer CHECK (star_rating >= 1 AND star_rating <= 5),
+    is_trending boolean NOT NULL DEFAULT false,
+    category character varying(50) DEFAULT 'press_release',
 
--- DROP existing table to apply clean schema (CAUTION: Deletes all v2 data)
-drop table if exists public.articles;
-
--- 1. Create articles table
-create table if not exists public.articles (
-    id uuid not null default gen_random_uuid(),
-    created_at timestamp with time zone not null default now(),
-    title text not null,
-    link text not null,
-    agency text not null,
-    content text null,
-    published_at timestamp with time zone not null,
-    published_at_source text null,
-    analysis_result jsonb null,
-    embedding vector(1536) null,
-    
-    -- v2.0 New Columns
-    view_count integer not null default 0,
-    star_rating integer null check (star_rating >= 1 and star_rating <= 5),
-    is_trending boolean not null default false,
-
-    constraint articles_pkey primary key (id),
-    constraint articles_link_key unique (link),
-    constraint articles_published_at_source_check check (
-        published_at_source is null
-        or published_at_source in ('source', 'collected_fallback')
+    CONSTRAINT articles_pkey PRIMARY KEY (id),
+    CONSTRAINT articles_link_key UNIQUE (link),
+    CONSTRAINT articles_agency_check CHECK (
+        agency IN (
+            'FSC',
+            'FSS',
+            'MOEF',
+            'BOK',
+            'FSS_REG',
+            'FSC_REG',
+            'FSS_REG_INFO',
+            'FSS_SANCTION',
+            'FSS_MGMT_NOTICE',
+            'MAFRA'
+        )
+    ),
+    CONSTRAINT articles_published_at_source_check CHECK (
+        published_at_source IS NULL
+        OR published_at_source IN ('source', 'collected_fallback')
     )
 );
 
-comment on column public.articles.published_at_source is 'source = 실제 발행시각, collected_fallback = 수집시각 fallback';
+COMMENT ON TABLE public.articles IS 'Stores government press releases, notices, source content, and analysis results.';
+COMMENT ON COLUMN public.articles.category IS 'Content type used by the dashboard: press_release, regulation_notice, or sanction_notice.';
+COMMENT ON COLUMN public.articles.content IS 'Original source body for backend/report generation. The dashboard client must not select this column.';
+COMMENT ON COLUMN public.articles.analysis_result IS 'JSONB structure containing summaries, scores, keywords, cached reports, and related analysis fields.';
+COMMENT ON COLUMN public.articles.published_at_source IS 'source = 실제 발행시각, collected_fallback = 수집시각 fallback';
+COMMENT ON COLUMN public.articles.embedding IS 'Legacy nullable pgvector placeholder; current application code does not write embeddings.';
 
--- 2. Create Indexes
-create index if not exists articles_agency_idx on public.articles (agency);
-create index if not exists articles_published_at_idx on public.articles (published_at desc);
+CREATE INDEX IF NOT EXISTS articles_agency_idx
+ON public.articles (agency);
 
--- 3. Enable RLS (Row Level Security) and Policies
-alter table public.articles enable row level security;
+CREATE INDEX IF NOT EXISTS articles_published_at_idx
+ON public.articles (published_at DESC);
 
--- Allow anonymous access (anon key) to READ all articles
-create policy "Enable read access for all users"
-on public.articles
-for select
-to anon
-using (true);
+CREATE INDEX IF NOT EXISTS idx_articles_category
+ON public.articles (category);
 
--- Allow anonymous access to UPDATE view_count (for trending feature)
--- Note: In production, this might need tighter control, but for v2 dev it's fine.
-create policy "Enable update for view_count"
-on public.articles
-for update
-to anon
-using (true)
-with check (true);
+ALTER TABLE public.articles ENABLE ROW LEVEL SECURITY;
 
--- Allow anonymous access to INSERT (for initial seeding & manual registration if needed)
-create policy "Enable insert for all users"
-on public.articles
-for insert
-to anon
-with check (true);
+DROP POLICY IF EXISTS "Enable insert for all users" ON public.articles;
+DROP POLICY IF EXISTS "Enable update for view_count" ON public.articles;
 
--- Note: INSERT/DELETE are restricted to service_role (backend only) by default.
+DO $$
+DECLARE
+    policy_record record;
+BEGIN
+    FOR policy_record IN
+        SELECT pol.polname
+        FROM pg_policy pol
+        JOIN pg_class cls ON cls.oid = pol.polrelid
+        JOIN pg_namespace nsp ON nsp.oid = cls.relnamespace
+        WHERE nsp.nspname = 'public'
+          AND cls.relname = 'articles'
+          AND pol.polcmd IN ('a', 'w', 'd', '*')
+          AND (
+              0 = ANY(pol.polroles)
+              OR EXISTS (
+                  SELECT 1
+                  FROM unnest(pol.polroles) AS role_oid(role_id)
+                  JOIN pg_roles rol ON rol.oid = role_oid.role_id
+                  WHERE rol.rolname IN ('anon', 'authenticated')
+              )
+          )
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS %I ON public.articles', policy_record.polname);
+    END LOOP;
+END $$;
+
+DO $$
+DECLARE
+    policy_record record;
+BEGIN
+    FOR policy_record IN
+        SELECT pol.polname
+        FROM pg_policy pol
+        JOIN pg_class cls ON cls.oid = pol.polrelid
+        JOIN pg_namespace nsp ON nsp.oid = cls.relnamespace
+        WHERE nsp.nspname = 'public'
+          AND cls.relname = 'articles'
+          AND pol.polcmd = 'r'
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS %I ON public.articles', policy_record.polname);
+    END LOOP;
+END $$;
+
+CREATE POLICY "articles_public_select"
+ON public.articles
+FOR SELECT
+TO anon, authenticated
+USING (true);
+
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+REVOKE ALL PRIVILEGES ON TABLE public.articles FROM PUBLIC;
+REVOKE ALL PRIVILEGES ON TABLE public.articles FROM anon, authenticated;
+GRANT SELECT (
+    id,
+    title,
+    agency,
+    category,
+    published_at,
+    published_at_source,
+    created_at,
+    link,
+    analysis_result,
+    view_count,
+    star_rating
+) ON TABLE public.articles TO anon, authenticated;
+GRANT ALL PRIVILEGES ON TABLE public.articles TO service_role;

@@ -110,6 +110,10 @@ def get_supabase_url() -> str:
     return _require("SUPABASE_URL")
 
 
+def get_supabase_service_role_key() -> Optional[str]:
+    return os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+
+
 def get_supabase_anon_key() -> str:
     return _require("SUPABASE_ANON_KEY")
 

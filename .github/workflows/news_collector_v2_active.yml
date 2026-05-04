@@ -28,6 +28,7 @@ jobs:
     - name: Run Collector (v2 Environment)
       env:
         SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL_V2 }}
+        SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_V2 }}
         SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY_V2 }}
         GEMINI_ENABLED: "false"
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}

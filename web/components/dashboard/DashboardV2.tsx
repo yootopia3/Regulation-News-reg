@@ -19,6 +19,9 @@ import {
 } from './constants'
 import { useHasNewByCategory } from './useHasNewByCategory'
 
+const DASHBOARD_ARTICLE_COLUMNS =
+    'id,title,agency,category,published_at,published_at_source,created_at,link,analysis_result,view_count,star_rating'
+
 export default function DashboardV2() {
     const [articles, setArticles] = useState<Article[]>([])
     const [loading, setLoading] = useState(true)
@@ -46,21 +49,21 @@ export default function DashboardV2() {
         const [pressResult, regulationResult, sanctionResult] = await Promise.all([
             supabase
                 .from('articles')
-                .select('*')
+                .select(DASHBOARD_ARTICLE_COLUMNS)
                 .in('agency', pressAgencies)
                 .or('category.eq.press_release,category.is.null')
                 .order('published_at', { ascending: false })
                 .limit(1000),
             supabase
                 .from('articles')
-                .select('*')
+                .select(DASHBOARD_ARTICLE_COLUMNS)
                 .in('agency', regulationAgencies)
                 .eq('category', 'regulation_notice')
                 .order('published_at', { ascending: false })
                 .limit(1000),
             supabase
                 .from('articles')
-                .select('*')
+                .select(DASHBOARD_ARTICLE_COLUMNS)
                 .in('agency', sanctionAgencies)
                 .eq('category', 'sanction_notice')
                 .order('published_at', { ascending: false })
