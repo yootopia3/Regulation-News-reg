@@ -1,0 +1,26 @@
+# Local secrets
+.env
+.env.*
+web/.env.local
+web/.env.*.local
+
+# Local dependency/build outputs
+node_modules/
+web/node_modules/
+.next/
+web/.next/
+venv/
+.venv/
+.pytest_cache/
+
+# Repository metadata and local agent artifacts
+.git/
+.cross-review/
+.worktrees/
+.claude/
+.omc/
+
+# Non-deploy project assets
+docs/archive/
+logs/
+tasks/*/phase*-output.json
