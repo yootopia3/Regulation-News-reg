@@ -26,7 +26,9 @@
     {
       "phase": 3,
       "name": "dashboard-fetch",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-05-04T16:19:24+0900",
+      "completed_at": "2026-05-04T16:21:59+0900"
     },
     {
       "phase": 4,

@@ -3,7 +3,6 @@
 
 import React, { useEffect, useState, useMemo } from 'react'
 import { toKSTDate } from '@/utils/date' // Use new utils
-import { supabase } from '@/utils/supabase/client'
 import { getLastVisitTime, updateLastVisitTime, isArticleNew } from '@/utils/newArticleTracker'
 import Header from './Header'
 import DateSection from './DateSection'
@@ -11,16 +10,8 @@ import ReportModal from '@/components/ReportModal' // Reuse existing modal
 import NewsCard, { Article } from './NewsCard'
 import Sidebar from './Sidebar'
 import AgencyChipBar from './AgencyChipBar'
-import {
-    pressAgencies,
-    regulationAgencies,
-    sanctionAgencies,
-    DashboardCategory,
-} from './constants'
+import { DashboardCategory } from './constants'
 import { useHasNewByCategory } from './useHasNewByCategory'
-
-const DASHBOARD_ARTICLE_COLUMNS =
-    'id,title,agency,category,published_at,published_at_source,created_at,link,analysis_result,view_count,star_rating'
 
 export default function DashboardV2() {
     const [articles, setArticles] = useState<Article[]>([])
@@ -46,47 +37,23 @@ export default function DashboardV2() {
     const fetchArticles = React.useCallback(async () => {
         setLoading(true)
 
-        const [pressResult, regulationResult, sanctionResult] = await Promise.all([
-            supabase
-                .from('articles')
-                .select(DASHBOARD_ARTICLE_COLUMNS)
-                .in('agency', pressAgencies)
-                .or('category.eq.press_release,category.is.null')
-                .order('published_at', { ascending: false })
-                .limit(1000),
-            supabase
-                .from('articles')
-                .select(DASHBOARD_ARTICLE_COLUMNS)
-                .in('agency', regulationAgencies)
-                .eq('category', 'regulation_notice')
-                .order('published_at', { ascending: false })
-                .limit(1000),
-            supabase
-                .from('articles')
-                .select(DASHBOARD_ARTICLE_COLUMNS)
-                .in('agency', sanctionAgencies)
-                .eq('category', 'sanction_notice')
-                .order('published_at', { ascending: false })
-                .limit(1000)
-        ])
+        try {
+            const res = await fetch('/api/articles')
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({} as { error?: string }))
+                console.error('Error fetching articles:', errorData.error || `HTTP ${res.status}`)
+                setArticles([])
+                return
+            }
 
-        const errors = [pressResult.error, regulationResult.error, sanctionResult.error].filter(Boolean)
-        if (errors.length > 0) {
-            console.error('Error fetching articles:', errors)
+            const data = await res.json() as { articles?: Article[] | null }
+            setArticles(data.articles || [])
+        } catch (error) {
+            console.error('Error fetching articles:', error)
+            setArticles([])
+        } finally {
+            setLoading(false)
         }
-
-        const mergedArticles = [
-            ...(pressResult.data || []),
-            ...(regulationResult.data || []),
-            ...(sanctionResult.data || [])
-        ]
-
-        const dedupedArticles = Array.from(
-            new Map(mergedArticles.map(article => [article.id, article])).values()
-        ).sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime())
-
-        setArticles(dedupedArticles)
-        setLoading(false)
     }, [])
 
     // 1. Fetch Data & Track Visit

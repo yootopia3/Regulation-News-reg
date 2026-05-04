@@ -1,27 +1,5 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
-
-vi.mock('@/utils/supabase/client', () => {
-    type SupabaseChain = {
-        from: ReturnType<typeof vi.fn>
-        select: ReturnType<typeof vi.fn>
-        in: ReturnType<typeof vi.fn>
-        eq: ReturnType<typeof vi.fn>
-        or: ReturnType<typeof vi.fn>
-        order: ReturnType<typeof vi.fn>
-        limit: ReturnType<typeof vi.fn>
-    }
-
-    const chain = {} as SupabaseChain
-    chain.from = vi.fn(() => chain)
-    chain.select = vi.fn(() => chain)
-    chain.in = vi.fn(() => chain)
-    chain.eq = vi.fn(() => chain)
-    chain.or = vi.fn(() => chain)
-    chain.order = vi.fn(() => chain)
-    chain.limit = vi.fn(() => Promise.resolve({ data: [], error: null }))
-    return { supabase: chain }
-})
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { cleanup, render, screen, waitFor } from '@testing-library/react'
 
 vi.mock('@/utils/newArticleTracker', () => ({
     getLastVisitTime: vi.fn(() => null),
@@ -34,6 +12,23 @@ vi.mock('@/components/ReportModal', () => ({
     default: () => null,
 }))
 
+let fetchMock: ReturnType<typeof vi.fn>
+
+beforeEach(() => {
+    fetchMock = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ articles: [] }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+})
+
+afterEach(() => {
+    cleanup()
+    vi.unstubAllGlobals()
+    vi.clearAllMocks()
+})
+
 describe('DashboardV2', () => {
     it('renders empty state when no articles', async () => {
         const DashboardV2 = (await import('@/components/dashboard/DashboardV2')).default
@@ -41,6 +36,7 @@ describe('DashboardV2', () => {
         await waitFor(() => {
             expect(screen.getByText('검색 결과가 없습니다.')).toBeInTheDocument()
         })
+        expect(fetchMock).toHaveBeenCalledWith('/api/articles')
     })
 })
 

@@ -10,19 +10,19 @@ export interface Article {
     id: string;
     title: string;
     agency: string;
-    category?: string; // 'press_release' | 'regulation_notice'
+    category?: string | null; // 'press_release' | 'regulation_notice'
     published_at: string;
     published_at_source?: 'source' | 'collected_fallback' | string | null;
-    created_at?: string;  // For NEW badge tracking
+    created_at?: string | null;  // For NEW badge tracking
     link: string;
     analysis_result?: {
         summary?: string[];
         importance_score?: number;
         risk_level?: string;
         keywords?: string[]; // Added for search filter
-    };
-    view_count?: number;
-    star_rating?: number; // Manual rating if any
+    } | null;
+    view_count?: number | null;
+    star_rating?: number | null; // Manual rating if any
     isNew?: boolean;  // Client-side flag for NEW badge
 }
 
