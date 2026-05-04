@@ -65,6 +65,13 @@ describe('proxy', () => {
       expect(body).toEqual({ error: 'unauthorized' })
     })
 
+    it('returns 401 JSON for /api/articles without a session', async () => {
+      verifySessionMock.mockResolvedValue(null)
+      const res = await proxy(makeRequest('http://localhost/api/articles'))
+      expect(res.status).toBe(401)
+      expect(await res.json()).toEqual({ error: 'unauthorized' })
+    })
+
     it('redirects (307) to /login for non-API routes when verifySession returns null', async () => {
       verifySessionMock.mockResolvedValue(null)
       const res = await proxy(makeRequest('http://localhost/dashboard'))
