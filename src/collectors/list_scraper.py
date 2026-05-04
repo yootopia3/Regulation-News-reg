@@ -10,6 +10,7 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 
 from src.config import settings
+from src.config.agency_codes import PublishedAtSource
 from src.config.agency_loader import get_ssl_verify
 from src.collectors import http
 from src.collectors.date_parser import KST, parse_date
@@ -115,6 +116,7 @@ def fetch_list_items(
                                 'title': title,
                                 'link': link,
                                 'published_at': pub_date.isoformat(),
+                                'published_at_source': PublishedAtSource.SOURCE.value,
                                 'agency': agency_config.get('code'),
                                 'category': agency_config.get('category', 'press_release')
                             })
@@ -125,6 +127,7 @@ def fetch_list_items(
                             'title': title,
                             'link': link,
                             'published_at': now_kst.isoformat(),
+                            'published_at_source': PublishedAtSource.COLLECTED_FALLBACK.value,
                             'agency': agency_config.get('code'),
                             'category': agency_config.get('category', 'press_release')
                         })

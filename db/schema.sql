@@ -13,9 +13,14 @@ CREATE TABLE IF NOT EXISTS public.articles (
     title TEXT NOT NULL,
     link TEXT NOT NULL UNIQUE,
     published_at TIMESTAMPTZ NOT NULL,
+    published_at_source TEXT,
     content TEXT, -- Original content from the scraper
     analysis_result JSONB, -- Gemini analysis result
-    created_at TIMESTAMPTZ DEFAULT now()
+    created_at TIMESTAMPTZ DEFAULT now(),
+    CONSTRAINT articles_published_at_source_check CHECK (
+        published_at_source IS NULL
+        OR published_at_source IN ('source', 'collected_fallback')
+    )
 );
 
 -- 1. Enable Row Level Security (RLS)
@@ -46,3 +51,4 @@ CREATE INDEX IF NOT EXISTS idx_articles_agency_published_at ON public.articles (
 
 COMMENT ON TABLE public.articles IS 'Stores government press releases and Gemini analysis results.';
 COMMENT ON COLUMN public.articles.analysis_result IS 'JSONB structure containing summary, impact analysis, etc.';
+COMMENT ON COLUMN public.articles.published_at_source IS 'source = 실제 발행시각, collected_fallback = 수집시각 fallback';

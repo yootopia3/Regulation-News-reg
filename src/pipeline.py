@@ -6,7 +6,8 @@ from typing import Dict, List, Optional, Set, Tuple
 from src.collectors.rss_parser import collect_all_rss
 from src.collectors.sanction_scraper import extract_sanction_key
 from src.collectors.scraper import ContentScraper
-from src.config.agency_codes import AgencyCode, ArticleCategory
+from src.collectors.date_parser import KST
+from src.config.agency_codes import AgencyCode, ArticleCategory, PublishedAtSource
 from src.config.agency_loader import get_sanction_codes, is_sanction_agency
 from src.db.client import get_supabase_client
 
@@ -284,11 +285,19 @@ class Pipeline:
                         )
                     analysis_result = {'pdf_url': pdf_url}
 
+            published_at = item.get('published_at')
+            if published_at:
+                published_at_source = item.get('published_at_source')
+            else:
+                published_at = datetime.now(KST).isoformat()
+                published_at_source = PublishedAtSource.COLLECTED_FALLBACK.value
+
             data = {
                 "agency": item['agency'],
                 "title": item['title'],
                 "link": item['link'],
-                "published_at": item.get('published_at') or datetime.now().isoformat(),
+                "published_at": published_at,
+                "published_at_source": published_at_source,
                 "content": item.get('content') or "",
                 "analysis_result": analysis_result,
                 "category": item.get('category', ArticleCategory.PRESS_RELEASE),

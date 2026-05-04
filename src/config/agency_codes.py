@@ -40,3 +40,11 @@ class ArticleCategory(str, Enum):
 
     def __str__(self) -> str:  # pragma: no cover - trivial
         return self.value
+
+
+class PublishedAtSource(str, Enum):
+    SOURCE = "source"
+    COLLECTED_FALLBACK = "collected_fallback"
+
+    def __str__(self) -> str:  # pragma: no cover - trivial
+        return self.value

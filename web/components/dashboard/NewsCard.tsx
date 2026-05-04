@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react'
-import { ChevronDown, ChevronUp, FileText, ExternalLink, Sparkles } from 'lucide-react'
+import { ChevronDown, ChevronUp, ExternalLink, Sparkles } from 'lucide-react'
 import StarRating from './StarRating'
 import { getMafraDisplayLink } from '@/utils/mafraLink'
+import { getArticleDisplayTime } from '@/utils/date'
 
 // Type definition (Match DB schema mostly)
 export interface Article {
@@ -11,6 +12,7 @@ export interface Article {
     agency: string;
     category?: string; // 'press_release' | 'regulation_notice'
     published_at: string;
+    published_at_source?: 'source' | 'collected_fallback' | string | null;
     created_at?: string;  // For NEW badge tracking
     link: string;
     analysis_result?: {
@@ -74,12 +76,8 @@ export default function NewsCard({ article, onGenerateReport }: NewsCardProps) {
         return null
     }
 
-    // Time display (HH:mm)
-    const timeStr = new Date(article.published_at).toLocaleTimeString('ko-KR', {
-        hour: '2-digit', minute: '2-digit', hour12: false
-    });
-
     const subCat = getSubCategory(article.agency);
+    const displayTime = getArticleDisplayTime(article);
 
     return (
         <div
@@ -96,8 +94,8 @@ export default function NewsCard({ article, onGenerateReport }: NewsCardProps) {
                 className="cursor-pointer"
             >
                 <div className="flex justify-between items-start gap-3">
-                    <div className="flex-1">
-                        {/* Meta: Agency & Category & Time */}
+                    <div data-testid="news-card-left" className="flex-1 min-w-0">
+                        {/* Meta: Agency & Category */}
                         <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                             <span className={`px-2 py-0.5 text-[11px] font-bold rounded-md ${getAgencyColor(article.agency)}`}>
                                 {getAgencyName(article.agency)}
@@ -110,10 +108,6 @@ export default function NewsCard({ article, onGenerateReport }: NewsCardProps) {
                                 </span>
                             )}
 
-                            <div className="w-0.5 h-2.5 bg-gray-200 rounded-full"></div>
-                            <span className="text-xs text-gray-400 font-medium tracking-tight">
-                                {timeStr}
-                            </span>
                             {/* NEW Badge */}
                             {article.isNew && (
                                 <span className="px-1.5 py-0.5 text-[10px] font-bold text-white bg-gradient-to-r from-red-500 to-orange-500 rounded-md animate-pulse">
@@ -128,8 +122,18 @@ export default function NewsCard({ article, onGenerateReport }: NewsCardProps) {
                         </h3>
                     </div>
 
-                    {/* Right: Score & Toggle Icon */}
-                    <div className="flex flex-col items-end gap-2 min-w-[60px]">
+                    {/* Right: Time, Score & Toggle Icon */}
+                    <div data-testid="news-card-right" className="flex flex-col items-end gap-2 shrink-0 min-w-[64px]">
+                        {displayTime.timeText && (
+                            <span data-testid="news-card-time" className="text-xs text-gray-400 font-medium tracking-tight leading-none">
+                                {displayTime.timeText}
+                            </span>
+                        )}
+                        {displayTime.label === '수집' && (
+                            <span className="text-[10px] font-bold text-gray-400 leading-none">
+                                수집
+                            </span>
+                        )}
                         <StarRating score={score} size={12} />
                         {isExpanded ? <ChevronUp size={16} className="text-gray-300" /> : <ChevronDown size={16} className="text-gray-300" />}
                     </div>

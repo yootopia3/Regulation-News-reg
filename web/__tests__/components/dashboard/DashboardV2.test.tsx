@@ -1,8 +1,18 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 
 vi.mock('@/utils/supabase/client', () => {
-    const chain: any = {}
+    type SupabaseChain = {
+        from: ReturnType<typeof vi.fn>
+        select: ReturnType<typeof vi.fn>
+        in: ReturnType<typeof vi.fn>
+        eq: ReturnType<typeof vi.fn>
+        or: ReturnType<typeof vi.fn>
+        order: ReturnType<typeof vi.fn>
+        limit: ReturnType<typeof vi.fn>
+    }
+
+    const chain = {} as SupabaseChain
     chain.from = vi.fn(() => chain)
     chain.select = vi.fn(() => chain)
     chain.in = vi.fn(() => chain)

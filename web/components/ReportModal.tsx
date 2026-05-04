@@ -3,7 +3,8 @@
 
 import { useState, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
-import { X, Download, Printer } from 'lucide-react'
+import type { Components } from 'react-markdown'
+import { X, Printer } from 'lucide-react'
 import type { Article } from './dashboard/NewsCard'
 
 interface ReportModalProps {
@@ -43,29 +44,30 @@ export default function ReportModal({ isOpen, onClose, article }: ReportModalPro
 
             const data = await res.json()
             setReport(data.report)
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(error)
-            setReport(`**Error:** ${error.message || 'Failed to generate report. Please try again.'}`)
+            const message = error instanceof Error ? error.message : 'Failed to generate report. Please try again.'
+            setReport(`**Error:** ${message}`)
         } finally {
             setLoading(false)
         }
     }
 
     // Custom Markdown Components for styling
-    const MarkdownComponents = {
-        h1: ({ node, ...props }: any) => <h1 className="text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-slate-200 mt-6 first:mt-0" {...props} />,
-        h2: ({ node, ...props }: any) => <h2 className="text-lg font-bold text-sky-700 mb-3 mt-6" {...props} />,
-        h3: ({ node, ...props }: any) => <h3 className="text-base font-bold text-slate-800 mb-2 mt-4" {...props} />,
-        p: ({ node, ...props }: any) => <p className="text-[15px] leading-7 text-slate-700 mb-3 break-words text-justify" {...props} />,
-        li: ({ node, children, ...props }: any) => (
+    const MarkdownComponents: Components = {
+        h1: (props) => <h1 className="text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-slate-200 mt-6 first:mt-0" {...props} />,
+        h2: (props) => <h2 className="text-lg font-bold text-sky-700 mb-3 mt-6" {...props} />,
+        h3: (props) => <h3 className="text-base font-bold text-slate-800 mb-2 mt-4" {...props} />,
+        p: (props) => <p className="text-[15px] leading-7 text-slate-700 mb-3 break-words text-justify" {...props} />,
+        li: ({ children, ...props }) => (
             <li className="text-[15px] leading-7 text-slate-700 mb-1 pl-1" {...props}>
                 <span className="mr-2 text-sky-500">•</span>
                 {children}
             </li>
         ),
-        ul: ({ node, ...props }: any) => <ul className="mb-4 pl-4" {...props} />,
-        strong: ({ node, ...props }: any) => <strong className="font-bold text-slate-900" {...props} />,
-        hr: ({ node, ...props }: any) => <hr className="my-6 border-slate-200" {...props} />,
+        ul: (props) => <ul className="mb-4 pl-4" {...props} />,
+        strong: (props) => <strong className="font-bold text-slate-900" {...props} />,
+        hr: (props) => <hr className="my-6 border-slate-200" {...props} />,
     }
 
     if (!isOpen || !article) return null

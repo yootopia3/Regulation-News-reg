@@ -7,6 +7,8 @@ from datetime import datetime, timezone, timedelta
 from email.utils import parsedate_to_datetime
 from typing import List, Dict, Optional
 
+from src.config.agency_codes import PublishedAtSource
+
 logger = logging.getLogger(__name__)
 
 # Warn if a feed's most recent entry is older than this many days. Operational
@@ -141,12 +143,18 @@ def fetch_rss_feed(agency: Dict) -> List[Dict]:
         
         if published_at:
             real_dates.append(published_at)
+        published_at_source = (
+            PublishedAtSource.SOURCE.value
+            if published_at
+            else PublishedAtSource.COLLECTED_FALLBACK.value
+        )
 
         item = {
             'agency': agency_id,
             'title': title,
             'link': link,
             'published_at': published_at.isoformat() if published_at else datetime.now(KST).isoformat(),
+            'published_at_source': published_at_source,
             'source_published_at_str': published
         }
         parsed_items.append(item)

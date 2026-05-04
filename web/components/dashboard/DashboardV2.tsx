@@ -6,7 +6,6 @@ import { toKSTDate } from '@/utils/date' // Use new utils
 import { supabase } from '@/utils/supabase/client'
 import { getLastVisitTime, updateLastVisitTime, isArticleNew } from '@/utils/newArticleTracker'
 import Header from './Header'
-import SearchBar from './SearchBar'
 import DateSection from './DateSection'
 import ReportModal from '@/components/ReportModal' // Reuse existing modal
 import NewsCard, { Article } from './NewsCard'
@@ -36,12 +35,12 @@ export default function DashboardV2() {
     const [isSanctionExpanded, setIsSanctionExpanded] = useState(false) // Collapsible sanction section
     const [viewMode, setViewMode] = useState<'date' | 'list'>('date') // View Toggle State
     const [selectedArticle, setSelectedArticle] = useState<Article | null>(null)
-    const [lastVisitTime, setLastVisitTime] = useState<Date | null>(null) // For NEW badge tracking
+    const [lastVisitTime] = useState<Date | null>(() => getLastVisitTime()) // For NEW badge tracking
 
     // Track NEW status for main menus (Dependent on lastVisitTime)
     const { hasNewPress, hasNewReg, hasNewSanction } = useHasNewByCategory(articles, lastVisitTime)
 
-    const fetchArticles = async () => {
+    const fetchArticles = React.useCallback(async () => {
         setLoading(true)
 
         const [pressResult, regulationResult, sanctionResult] = await Promise.all([
@@ -85,18 +84,16 @@ export default function DashboardV2() {
 
         setArticles(dedupedArticles)
         setLoading(false)
-    }
+    }, [])
 
     // 1. Fetch Data & Track Visit
     useEffect(() => {
-        // Get last visit time BEFORE updating (to show NEW badges correctly)
-        const lastVisit = getLastVisitTime();
-        setLastVisitTime(lastVisit);
-
-        fetchArticles();
+        const fetchTimer = setTimeout(() => {
+            void fetchArticles();
+        }, 0);
 
         // Update last visit time AFTER a short delay (so user sees NEW badges first)
-        const timer = setTimeout(() => {
+        const visitTimer = setTimeout(() => {
             updateLastVisitTime();
         }, 3000); // 3 second delay before marking as "visited"
 
@@ -106,8 +103,11 @@ export default function DashboardV2() {
             setTimeout(() => setIsMenuOpen(true), 100);
         }
 
-        return () => clearTimeout(timer);
-    }, [])
+        return () => {
+            clearTimeout(fetchTimer);
+            clearTimeout(visitTimer);
+        };
+    }, [fetchArticles])
 
     // 2. Filter & Group Data
     const processedData = useMemo(() => {
@@ -201,7 +201,7 @@ export default function DashboardV2() {
                     {searchQuery && (
                         <div className="mb-4 flex items-center justify-between bg-blue-50/50 p-3 rounded-lg border border-blue-100">
                             <div className="text-sm font-medium text-blue-900">
-                                '<span className="font-bold">{searchQuery}</span>' 검색 결과: <span className="font-bold">{processedData ? Object.values(processedData).flat().length : 0}</span>건
+                                <span className="font-bold">{searchQuery}</span> 검색 결과: <span className="font-bold">{processedData ? Object.values(processedData).flat().length : 0}</span>건
                             </div>
                             <button
                                 onClick={() => setSearchQuery('')}
@@ -250,7 +250,7 @@ export default function DashboardV2() {
                             // DATE VIEW
                             Object.entries(processedData)
                                 .sort((a, b) => new Date(b[1][0].published_at).getTime() - new Date(a[1][0].published_at).getTime())
-                                .map(([dateTitle, dayArticles], idx) => (
+                                .map(([dateTitle, dayArticles]) => (
                                     <DateSection
                                         key={dateTitle}
                                         dateTitle={dateTitle}

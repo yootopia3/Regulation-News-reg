@@ -15,11 +15,22 @@
 | `agency` | `text` | No | - | Agency Code (FSC, FSS, MOEF, BOK) |
 | `content` | `text` | Yes | - | Full body text (parsed) |
 | `published_at` | `timestamptz` | No | - | **KST (UTC+9)** Timestamp of publication |
+| `published_at_source` | `text` | Yes | - | Source marker for `published_at`: `source`, `collected_fallback`, or `null` |
 | `analysis_result`| `jsonb` | Yes | - | AI Analysis Output (See Section 2) |
 | `embedding` | `vector(1536)` | Yes | - | **[NOT IMPLEMENTED]** Legacy Placeholder (Empty) |
 | `view_count` | `integer` | No | 0 | **[v2.0]** Article View Count |
 | `star_rating` | `integer` | Yes | - | **[v2.0]** Manual Rating (1-5) |
 | `is_trending` | `boolean` | No | false | **[v2.0]** Trending Status for UI |
+
+---
+
+## 1.1 `published_at_source`
+
+허용 값은 `null`, `source`, `collected_fallback`뿐이다.
+
+- `source`: 원문, RSS, 목록 등 수집 대상에서 실제 발행시각을 파싱해 `published_at`에 저장한 row.
+- `collected_fallback`: 발행시각을 얻지 못해 수집시각을 `published_at`에 저장한 row.
+- `null`: 기존 row 또는 출처를 기록하지 않은 row. 기존 row는 추정 보정하지 않고 `null`로 둔다.
 
 ---
 

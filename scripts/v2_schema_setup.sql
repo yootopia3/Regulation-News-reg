@@ -20,6 +20,7 @@ create table if not exists public.articles (
     agency text not null,
     content text null,
     published_at timestamp with time zone not null,
+    published_at_source text null,
     analysis_result jsonb null,
     embedding vector(1536) null,
     
@@ -29,8 +30,14 @@ create table if not exists public.articles (
     is_trending boolean not null default false,
 
     constraint articles_pkey primary key (id),
-    constraint articles_link_key unique (link)
+    constraint articles_link_key unique (link),
+    constraint articles_published_at_source_check check (
+        published_at_source is null
+        or published_at_source in ('source', 'collected_fallback')
+    )
 );
+
+comment on column public.articles.published_at_source is 'source = 실제 발행시각, collected_fallback = 수집시각 fallback';
 
 -- 2. Create Indexes
 create index if not exists articles_agency_idx on public.articles (agency);

@@ -14,7 +14,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from src.config.agency_codes import AgencyCode
+from src.config.agency_codes import AgencyCode, PublishedAtSource
 from src.pipeline import Pipeline
 
 
@@ -141,3 +141,52 @@ def test_original_analysis_result_not_mutated(pipeline_with_fake_db):
     assert 'pdf_url' not in original_ar
     assert item['analysis_result'] is original_ar
     assert 'pdf_url' not in item['analysis_result']
+
+
+def test_published_at_source_saved_from_item(pipeline_with_fake_db):
+    pipe = pipeline_with_fake_db
+    item = {
+        'agency': AgencyCode.FSC,
+        'title': 't',
+        'link': 'https://fsc.go.kr/news/3',
+        'published_at': '2026-05-04T09:00:00+09:00',
+        'published_at_source': PublishedAtSource.SOURCE.value,
+    }
+
+    pipe._save_item(item)
+
+    payload = _captured_payload(pipe)
+    assert payload['published_at'] == '2026-05-04T09:00:00+09:00'
+    assert payload['published_at_source'] == PublishedAtSource.SOURCE.value
+
+
+def test_missing_published_at_uses_collected_fallback_source(pipeline_with_fake_db):
+    pipe = pipeline_with_fake_db
+    item = {
+        'agency': AgencyCode.FSC,
+        'title': 't',
+        'link': 'https://fsc.go.kr/news/4',
+    }
+
+    pipe._save_item(item)
+
+    payload = _captured_payload(pipe)
+    assert payload['published_at']
+    assert payload['published_at'].endswith('+09:00')
+    assert payload['published_at_source'] == PublishedAtSource.COLLECTED_FALLBACK.value
+
+
+def test_legacy_item_with_published_at_saves_null_source(pipeline_with_fake_db):
+    pipe = pipeline_with_fake_db
+    item = {
+        'agency': AgencyCode.FSC,
+        'title': 't',
+        'link': 'https://fsc.go.kr/news/5',
+        'published_at': '2026-05-04T09:00:00+09:00',
+    }
+
+    pipe._save_item(item)
+
+    payload = _captured_payload(pipe)
+    assert payload['published_at'] == '2026-05-04T09:00:00+09:00'
+    assert payload['published_at_source'] is None

@@ -10,6 +10,7 @@ from urllib.parse import urljoin, urlparse, parse_qs
 from bs4 import BeautifulSoup
 
 from src.config import settings
+from src.config.agency_codes import PublishedAtSource
 from src.config.agency_loader import get_ssl_verify, is_sanction_agency
 from src.collectors import http
 from src.collectors.date_parser import KST, parse_date
@@ -148,8 +149,11 @@ def fetch_sanction_items(agency_config: Dict) -> List[Dict]:
                         continue
 
                     pub_date = parse_date(date_str)
-                    if not pub_date:
+                    if pub_date:
+                        published_at_source = PublishedAtSource.SOURCE.value
+                    else:
                         pub_date = now_kst
+                        published_at_source = PublishedAtSource.COLLECTED_FALLBACK.value
 
                     # 경영유의사항 has direct PDF links
                     if 'hpdownload' in link:
@@ -162,6 +166,7 @@ def fetch_sanction_items(agency_config: Dict) -> List[Dict]:
                         'title': institution,
                         'link': link,
                         'published_at': pub_date.isoformat(),
+                        'published_at_source': published_at_source,
                         'agency': code,
                         'category': 'sanction_notice',
                         'pdf_url': pdf_url,
