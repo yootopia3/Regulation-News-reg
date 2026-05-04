@@ -13,7 +13,7 @@ from src.config import settings
 from src.config.agency_codes import PublishedAtSource
 from src.config.agency_loader import get_ssl_verify, is_sanction_agency
 from src.collectors import http
-from src.collectors.date_parser import KST, parse_date
+from src.collectors.date_parser import KST, has_specific_time, parse_date
 
 
 logger = logging.getLogger(__name__)
@@ -149,7 +149,7 @@ def fetch_sanction_items(agency_config: Dict) -> List[Dict]:
                         continue
 
                     pub_date = parse_date(date_str)
-                    if pub_date:
+                    if pub_date and has_specific_time(date_str):
                         published_at_source = PublishedAtSource.SOURCE.value
                     else:
                         pub_date = now_kst

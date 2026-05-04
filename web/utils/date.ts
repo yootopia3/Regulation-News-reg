@@ -67,20 +67,35 @@ function publishedDisplayTime(dateStr?: string | null): ArticleDisplayTime {
     }
 }
 
+function collectedDisplayTime(article: {
+    published_at?: string | null
+    created_at?: string | null
+}): ArticleDisplayTime {
+    const timeText = formatKSTTime(article.created_at) || formatKSTTime(article.published_at)
+    if (!timeText) return unknownDisplayTime()
+
+    return {
+        timeText,
+        label: '수집',
+        source: 'collected',
+    }
+}
+
+function isKSTMidnight(dateStr?: string | null): boolean {
+    return formatKSTTime(dateStr) === '00:00'
+}
+
 export function getArticleDisplayTime(article: {
     published_at?: string | null
     created_at?: string | null
     published_at_source?: PublishedAtSource | string
 }): ArticleDisplayTime {
     if (article.published_at_source === PUBLISHED_AT_SOURCE.COLLECTED_FALLBACK) {
-        const timeText = formatKSTTime(article.created_at) || formatKSTTime(article.published_at)
-        if (!timeText) return unknownDisplayTime()
+        return collectedDisplayTime(article)
+    }
 
-        return {
-            timeText,
-            label: '수집',
-            source: 'collected',
-        }
+    if (!article.published_at_source && isKSTMidnight(article.published_at)) {
+        return collectedDisplayTime(article)
     }
 
     return publishedDisplayTime(article.published_at)

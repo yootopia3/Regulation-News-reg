@@ -40,13 +40,25 @@ describe('NewsCard time display', () => {
         expect(screen.getByText('수집')).toBeInTheDocument()
     })
 
-    it('uses published_at KST HH:mm for null or missing published_at_source rows', () => {
+    it('uses published_at KST HH:mm for null or missing published_at_source rows with a source time', () => {
         renderCard({ id: 'null-source', published_at_source: null })
         expect(screen.getByText('09:05')).toBeInTheDocument()
         cleanup()
 
         renderCard({ id: 'missing-source' })
         expect(screen.getByText('09:05')).toBeInTheDocument()
+    })
+
+    it('uses created_at and 수집 label for legacy rows whose published_at is KST midnight', () => {
+        renderCard({
+            published_at: '2026-05-03T15:00:00.000Z',
+            created_at: '2026-05-04T03:15:00.000Z',
+            published_at_source: null,
+        })
+
+        expect(screen.getByText('12:15')).toBeInTheDocument()
+        expect(screen.queryByText('00:00')).not.toBeInTheDocument()
+        expect(screen.getByText('수집')).toBeInTheDocument()
     })
 
     it('keeps NEW badge tied to article.isNew', () => {

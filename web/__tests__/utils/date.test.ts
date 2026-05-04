@@ -62,6 +62,18 @@ describe('getArticleDisplayTime', () => {
         })
     })
 
+    it('uses created_at for legacy rows whose published_at is KST midnight', () => {
+        expect(getArticleDisplayTime({
+            published_at: '2026-05-03T15:00:00.000Z',
+            created_at: '2026-05-04T03:00:00.000Z',
+            published_at_source: null,
+        })).toEqual({
+            timeText: '12:00',
+            label: '수집',
+            source: 'collected',
+        })
+    })
+
     it('treats unknown published_at_source values as legacy published rows', () => {
         expect(getArticleDisplayTime({
             published_at: '2026-05-04T05:45:00.000Z',

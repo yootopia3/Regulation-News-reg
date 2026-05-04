@@ -8,6 +8,7 @@ from email.utils import parsedate_to_datetime
 from typing import List, Dict, Optional
 
 from src.config.agency_codes import PublishedAtSource
+from src.collectors.date_parser import has_specific_time
 
 logger = logging.getLogger(__name__)
 
@@ -143,9 +144,10 @@ def fetch_rss_feed(agency: Dict) -> List[Dict]:
         
         if published_at:
             real_dates.append(published_at)
+        has_source_time = has_specific_time(published)
         published_at_source = (
             PublishedAtSource.SOURCE.value
-            if published_at
+            if published_at and has_source_time
             else PublishedAtSource.COLLECTED_FALLBACK.value
         )
 
@@ -153,7 +155,11 @@ def fetch_rss_feed(agency: Dict) -> List[Dict]:
             'agency': agency_id,
             'title': title,
             'link': link,
-            'published_at': published_at.isoformat() if published_at else datetime.now(KST).isoformat(),
+            'published_at': (
+                published_at.isoformat()
+                if published_at and has_source_time
+                else datetime.now(KST).isoformat()
+            ),
             'published_at_source': published_at_source,
             'source_published_at_str': published
         }

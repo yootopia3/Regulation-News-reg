@@ -9,6 +9,23 @@ import pytz
 
 KST = pytz.timezone('Asia/Seoul')
 
+TIME_RE = re.compile(r'(?<!\d)([01]\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?')
+
+
+def has_specific_time(date_str: str) -> bool:
+    """Return True when the source string includes a non-midnight time."""
+    if not date_str:
+        return False
+
+    match = TIME_RE.search(date_str)
+    if not match:
+        return False
+
+    hour = int(match.group(1))
+    minute = int(match.group(2))
+    second = int(match.group(3) or 0)
+    return any((hour, minute, second))
+
 
 def parse_date(date_str: str) -> Optional[datetime]:
     """Parse various date string formats and localize to KST.

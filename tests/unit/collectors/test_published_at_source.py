@@ -80,6 +80,7 @@ def _today_compact() -> str:
     ("date_text", "expected_source"),
     [
         ("Tue, 05 May 2026 09:00:00 +0900", PublishedAtSource.SOURCE.value),
+        ("Tue, 05 May 2026 00:00:00 +0900", PublishedAtSource.COLLECTED_FALLBACK.value),
         ("not a date", PublishedAtSource.COLLECTED_FALLBACK.value),
     ],
 )
@@ -107,7 +108,7 @@ def test_rss_items_include_published_at_source(
 @pytest.mark.parametrize(
     ("date_text", "expected_source"),
     [
-        (_today_dash(), PublishedAtSource.SOURCE.value),
+        (_today_dash(), PublishedAtSource.COLLECTED_FALLBACK.value),
         ("not a date", PublishedAtSource.COLLECTED_FALLBACK.value),
     ],
 )
@@ -130,7 +131,7 @@ def test_list_items_include_published_at_source(
 @pytest.mark.parametrize(
     ("date_text", "expected_source"),
     [
-        (_today_compact(), PublishedAtSource.SOURCE.value),
+        (_today_compact(), PublishedAtSource.COLLECTED_FALLBACK.value),
         ("not a date", PublishedAtSource.COLLECTED_FALLBACK.value),
     ],
 )

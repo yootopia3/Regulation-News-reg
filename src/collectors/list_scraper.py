@@ -13,7 +13,7 @@ from src.config import settings
 from src.config.agency_codes import PublishedAtSource
 from src.config.agency_loader import get_ssl_verify
 from src.collectors import http
-from src.collectors.date_parser import KST, parse_date
+from src.collectors.date_parser import KST, has_specific_time, parse_date
 from src.collectors.pagination import build_page_url
 
 
@@ -112,11 +112,16 @@ def fetch_list_items(
 
                     if pub_date:
                         if pub_date >= cutoff_date:
+                            has_source_time = has_specific_time(date_str)
                             page_items.append({
                                 'title': title,
                                 'link': link,
-                                'published_at': pub_date.isoformat(),
-                                'published_at_source': PublishedAtSource.SOURCE.value,
+                                'published_at': (pub_date if has_source_time else now_kst).isoformat(),
+                                'published_at_source': (
+                                    PublishedAtSource.SOURCE.value
+                                    if has_source_time
+                                    else PublishedAtSource.COLLECTED_FALLBACK.value
+                                ),
                                 'agency': agency_config.get('code'),
                                 'category': agency_config.get('category', 'press_release')
                             })
