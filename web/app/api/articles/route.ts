@@ -13,6 +13,7 @@ const ARTICLE_CATEGORY = {
 } as const
 
 type RawArticleRow = Record<string, unknown>
+type ArticleQueryResult = { data: unknown[] | null; error: unknown }
 
 type SafeAnalysisResult = {
     summary?: string[]
@@ -114,30 +115,36 @@ export async function GET() {
         return NextResponse.json({ error: 'Server Misconfiguration: Supabase key missing' }, { status: 500 })
     }
 
-    const supabase = createClient(env.supabaseUrl, env.supabaseKey)
-    const results = await Promise.all([
-        supabase
-            .from('articles')
-            .select(ARTICLE_COLUMNS)
-            .in('agency', pressAgencies)
-            .or(`category.eq.${ARTICLE_CATEGORY.press},category.is.null`)
-            .order('published_at', { ascending: false })
-            .limit(1000),
-        supabase
-            .from('articles')
-            .select(ARTICLE_COLUMNS)
-            .in('agency', regulationAgencies)
-            .eq('category', ARTICLE_CATEGORY.regulation)
-            .order('published_at', { ascending: false })
-            .limit(1000),
-        supabase
-            .from('articles')
-            .select(ARTICLE_COLUMNS)
-            .in('agency', sanctionAgencies)
-            .eq('category', ARTICLE_CATEGORY.sanction)
-            .order('published_at', { ascending: false })
-            .limit(1000),
-    ])
+    let results: ArticleQueryResult[]
+    try {
+        const supabase = createClient(env.supabaseUrl, env.supabaseKey)
+        results = await Promise.all([
+            supabase
+                .from('articles')
+                .select(ARTICLE_COLUMNS)
+                .in('agency', pressAgencies)
+                .or(`category.eq.${ARTICLE_CATEGORY.press},category.is.null`)
+                .order('published_at', { ascending: false })
+                .limit(1000),
+            supabase
+                .from('articles')
+                .select(ARTICLE_COLUMNS)
+                .in('agency', regulationAgencies)
+                .eq('category', ARTICLE_CATEGORY.regulation)
+                .order('published_at', { ascending: false })
+                .limit(1000),
+            supabase
+                .from('articles')
+                .select(ARTICLE_COLUMNS)
+                .in('agency', sanctionAgencies)
+                .eq('category', ARTICLE_CATEGORY.sanction)
+                .order('published_at', { ascending: false })
+                .limit(1000),
+        ])
+    } catch (error) {
+        console.error('Error fetching articles:', error)
+        return NextResponse.json({ error: 'Failed to fetch articles' }, { status: 500 })
+    }
 
     const errors = results.map(result => result.error).filter(Boolean)
     if (errors.length > 0) {

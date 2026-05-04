@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { pressAgencies, regulationAgencies, sanctionAgencies } from '@/components/dashboard/constants'
 
-type QueryResult = { data: unknown[] | null; error: unknown }
+type QueryResult = { data: unknown[] | null; error: unknown; reject?: Error }
 type QueryChain = {
   fromTable: string
   select: ReturnType<typeof vi.fn>; in: ReturnType<typeof vi.fn>; or: ReturnType<typeof vi.fn>
@@ -22,7 +22,7 @@ function makeChain(fromTable: string, result: QueryResult): QueryChain {
   chain.or = vi.fn(() => chain)
   chain.eq = vi.fn(() => chain)
   chain.order = vi.fn(() => chain)
-  chain.limit = vi.fn(() => Promise.resolve(result))
+  chain.limit = vi.fn(() => result.reject ? Promise.reject(result.reject) : Promise.resolve(result))
   return chain
 }
 
@@ -162,6 +162,30 @@ describe('/api/articles', () => {
   it('returns 500 when any Supabase query fails', async () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
     queryResults[1].error = { message: 'failed' }
+
+    const { res, json } = await callGet()
+
+    expect(res.status).toBe(500)
+    expect(json).toEqual({ error: 'Failed to fetch articles' })
+    errorSpy.mockRestore()
+  })
+
+  it('returns 500 JSON when Supabase client creation throws', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    createClientMock.mockImplementationOnce(() => {
+      throw new Error('Invalid supabaseUrl')
+    })
+
+    const { res, json } = await callGet()
+
+    expect(res.status).toBe(500)
+    expect(json).toEqual({ error: 'Failed to fetch articles' })
+    errorSpy.mockRestore()
+  })
+
+  it('returns 500 JSON when a Supabase query promise rejects', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    queryResults[0].reject = new Error('network failed')
 
     const { res, json } = await callGet()
 
