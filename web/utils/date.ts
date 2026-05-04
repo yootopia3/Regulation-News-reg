@@ -3,7 +3,7 @@ const KST_TIME_FORMATTER = new Intl.DateTimeFormat('ko-KR', {
     timeZone: 'Asia/Seoul',
     hour: '2-digit',
     minute: '2-digit',
-    hour12: false,
+    hourCycle: 'h23',
 })
 
 const PUBLISHED_AT_SOURCE = {
@@ -45,7 +45,13 @@ export function formatKSTTime(dateStr?: string | null): string {
     const date = new Date(dateStr)
     if (Number.isNaN(date.getTime())) return ''
 
-    return KST_TIME_FORMATTER.format(date)
+    const parts = KST_TIME_FORMATTER.formatToParts(date)
+    const hour = parts.find((part) => part.type === 'hour')?.value
+    const minute = parts.find((part) => part.type === 'minute')?.value
+
+    if (!hour || !minute) return ''
+
+    return `${hour === '24' ? '00' : hour}:${minute}`
 }
 
 function unknownDisplayTime(): ArticleDisplayTime {
