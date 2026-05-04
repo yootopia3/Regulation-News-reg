@@ -1,0 +1,33 @@
+{
+  "project": "reg_brief",
+  "task": "dashboard-api-boundary",
+  "prompt": "$my-harness-codex 현재 프로젝트 `/home/pacer/projects/reg_brief`에서 아래 3가지를 아주 보수적으로 개선해줘. 목표: 1. `ReportModal`의 React Hook dependency warning 정리 2. 대시보드 클라이언트에 노출되는 `analysis_result` 범위 축소 3. 클라이언트 Supabase 직접 조회를 서버 API로 감싸기. 중요 제약: 기존 기능, 화면, 정렬, 필터, 모바일 시간 표시, 리포트 생성 흐름을 깨지 않는다. DB schema/RLS/migration은 이번 작업에서 변경하지 않는다. destructive 작업 금지. 한 번에 큰 리팩터링하지 말고, 기존 인터페이스를 최대한 유지한다. 대시보드 카드가 현재 보여주는 정보만 클라이언트로 내려준다. `/api/report`는 기존처럼 `articleId`만 받아 서버에서 content를 조회하게 유지한다. 가능하면 타입을 명확히 하되, 과한 추상화는 하지 않는다. 계획문서 먼저 작성해줘. 절대 다음작업하지말고 plan문서만 작성하고, 다음단계에서 phase문서 작성할거니까 계획문서만 작성해.",
+  "totalPhases": 4,
+  "build_command": "(cd web && npm run lint && npm run test && npm run build) && venv/bin/python -m pytest tests/unit -q",
+  "commit_prefix": "feat",
+  "branch_prefix": "feat",
+  "push_on_complete": false,
+  "created_at": "2026-05-04T15:54:42+0900",
+  "phases": [
+    {
+      "phase": 1,
+      "name": "report-modal-hooks",
+      "status": "pending"
+    },
+    {
+      "phase": 2,
+      "name": "articles-api",
+      "status": "pending"
+    },
+    {
+      "phase": 3,
+      "name": "dashboard-fetch",
+      "status": "pending"
+    },
+    {
+      "phase": 4,
+      "name": "final-verification",
+      "status": "pending"
+    }
+  ]
+}
