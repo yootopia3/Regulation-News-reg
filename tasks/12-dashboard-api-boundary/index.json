@@ -12,7 +12,9 @@
     {
       "phase": 1,
       "name": "report-modal-hooks",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-05-04T16:10:51+0900",
+      "completed_at": "2026-05-04T16:13:30+0900"
     },
     {
       "phase": 2,

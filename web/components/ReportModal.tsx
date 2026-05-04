@@ -16,42 +16,55 @@ interface ReportModalProps {
 export default function ReportModal({ isOpen, onClose, article }: ReportModalProps) {
     const [loading, setLoading] = useState(false)
     const [report, setReport] = useState<string | null>(null)
+    const articleId = article?.id
 
     useEffect(() => {
-        if (isOpen && article) {
-            fetchReport()
-        } else {
+        if (!isOpen || !articleId) {
             setReport(null)
+            return
         }
-    }, [isOpen, article])
 
-    const fetchReport = async () => {
-        if (!article) return
-        setLoading(true)
-        try {
-            const res = await fetch('/api/report', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    articleId: String(article.id),
+        let shouldUpdate = true
+
+        const fetchReport = async (article: Pick<Article, 'id'>) => {
+            setLoading(true)
+            try {
+                const res = await fetch('/api/report', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        articleId: String(article.id),
+                    })
                 })
-            })
 
-            if (!res.ok) {
-                const errorData = await res.json().catch(() => ({}))
-                throw new Error(errorData.error || 'Failed to fetch report')
+                if (!res.ok) {
+                    const errorData = await res.json().catch(() => ({}))
+                    throw new Error(errorData.error || 'Failed to fetch report')
+                }
+
+                const data = await res.json()
+                if (shouldUpdate) {
+                    setReport(data.report)
+                }
+            } catch (error: unknown) {
+                console.error(error)
+                const message = error instanceof Error ? error.message : 'Failed to generate report. Please try again.'
+                if (shouldUpdate) {
+                    setReport(`**Error:** ${message}`)
+                }
+            } finally {
+                if (shouldUpdate) {
+                    setLoading(false)
+                }
             }
-
-            const data = await res.json()
-            setReport(data.report)
-        } catch (error: unknown) {
-            console.error(error)
-            const message = error instanceof Error ? error.message : 'Failed to generate report. Please try again.'
-            setReport(`**Error:** ${message}`)
-        } finally {
-            setLoading(false)
         }
-    }
+
+        void fetchReport({ id: articleId })
+
+        return () => {
+            shouldUpdate = false
+        }
+    }, [isOpen, articleId])
 
     // Custom Markdown Components for styling
     const MarkdownComponents: Components = {
