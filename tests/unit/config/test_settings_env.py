@@ -66,6 +66,29 @@ def test_get_model_analyzer_fallback_env_override(monkeypatch):
     assert get_model_analyzer_fallback() == "fallback-test"
 
 
+def test_is_gemini_enabled_default_false(monkeypatch):
+    monkeypatch.delenv("GEMINI_ENABLED", raising=False)
+    from src.config.settings import is_gemini_enabled
+
+    assert is_gemini_enabled() is False
+
+
+def test_is_gemini_enabled_true_values(monkeypatch):
+    from src.config.settings import is_gemini_enabled
+
+    for value in ("1", "true", "TRUE", "yes", "on"):
+        monkeypatch.setenv("GEMINI_ENABLED", value)
+        assert is_gemini_enabled() is True
+
+
+def test_is_gemini_enabled_false_values(monkeypatch):
+    from src.config.settings import is_gemini_enabled
+
+    for value in ("", "0", "false", "no", "off", "enabled"):
+        monkeypatch.setenv("GEMINI_ENABLED", value)
+        assert is_gemini_enabled() is False
+
+
 def test_getters_honor_load_env_called_after_import(tmp_path):
     """Regression test for the Round 2 follow-up fix.
 

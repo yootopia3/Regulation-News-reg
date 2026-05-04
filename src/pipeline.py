@@ -48,6 +48,13 @@ class Pipeline:
             return {}
 
     def _init_analyzer(self):
+        from src.config.settings import is_gemini_enabled, load_env
+
+        load_env()
+        if not is_gemini_enabled():
+            logger.info("Gemini analysis disabled; collector will save articles without analysis_result.")
+            return None
+
         try:
             from src.services.analyzer import HybridAnalyzer
             return HybridAnalyzer()

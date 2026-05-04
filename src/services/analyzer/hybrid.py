@@ -11,6 +11,7 @@ from src.config.settings import (
     get_model_analyzer_fallback,
     get_model_analyzer_id,
     get_model_filter_id,
+    is_gemini_enabled,
     load_env,
 )
 from src.services.analyzer.gemini_client import GeminiClient
@@ -37,6 +38,8 @@ class HybridAnalyzer:
         # `src.config.settings` freeze at import time, which happens above
         # this call and thus predates `.env` loading.
         load_env()
+        if not is_gemini_enabled():
+            raise RuntimeError("Gemini analysis is disabled. Set GEMINI_ENABLED=true to enable it.")
         self._client = GeminiClient(get_gemini_api_key())
         self._safeguard_rules = load_safeguard_keywords()
 

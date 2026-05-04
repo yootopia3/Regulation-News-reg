@@ -23,8 +23,11 @@ logger = logging.getLogger(__name__)
 
 async def reanalyze_all():
     # API Keys loaded by load_dotenv() above
-    
-    analyzer = HybridAnalyzer()
+    try:
+        analyzer = HybridAnalyzer()
+    except Exception as e:
+        logger.error(f"Failed to init Analyzer: {e}")
+        return
     
     logger.info("Fetching all articles for re-analysis...")
     

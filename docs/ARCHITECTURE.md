@@ -135,6 +135,10 @@ Backend Gemini model IDs are env-driven via `src/config/settings.py`:
 `GEMINI_ANALYZER_FALLBACK_MODEL` (Tier 2 fallback). Defaults live in
 `settings.py`. The frontend `/api/report` route uses a separate
 `GEMINI_REPORT_MODEL` env (default in `web/app/api/report/route.ts`).
+Gemini calls are fail-closed behind `GEMINI_ENABLED`: unless the value is
+explicitly set to `true`/`1`/`yes`/`on`, backend analysis and the web
+`/api/report` route do not create Gemini SDK clients even when
+`GEMINI_API_KEY` is present.
 
 ### 4.1.1 Sanction agency derivation
 `SANCTION_AGENCY_CODES` is no longer a hardcoded frozenset. It is derived
@@ -166,6 +170,8 @@ per-agency TLS verify 정책을 단일 진실원(`config/agencies.json`)에서 �
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY_V2` | v2 DB API Key | **Github Secrets** (Actions), **Vercel** (Preview) |
 | `NEXT_PUBLIC_USE_V2_DB` | v2 Switch Flag (`true`) | **Vercel** (Preview), Local `.env` |
 | `ENV_TYPE` | Backend Branch Flag (`v2`) | **Github Actions** (`news_collector_v2.yml`) |
+| `GEMINI_ENABLED` | Enables Gemini analysis/reporting only when explicitly true | **Github Actions**, **Vercel**, Local `.env` |
+| `GEMINI_API_KEY` | Gemini API key, used only when `GEMINI_ENABLED` is true | **Github Actions**, **Vercel**, Local `.env` |
 | `APP_PASSCODE` | Login passcode (server-side compare) | **Vercel** (Web), Local `.env` |
 | `SESSION_SECRET` | HMAC key for `mp_session` cookie | **Vercel** (Web), Local `.env` |
 
@@ -178,7 +184,9 @@ per-agency TLS verify 정책을 단일 진실원(`config/agencies.json`)에서 �
   `title`, `content`, and `agency` from Supabase by id — clients cannot
   inject prompt content. The Gemini prompt is built by
   `buildReportPrompt()` in `web/lib/prompts/report.ts`, and the model id
-  is taken from `GEMINI_REPORT_MODEL`.
+  is taken from `GEMINI_REPORT_MODEL`. When `GEMINI_ENABLED` is not
+  explicitly true, the route returns `503` before Supabase lookup or
+  Gemini SDK construction.
 
 ### 4.5 Authentication
 프론트엔드 인증은 서명된 `mp_session` HMAC 쿠키 기반이다. 사용자가 입력한

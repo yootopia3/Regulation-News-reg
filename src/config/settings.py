@@ -29,6 +29,12 @@ SAFEGUARD_KEYWORDS_PATH: Path = CONFIG_DIR / "safeguard_keywords.json"
 _DEFAULT_FILTER_MODEL = "gemini-2.5-flash-lite"
 _DEFAULT_ANALYZER_MODEL = "gemini-3-flash-preview"
 _DEFAULT_ANALYZER_FALLBACK_MODEL = "gemini-1.5-pro"
+_TRUE_VALUES = {"1", "true", "yes", "on"}
+
+
+def is_gemini_enabled() -> bool:
+    """Return whether Gemini-backed analysis/report generation is enabled."""
+    return os.environ.get("GEMINI_ENABLED", "").strip().lower() in _TRUE_VALUES
 
 
 def get_model_filter_id() -> str:

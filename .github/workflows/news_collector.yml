@@ -26,12 +26,10 @@ jobs:
 
     - name: Debug Secrets
       env:
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
         SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
       run: |
         echo "Check Env Vars..."
-        echo "GEMINI_KEY: ${GEMINI_API_KEY:0:4}****"
         echo "SUPABASE_URL: ${SUPABASE_URL:0:8}****"
         if [ -z "$SUPABASE_ANON_KEY" ]; then
           echo "SUPABASE_ANON_KEY is EMPTY!"
@@ -42,7 +40,7 @@ jobs:
 
     - name: Run Collector Pipeline
       env:
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        GEMINI_ENABLED: "false"
         SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
         SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}

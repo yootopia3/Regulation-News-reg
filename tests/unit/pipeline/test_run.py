@@ -343,6 +343,33 @@ def test_t3_analyzer_none_saves_but_does_not_notify(monkeypatch):
     assert notifier.sent == []
 
 
+def test_gemini_disabled_default_pipeline_saves_without_analysis(monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "leftover-key")
+    monkeypatch.delenv("GEMINI_ENABLED", raising=False)
+    monkeypatch.setattr("src.config.settings.load_env", lambda: None)
+    monkeypatch.setattr(
+        "src.pipeline.collect_all_rss", lambda: [_rss_item()]
+    )
+
+    notifier = FakeNotifier()
+    db = FakeSupabase()
+    scraper = FakeScraper()
+
+    pipe = Pipeline(
+        "config/agencies.json",
+        notifier=notifier,
+        db=db,
+        scraper=scraper,
+    )
+    pipe.run()
+
+    assert pipe.analyzer is None
+    assert len(db.inserted) == 1
+    assert db.inserted[0]["link"] == "https://korea.kr/news/1"
+    assert db.inserted[0]["analysis_result"] is None
+    assert notifier.sent == []
+
+
 def test_t4_sanction_item_preserves_pdf_url_in_analysis_result(monkeypatch):
     analyzer = FakeAnalyzer(
         return_value={

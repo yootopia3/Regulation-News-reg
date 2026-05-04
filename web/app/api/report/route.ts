@@ -6,12 +6,17 @@ import { NextResponse } from 'next/server'
 import { buildReportPrompt } from '@/lib/prompts/report'
 import { ReportRequestSchema } from '@/lib/validation/report'
 
+function isGeminiEnabled(value: string | undefined) {
+    return ['1', 'true', 'yes', 'on'].includes((value ?? '').trim().toLowerCase())
+}
+
 function getEnv() {
     return {
         supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL_V2,
         serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
         anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_V2,
         geminiApiKey: process.env.GEMINI_API_KEY,
+        geminiEnabled: isGeminiEnabled(process.env.GEMINI_ENABLED),
         reportModel: process.env.GEMINI_REPORT_MODEL ?? 'gemini-3-flash-preview',
     }
 }
@@ -19,6 +24,9 @@ function getEnv() {
 export async function POST(req: Request) {
     const env = getEnv()
 
+    if (!env.geminiEnabled) {
+        return NextResponse.json({ error: 'AI report generation is disabled' }, { status: 503 })
+    }
     if (!env.supabaseUrl) {
         return NextResponse.json({ error: 'Server Misconfiguration: SUPABASE_URL missing' }, { status: 500 })
     }

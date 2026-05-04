@@ -1,46 +1,66 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
+type SupabaseSingleResult = { data: unknown; error: unknown }
+type SupabaseUpdateResult = { error: unknown }
+type QueryChain = {
+  from: ReturnType<typeof vi.fn>
+  select: ReturnType<typeof vi.fn>
+  eq: ReturnType<typeof vi.fn>
+  single: ReturnType<typeof vi.fn>
+  update: ReturnType<typeof vi.fn>
+  then: (resolve: (value: SupabaseUpdateResult) => unknown) => unknown
+}
+
 const supabaseState: {
-  fetchSingle: { data: any; error: any }
-  updateResult: { error: any }
+  fetchSingle: SupabaseSingleResult
+  updateResult: SupabaseUpdateResult
 } = {
   fetchSingle: { data: null, error: null },
   updateResult: { error: null },
 }
 
 const generateContentMock = vi.fn()
+const getGenerativeModelMock = vi.fn()
+const googleGenerativeAIMock = vi.fn().mockImplementation(() => ({
+  getGenerativeModel: getGenerativeModelMock,
+}))
 const updateMock = vi.fn()
-
-vi.mock('@supabase/supabase-js', () => {
-  const createClient = vi.fn(() => {
-    const chain: any = {}
-    chain.from = vi.fn(() => chain)
-    chain.select = vi.fn(() => chain)
-    chain.eq = vi.fn(() => chain)
-    chain.single = vi.fn(() => Promise.resolve(supabaseState.fetchSingle))
-    chain.update = vi.fn((...args: any[]) => {
-      updateMock(...args)
-      return chain
-    })
-    // Make chain awaitable for the `update().eq()` path.
-    chain.then = (resolve: (v: any) => any) => resolve(supabaseState.updateResult)
+const createClientMock = vi.fn(() => {
+  const chain = {} as QueryChain
+  chain.from = vi.fn(() => chain)
+  chain.select = vi.fn(() => chain)
+  chain.eq = vi.fn(() => chain)
+  chain.single = vi.fn(() => Promise.resolve(supabaseState.fetchSingle))
+  chain.update = vi.fn((...args: unknown[]) => {
+    updateMock(...args)
     return chain
   })
-  return { createClient }
+  // Make chain awaitable for the `update().eq()` path.
+  chain.then = (resolve: (value: SupabaseUpdateResult) => unknown) => resolve(supabaseState.updateResult)
+  return chain
+})
+
+vi.mock('@supabase/supabase-js', () => {
+  return { createClient: createClientMock }
 })
 
 vi.mock('@google/generative-ai', () => ({
-  GoogleGenerativeAI: vi.fn().mockImplementation(() => ({
-    getGenerativeModel: vi.fn().mockReturnValue({
-      generateContent: generateContentMock,
-    }),
-  })),
+  GoogleGenerativeAI: googleGenerativeAIMock,
 }))
 
 beforeEach(() => {
+  supabaseState.fetchSingle = { data: null, error: null }
+  supabaseState.updateResult = { error: null }
   process.env.NEXT_PUBLIC_SUPABASE_URL_V2 = 'https://test.supabase.co'
   process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key'
   process.env.GEMINI_API_KEY = 'test-gemini-key'
+  process.env.GEMINI_ENABLED = 'true'
+  createClientMock.mockClear()
+  googleGenerativeAIMock.mockClear()
+  getGenerativeModelMock.mockReset()
+  getGenerativeModelMock.mockReturnValue({
+    generateContent: generateContentMock,
+  })
   generateContentMock.mockReset()
   updateMock.mockReset()
   generateContentMock.mockResolvedValue({
@@ -57,6 +77,22 @@ function makeRequest(body: unknown): Request {
 }
 
 describe('/api/report', () => {
+  it('returns 503 without touching Supabase or Gemini when Gemini is disabled', async () => {
+    delete process.env.GEMINI_ENABLED
+
+    const { POST } = await import('@/app/api/report/route')
+    const res = await POST(makeRequest({ articleId: 'a-disabled' }))
+    const json = await res.json()
+
+    expect(res.status).toBe(503)
+    expect(json).toEqual({ error: 'AI report generation is disabled' })
+    expect(createClientMock).not.toHaveBeenCalled()
+    expect(googleGenerativeAIMock).not.toHaveBeenCalled()
+    expect(getGenerativeModelMock).not.toHaveBeenCalled()
+    expect(generateContentMock).not.toHaveBeenCalled()
+    expect(updateMock).not.toHaveBeenCalled()
+  })
+
   it('returns cached report when detailed_report exists', async () => {
     supabaseState.fetchSingle = {
       data: {

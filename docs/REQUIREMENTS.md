@@ -48,6 +48,12 @@
 
 ## 4. Analysis & Scoring (분석 요건)
 
+### 4.0 Runtime Enablement
+Gemini-backed analysis is disabled by default. Backend Tier 1/Tier 2
+analysis and the web `/api/report` route run only when `GEMINI_ENABLED` is
+explicitly set to one of `true`, `1`, `yes`, or `on`. If the flag is absent
+or false, collection and DB persistence continue without Gemini calls.
+
 ### 4.1 AI Scoring Model (Tiered Analysis)
 The system uses a 2-Tier AI approach with 2025-Standard Models.
 
