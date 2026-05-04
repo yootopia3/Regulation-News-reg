@@ -56,3 +56,4 @@ docs/*.metadata.json
 # --- Round 2: current task workspace scratch images (scoped to this task only) ---
 /tasks/4-round2-hygiene/**/image*.png
 .worktrees/
+.vercel
