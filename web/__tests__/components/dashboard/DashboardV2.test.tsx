@@ -40,14 +40,9 @@ describe('DashboardV2', () => {
     })
 })
 
-describe('MAFRA integration', () => {
-    it('pressAgencies includes MAFRA', async () => {
+describe('press agency navigation', () => {
+    it('pressAgencies excludes MAFRA from the dashboard menu', async () => {
         const { pressAgencies } = await import('@/components/dashboard/constants')
-        expect(pressAgencies).toContain('MAFRA')
-    })
-
-    it('agencyNames maps MAFRA to 농식품부', async () => {
-        const { agencyNames } = await import('@/components/dashboard/constants')
-        expect(agencyNames['MAFRA']).toBe('농식품부')
+        expect(pressAgencies).not.toContain('MAFRA')
     })
 })

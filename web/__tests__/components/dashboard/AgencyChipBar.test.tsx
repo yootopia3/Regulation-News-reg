@@ -14,7 +14,6 @@ describe('chipLabels', () => {
         expect(chipLabels['FSC']).toBe('금융위')
         expect(chipLabels['FSS']).toBe('금감원')
         expect(chipLabels['BOK']).toBe('한은')
-        expect(chipLabels['MAFRA']).toBe('농식품부')
     })
 
     it('maps all regulation agencies to Korean short names', async () => {
@@ -38,7 +37,7 @@ describe('chipLabels', () => {
 })
 
 describe('AgencyChipBar rendering', () => {
-    it('renders "전체" + 5 press agency chips for press_release category', async () => {
+    it('renders "전체" + 4 press agency chips for press_release category', async () => {
         const AgencyChipBar = (await import('@/components/dashboard/AgencyChipBar')).default
         render(
             <AgencyChipBar
@@ -52,8 +51,8 @@ describe('AgencyChipBar rendering', () => {
         expect(screen.getByText('금감원')).toBeInTheDocument()
         expect(screen.getByText('기재부')).toBeInTheDocument()
         expect(screen.getByText('한은')).toBeInTheDocument()
-        expect(screen.getByText('농식품부')).toBeInTheDocument()
-        expect(screen.getAllByRole('button')).toHaveLength(6)
+        expect(screen.queryByText('농식품부')).not.toBeInTheDocument()
+        expect(screen.getAllByRole('button')).toHaveLength(5)
     })
 
     it('renders "전체" + 3 regulation chips for regulation_notice category', async () => {
