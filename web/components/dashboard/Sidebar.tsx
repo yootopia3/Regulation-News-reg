@@ -97,7 +97,7 @@ export default function Sidebar(props: SidebarProps): React.ReactElement {
                             />
                         </div>
                         <h2 className="leading-none pb-1">
-                            <span className="block text-[26px] font-black tracking-normal text-white">RegBrief</span>
+                            <span className="block text-[26px] font-black tracking-normal text-white">규제동향</span>
                             <span className="mt-2 block text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/80">Regulatory News</span>
                         </h2>
                     </div>
