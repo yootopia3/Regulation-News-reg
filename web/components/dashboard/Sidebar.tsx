@@ -88,17 +88,16 @@ export default function Sidebar(props: SidebarProps): React.ReactElement {
                 <div className="p-6 h-full flex flex-col">
                     {/* Brand Logo */}
                     <div className="mb-10">
-                        <div className="mb-4 rounded-lg bg-white px-3 py-2 shadow-sm">
+                        <div className="mb-3 rounded-lg bg-white px-3 py-3 shadow-sm">
                             <Image
-                                src="/ibk-logo-ko.jpg"
-                                alt="IBK기업은행"
-                                width={210}
-                                height={38}
-                                className="h-9 w-full object-contain"
+                                src="/ibk-regulatory-brand.png"
+                                alt="IBK기업은행 by 내부통제총괄부"
+                                width={420}
+                                height={136}
+                                className="h-auto w-full object-contain"
                             />
                         </div>
                         <h2 className="leading-none pb-1">
-                            <span className="block text-[26px] font-black tracking-normal text-white">내부통제총괄부</span>
                             <span className="mt-2 block text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/80">Regulatory News</span>
                         </h2>
                     </div>
