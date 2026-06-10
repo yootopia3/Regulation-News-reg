@@ -36,9 +36,25 @@ type SafeArticle = {
     star_rating?: number | null
 }
 
+function normalizeSupabaseUrl(value: string | undefined): string | undefined {
+    const trimmed = value?.trim()
+    if (!trimmed) return undefined
+
+    try {
+        const parsed = new URL(trimmed)
+        if (parsed.hostname.endsWith('.supabase.co')) {
+            return parsed.origin
+        }
+    } catch {
+        return trimmed
+    }
+
+    return trimmed
+}
+
 function getEnv() {
     const useV2 = process.env.NEXT_PUBLIC_USE_V2_DB === 'true'
-    const supabaseUrl = useV2
+    const rawSupabaseUrl = useV2
         ? process.env.NEXT_PUBLIC_SUPABASE_URL_V2
         : process.env.NEXT_PUBLIC_SUPABASE_URL
     const anonKey = useV2
@@ -46,7 +62,7 @@ function getEnv() {
         : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
     return {
-        supabaseUrl,
+        supabaseUrl: normalizeSupabaseUrl(rawSupabaseUrl),
         supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY || anonKey,
     }
 }
