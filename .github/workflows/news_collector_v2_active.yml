@@ -1,9 +1,11 @@
 name: v2.0 News Collector (Beta)
 
 on:
-  # Schedule disabled - using external cron (cron-job.org)
-  # schedule:
-  #   - cron: '*/15 * * * *'
+  schedule:
+    # KST 08:00, 12:00, 18:00 (GitHub cron runs in UTC)
+    - cron: '0 23 * * *'
+    - cron: '0 3 * * *'
+    - cron: '0 9 * * *'
   workflow_dispatch:  # Keep this for cron-job.org and manual triggers
 
 jobs:
