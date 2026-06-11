@@ -139,6 +139,39 @@ def _extract_date_text(row_text: str) -> str:
     return match.group(0) if match else ""
 
 
+def _text_without_date(text: str, date_text: str) -> str:
+    if date_text:
+        text = text.replace(date_text, "")
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
+
+def _extract_javascript_url(page_url: str, script_text: str) -> Optional[str]:
+    if not script_text:
+        return None
+    url_match = re.search(r"""['"]([^'"]+\.php(?:\?[^'"]*)?)['"]""", script_text)
+    if url_match:
+        return urljoin(page_url, url_match.group(1))
+
+    id_match = re.search(r"""['"]?(\d{2,})['"]?""", script_text)
+    if id_match:
+        separator = "&" if "?" in page_url else "?"
+        return f"{page_url}{separator}idx={id_match.group(1)}"
+    return None
+
+
+def _extract_link(page_url: str, row, anchor) -> Optional[str]:
+    href = anchor.get("href") or ""
+    if href and not href.startswith("#") and not href.lower().startswith("javascript:"):
+        return urljoin(page_url, href)
+
+    for raw in (href, anchor.get("onclick") or "", row.get("onclick") or ""):
+        extracted = _extract_javascript_url(page_url, raw)
+        if extracted:
+            return extracted
+    return None
+
+
 def _parse_html_items(page_url: str, html: bytes, agency_config: Dict, last_crawled_date=None) -> List[Dict]:
     selectors = agency_config.get("selector", {})
     list_selector = selectors.get("list") or "table tbody tr, .board_list li, .bbs-list li, .list li"
@@ -158,18 +191,21 @@ def _parse_html_items(page_url: str, html: bytes, agency_config: Dict, last_craw
 
     items: List[Dict] = []
     seen_links = set()
+    skipped_no_anchor = 0
+    skipped_no_link = 0
+    skipped_no_date = 0
+    skipped_old = 0
+    skipped_no_title = 0
     for row in rows:
         anchor = row if getattr(row, "name", None) == "a" else row.select_one(title_selector)
         if not anchor:
+            skipped_no_anchor += 1
             continue
-        title = anchor.get_text(" ", strip=True)
-        href = anchor.get("href")
-        if not title or not href or href.startswith("#") or href.lower().startswith("javascript:"):
-            continue
-        if getattr(row, "name", None) == "a" and "news" not in href.lower():
+        link = _extract_link(page_url, row, anchor)
+        if not link:
+            skipped_no_link += 1
             continue
 
-        link = urljoin(page_url, href)
         if link in seen_links:
             continue
         seen_links.add(link)
@@ -184,10 +220,17 @@ def _parse_html_items(page_url: str, html: bytes, agency_config: Dict, last_craw
             parent_text = row.parent.get_text(" ", strip=True) if row.parent else ""
             date_text = _extract_date_text(f"{row_text} {parent_text}")
         if getattr(row, "name", None) == "a" and not date_text:
+            skipped_no_date += 1
+            continue
+
+        title = anchor.get_text(" ", strip=True) or _text_without_date(row.get_text(" ", strip=True), date_text)
+        if not title:
+            skipped_no_title += 1
             continue
 
         published_at = parse_date(date_text)
         if published_at and published_at < cutoff_date:
+            skipped_old += 1
             continue
 
         has_source_time = has_specific_time(date_text)
@@ -210,6 +253,14 @@ def _parse_html_items(page_url: str, html: bytes, agency_config: Dict, last_craw
         if len(items) >= MAX_HTML_ITEMS:
             break
 
+    logger.info(
+        "KFB HTML fallback skipped rows: no_anchor=%s, no_link=%s, no_date=%s, old=%s, no_title=%s",
+        skipped_no_anchor,
+        skipped_no_link,
+        skipped_no_date,
+        skipped_old,
+        skipped_no_title,
+    )
     return items
 
 
