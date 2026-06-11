@@ -23,7 +23,7 @@ ALTER TABLE articles DROP CONSTRAINT IF EXISTS articles_agency_check;
 
 -- Add new constraint with all agency codes including sanction notices
 ALTER TABLE articles ADD CONSTRAINT articles_agency_check 
-CHECK (agency IN ('FSC', 'FSS', 'MOEF', 'BOK', 'FSS_REG', 'FSC_REG', 'FSS_REG_INFO', 'FSS_SANCTION', 'FSS_MGMT_NOTICE', 'MAFRA'));
+CHECK (agency IN ('FSC', 'FSS', 'MOEF', 'BOK', 'FSS_REG', 'FSC_REG', 'FSS_REG_INFO', 'FSS_SANCTION', 'FSS_MGMT_NOTICE', 'MAFRA', 'KFB'));
 """)
 else:
     sb = create_client(url, key)

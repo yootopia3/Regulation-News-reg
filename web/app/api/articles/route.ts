@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 import { pressAgencies, regulationAgencies, sanctionAgencies } from '@/components/dashboard/constants'
 
 const ARTICLE_COLUMNS =
-    'id,title,agency,category,published_at,published_at_source,created_at,link,analysis_result,view_count,star_rating'
+    'id,title,agency,category,published_at,published_at_source,created_at,link,source_org,source_name,subcategory,analysis_result,view_count,star_rating'
 
 const ARTICLE_CATEGORY = {
     press: 'press_release',
@@ -31,6 +31,9 @@ type SafeArticle = {
     published_at_source?: string | null
     created_at?: string | null
     link: string
+    source_org?: string | null
+    source_name?: string | null
+    subcategory?: string | null
     analysis_result: SafeAnalysisResult | null
     view_count?: number | null
     star_rating?: number | null
@@ -108,7 +111,7 @@ function sanitizeArticle(row: RawArticleRow): SafeArticle | null {
         analysis_result: sanitizeAnalysisResult(row.analysis_result),
     }
 
-    for (const key of ['category', 'published_at_source', 'created_at'] as const) {
+    for (const key of ['category', 'published_at_source', 'created_at', 'source_org', 'source_name', 'subcategory'] as const) {
         if (typeof row[key] === 'string' || row[key] === null) {
             article[key] = row[key]
         }

@@ -10,10 +10,11 @@ describe('chipLabels', () => {
         for (const code of pressAgencies) {
             expect(chipLabels[code]).toBeDefined()
         }
-        expect(chipLabels['MOEF']).toBe('기재부')
-        expect(chipLabels['FSC']).toBe('금융위')
-        expect(chipLabels['FSS']).toBe('금감원')
-        expect(chipLabels['BOK']).toBe('한은')
+        expect(chipLabels.MOEF).toBe('기재부')
+        expect(chipLabels.FSC).toBe('금융위')
+        expect(chipLabels.FSS).toBe('금감원')
+        expect(chipLabels.BOK).toBe('한은')
+        expect(chipLabels.KFB).toBe('은행연합회')
     })
 
     it('maps all regulation agencies to Korean short names', async () => {
@@ -21,9 +22,9 @@ describe('chipLabels', () => {
         for (const code of regulationAgencies) {
             expect(chipLabels[code]).toBeDefined()
         }
-        expect(chipLabels['FSC_REG']).toBe('금융위')
-        expect(chipLabels['FSS_REG']).toBe('금감원(세칙)')
-        expect(chipLabels['FSS_REG_INFO']).toBe('금감원(제개정)')
+        expect(chipLabels.FSC_REG).toBe('금융위')
+        expect(chipLabels.FSS_REG).toBe('금감원(세칙)')
+        expect(chipLabels.FSS_REG_INFO).toBe('금감원(제개정)')
     })
 
     it('maps all sanction agencies to Korean short names', async () => {
@@ -31,13 +32,13 @@ describe('chipLabels', () => {
         for (const code of sanctionAgencies) {
             expect(chipLabels[code]).toBeDefined()
         }
-        expect(chipLabels['FSS_SANCTION']).toBe('제재')
-        expect(chipLabels['FSS_MGMT_NOTICE']).toBe('경영유의')
+        expect(chipLabels.FSS_SANCTION).toBe('제재')
+        expect(chipLabels.FSS_MGMT_NOTICE).toBe('경영유의')
     })
 })
 
 describe('AgencyChipBar rendering', () => {
-    it('renders "전체" + 4 press agency chips for press_release category', async () => {
+    it('renders "전체" + 5 press agency chips for press_release category', async () => {
         const AgencyChipBar = (await import('@/components/dashboard/AgencyChipBar')).default
         render(
             <AgencyChipBar
@@ -51,8 +52,9 @@ describe('AgencyChipBar rendering', () => {
         expect(screen.getByText('금감원')).toBeInTheDocument()
         expect(screen.getByText('기재부')).toBeInTheDocument()
         expect(screen.getByText('한은')).toBeInTheDocument()
+        expect(screen.getByText('은행연합회')).toBeInTheDocument()
         expect(screen.queryByText('농식품부')).not.toBeInTheDocument()
-        expect(screen.getAllByRole('button')).toHaveLength(5)
+        expect(screen.getAllByRole('button')).toHaveLength(6)
     })
 
     it('renders "전체" + 3 regulation chips for regulation_notice category', async () => {

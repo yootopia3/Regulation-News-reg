@@ -29,6 +29,7 @@
 | FSS  | Financial Supervisory Service | Scraper (Legacy) | Every 30 mins |
 | MOEF | Ministry of Economy & Finance | RSS | Every 30 mins |
 | BOK  | Bank of Korea | RSS | Every 30 mins |
+| KFB  | Korea Federation of Banks | RSS auto-discovery / HTML fallback | Every 30 mins |
 | **MAFRA** | ~~Ministry of Agriculture~~ | **Not Implemented** | N/A |
 
 ### 3.2 Timezone & Schedule

@@ -19,9 +19,14 @@ CREATE TABLE IF NOT EXISTS public.articles (
     star_rating integer CHECK (star_rating >= 1 AND star_rating <= 5),
     is_trending boolean NOT NULL DEFAULT false,
     category character varying(50) DEFAULT 'press_release',
+    source_org text,
+    source_name text,
+    subcategory text,
+    dedup_key text,
 
     CONSTRAINT articles_pkey PRIMARY KEY (id),
     CONSTRAINT articles_link_key UNIQUE (link),
+    CONSTRAINT articles_dedup_key_key UNIQUE (dedup_key),
     CONSTRAINT articles_agency_check CHECK (
         agency IN (
             'FSC',
@@ -33,7 +38,8 @@ CREATE TABLE IF NOT EXISTS public.articles (
             'FSS_REG_INFO',
             'FSS_SANCTION',
             'FSS_MGMT_NOTICE',
-            'MAFRA'
+            'MAFRA',
+            'KFB'
         )
     ),
     CONSTRAINT articles_published_at_source_check CHECK (
@@ -124,6 +130,9 @@ GRANT SELECT (
     published_at_source,
     created_at,
     link,
+    source_org,
+    source_name,
+    subcategory,
     analysis_result,
     view_count,
     star_rating

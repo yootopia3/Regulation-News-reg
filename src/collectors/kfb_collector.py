@@ -1,0 +1,228 @@
+"""Korea Federation of Banks press-release collector.
+
+KFB does not expose a fixed feed URL in our config. The collector therefore
+discovers official RSS/Atom links from the press page first, validates the
+candidate XML feed, and falls back to HTML list scraping when no usable feed
+or feed entries are available.
+"""
+
+import logging
+import re
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Tuple
+from urllib.parse import urljoin
+from xml.etree import ElementTree
+
+import feedparser
+from bs4 import BeautifulSoup
+
+from src.collectors import http
+from src.collectors.date_parser import KST, has_specific_time, parse_date
+from src.collectors.rss_parser import parse_date as parse_rss_date
+from src.config.agency_codes import ArticleCategory, PublishedAtSource
+from src.config.agency_loader import get_ssl_verify
+
+
+logger = logging.getLogger(__name__)
+
+KFB_CODE = "KFB"
+KFB_NAME = "은행연합회"
+KFB_SUBCATEGORY = "bank_association_press"
+FEED_TYPES = {"application/rss+xml", "application/atom+xml"}
+MAX_HTML_ITEMS = 30
+HTML_LOOKBACK_DAYS = 7
+
+
+def _with_kfb_metadata(item: Dict) -> Dict:
+    link = item["link"]
+    return {
+        **item,
+        "agency": KFB_CODE,
+        "source_org": KFB_CODE,
+        "source_name": KFB_NAME,
+        "category": ArticleCategory.PRESS_RELEASE.value,
+        "subcategory": KFB_SUBCATEGORY,
+        "dedup_key": f"{KFB_CODE}:{link}",
+    }
+
+
+def _feed_root_name(content: bytes) -> Optional[str]:
+    try:
+        root = ElementTree.fromstring(content.strip())
+    except ElementTree.ParseError:
+        return None
+    return root.tag.rsplit("}", 1)[-1].lower()
+
+
+def _is_valid_feed_response(content: bytes) -> bool:
+    return _feed_root_name(content) in {"rss", "feed"}
+
+
+def _candidate_feed_urls(page_url: str, html: bytes) -> List[str]:
+    soup = BeautifulSoup(html, "html.parser")
+    urls: List[str] = []
+    for link in soup.find_all("link"):
+        rel = link.get("rel") or []
+        if isinstance(rel, str):
+            rel_values = {rel.lower()}
+        else:
+            rel_values = {str(value).lower() for value in rel}
+        type_value = str(link.get("type") or "").lower()
+        href = link.get("href")
+        if "alternate" not in rel_values or type_value not in FEED_TYPES or not href:
+            continue
+        urls.append(urljoin(page_url, href))
+    return urls
+
+
+def discover_rss_feed(page_url: str, html: bytes, agency_config: Dict) -> Tuple[Optional[str], Optional[bytes]]:
+    """Return the first valid official RSS/Atom URL discovered from HTML."""
+    for candidate_url in _candidate_feed_urls(page_url, html):
+        try:
+            response = http.fetch(candidate_url, verify=get_ssl_verify(agency_config.get("code")))
+        except Exception as exc:
+            logger.warning("KFB RSS candidate failed: %s (%s)", candidate_url, exc)
+            continue
+        if _is_valid_feed_response(response.content):
+            logger.info("KFB RSS URL discovered: %s", candidate_url)
+            return candidate_url, response.content
+        logger.warning("KFB RSS candidate is not RSS/Atom XML: %s", candidate_url)
+    return None, None
+
+
+def _parse_feed_items(feed_content: bytes) -> List[Dict]:
+    feed = feedparser.parse(feed_content)
+    items: List[Dict] = []
+    for entry in feed.entries:
+        title = str(entry.get("title") or "").strip()
+        link = str(entry.get("link") or "").strip()
+        if not title or not link:
+            continue
+        if link.startswith("http://"):
+            link = "https://" + link[7:]
+
+        published = str(entry.get("published") or entry.get("updated") or "")
+        published_at = parse_rss_date(published)
+        has_source_time = has_specific_time(published)
+
+        if published_at and has_source_time:
+            published_at_value = published_at.isoformat()
+            source = PublishedAtSource.SOURCE.value
+        else:
+            published_at_value = datetime.now(KST).isoformat()
+            source = PublishedAtSource.COLLECTED_FALLBACK.value
+
+        description = str(entry.get("summary") or entry.get("description") or "").strip()
+        items.append(
+            _with_kfb_metadata(
+                {
+                    "title": title,
+                    "link": link,
+                    "published_at": published_at_value,
+                    "published_at_source": source,
+                    "source_published_at_str": published,
+                    "description": BeautifulSoup(description, "html.parser").get_text(" ", strip=True),
+                    "collection_source": "rss",
+                }
+            )
+        )
+    return items
+
+
+def _extract_date_text(row_text: str) -> str:
+    match = re.search(r"\d{4}[.-]\d{2}[.-]\d{2}", row_text)
+    return match.group(0) if match else ""
+
+
+def _parse_html_items(page_url: str, html: bytes, agency_config: Dict, last_crawled_date=None) -> List[Dict]:
+    selectors = agency_config.get("selector", {})
+    list_selector = selectors.get("list") or "table tbody tr, .board_list li, .bbs-list li, .list li"
+    title_selector = selectors.get("title") or "a"
+    date_selector = selectors.get("date")
+
+    soup = BeautifulSoup(html, "html.parser")
+    rows = soup.select(list_selector)
+    now_kst = datetime.now(KST)
+    cutoff_date = now_kst - timedelta(days=HTML_LOOKBACK_DAYS)
+    if last_crawled_date:
+        cutoff_date = max(last_crawled_date - timedelta(days=1), cutoff_date)
+
+    items: List[Dict] = []
+    seen_links = set()
+    for row in rows:
+        anchor = row.select_one(title_selector)
+        if not anchor:
+            continue
+        title = anchor.get_text(" ", strip=True)
+        href = anchor.get("href")
+        if not title or not href or href.startswith("#") or href.lower().startswith("javascript:"):
+            continue
+
+        link = urljoin(page_url, href)
+        if link in seen_links:
+            continue
+        seen_links.add(link)
+
+        date_text = ""
+        if date_selector:
+            date_el = row.select_one(date_selector)
+            if date_el:
+                date_text = date_el.get_text(" ", strip=True)
+        if not date_text:
+            date_text = _extract_date_text(row.get_text(" ", strip=True))
+
+        published_at = parse_date(date_text)
+        if published_at and published_at < cutoff_date:
+            continue
+
+        has_source_time = has_specific_time(date_text)
+        items.append(
+            _with_kfb_metadata(
+                {
+                    "title": title,
+                    "link": link,
+                    "published_at": (published_at if published_at and has_source_time else now_kst).isoformat(),
+                    "published_at_source": (
+                        PublishedAtSource.SOURCE.value
+                        if published_at and has_source_time
+                        else PublishedAtSource.COLLECTED_FALLBACK.value
+                    ),
+                    "source_published_at_str": date_text,
+                    "collection_source": "html",
+                }
+            )
+        )
+        if len(items) >= MAX_HTML_ITEMS:
+            break
+
+    return items
+
+
+def collect_kfb_rss_first(agency_config: Dict, last_crawled_date=None) -> List[Dict]:
+    """Collect KFB press releases using RSS/Atom first and HTML as fallback."""
+    page_url = agency_config.get("url")
+    if not page_url:
+        logger.error("[KFB] Missing base press-release URL.")
+        return []
+
+    try:
+        page_response = http.fetch(page_url, verify=get_ssl_verify(agency_config.get("code")))
+    except Exception as exc:
+        logger.error("[KFB] Failed to fetch press-release page: %s", exc)
+        return []
+
+    rss_url, rss_content = discover_rss_feed(page_url, page_response.content, agency_config)
+    if rss_url and rss_content:
+        items = _parse_feed_items(rss_content)
+        logger.info("KFB collection method: rss")
+        if items:
+            logger.info("KFB collected %s items via RSS.", len(items))
+            return items
+        logger.info("KFB RSS has no latest entries, fallback to HTML crawling")
+    else:
+        logger.info("KFB RSS not found, fallback to HTML crawling")
+
+    items = _parse_html_items(page_url, page_response.content, agency_config, last_crawled_date)
+    logger.info("KFB collection method: html")
+    logger.info("KFB collected %s items via HTML.", len(items))
+    return items

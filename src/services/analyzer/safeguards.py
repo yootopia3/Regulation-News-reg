@@ -60,7 +60,7 @@ def is_personnel_announcement(title: str, agency_name: str) -> bool:
     Personnel announcements from any agency are HIGH importance.
     """
     # Key agencies - ALL agencies we track
-    key_agencies = ['금융감독원', '금융위원회', '기획재정부', '한국은행', 'FSS', 'FSC', 'MOEF', 'BOK']
+    key_agencies = ['금융감독원', '금융위원회', '기획재정부', '한국은행', '은행연합회', 'FSS', 'FSC', 'MOEF', 'BOK', 'KFB']
 
     # Personnel-related keywords (expanded)
     personnel_keywords = [

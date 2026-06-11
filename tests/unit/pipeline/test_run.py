@@ -172,6 +172,19 @@ class _InsertChain:
         return SimpleNamespace(data=[self._payload])
 
 
+class _UpsertChain:
+    def __init__(self, db: "FakeSupabase", payload: Dict, on_conflict: str):
+        self._db = db
+        self._payload = payload
+        self._on_conflict = on_conflict
+
+    def execute(self):
+        self._db.upserted.append(
+            {"payload": self._payload, "on_conflict": self._on_conflict}
+        )
+        return SimpleNamespace(data=[self._payload])
+
+
 class _Table:
     def __init__(self, db: "FakeSupabase", name: str):
         self._db = db
@@ -182,6 +195,9 @@ class _Table:
 
     def insert(self, payload):
         return _InsertChain(self._db, payload)
+
+    def upsert(self, payload, on_conflict):
+        return _UpsertChain(self._db, payload, on_conflict)
 
 
 class FakeSupabase:
@@ -199,6 +215,7 @@ class FakeSupabase:
         self.sanction_links_by_agency: Dict[str, List[str]] = {}
         self.last_crawled_by_agency: Dict[str, str] = {}
         self.inserted: List[Dict] = []
+        self.upserted: List[Dict] = []
 
     def table(self, name):
         return _Table(self, name)
@@ -257,6 +274,21 @@ def _sanction_item(exam="A", seq="1"):
         "agency": "FSS_SANCTION",
         "category": "sanction_notice",
         "pdf_url": "https://fss.or.kr/x.pdf",
+    }
+
+
+def _kfb_item():
+    return {
+        "title": "은행연합회 보도자료",
+        "link": "https://m.kfb.or.kr/news/view.php?idx=1",
+        "published_at": "2026-06-09T09:30:00+09:00",
+        "published_at_source": "source",
+        "agency": "KFB",
+        "source_org": "KFB",
+        "source_name": "은행연합회",
+        "category": "press_release",
+        "subcategory": "bank_association_press",
+        "dedup_key": "KFB:https://m.kfb.or.kr/news/view.php?idx=1",
     }
 
 
@@ -428,3 +460,36 @@ def test_t5_sanction_duplicate_by_identity_key_is_skipped(monkeypatch):
     assert db.inserted == []
     assert analyzer.calls == []
     assert notifier.sent == []
+
+
+def test_kfb_rss_first_item_is_upserted_by_dedup_key(monkeypatch):
+    monkeypatch.setattr("src.pipeline.collect_all_rss", lambda: [])
+    monkeypatch.setattr("src.pipeline.collect_kfb_rss_first", lambda *args, **kwargs: [_kfb_item()])
+
+    analyzer = FakeAnalyzer(return_value=None)
+    notifier = FakeNotifier()
+    db = FakeSupabase()
+    scraper = FakeScraper(
+        content_by_link={
+            "https://m.kfb.or.kr/news/view.php?idx=1": "상세 본문과 첨부파일 정보"
+        }
+    )
+
+    pipe = Pipeline(
+        "config/agencies.json",
+        analyzer=analyzer,
+        notifier=notifier,
+        db=db,
+        scraper=scraper,
+    )
+    pipe.run()
+
+    assert db.inserted == []
+    assert len(db.upserted) == 1
+    assert db.upserted[0]["on_conflict"] == "dedup_key"
+    payload = db.upserted[0]["payload"]
+    assert payload["agency"] == "KFB"
+    assert payload["source_org"] == "KFB"
+    assert payload["source_name"] == "은행연합회"
+    assert payload["subcategory"] == "bank_association_press"
+    assert payload["dedup_key"] == "KFB:https://m.kfb.or.kr/news/view.php?idx=1"

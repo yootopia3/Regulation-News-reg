@@ -3,6 +3,7 @@ import json
 from datetime import datetime
 from typing import Dict, List, Optional, Set, Tuple
 
+from src.collectors.kfb_collector import collect_kfb_rss_first
 from src.collectors.rss_parser import collect_all_rss
 from src.collectors.sanction_scraper import extract_sanction_key
 from src.collectors.scraper import ContentScraper
@@ -205,6 +206,18 @@ class Pipeline:
             logger.error(f"Scraping failed for {agency_id}: {e}")
             return []
 
+    def _collect_rss_first(self, agency: Dict, last_crawled: Dict[str, datetime]) -> List[Dict]:
+        agency_id = agency.get('code') or agency.get('id')
+        if agency_id != AgencyCode.KFB.value:
+            logger.warning(f"Unsupported rss_first agency: {agency_id}")
+            return []
+        last_date = last_crawled.get(agency_id)
+        try:
+            return collect_kfb_rss_first(agency, last_crawled_date=last_date)
+        except Exception as e:
+            logger.error(f"RSS-first collection failed for {agency_id}: {e}")
+            return []
+
     def _collect_sanction(self, agency: Dict) -> List[Dict]:
         agency_id = agency.get('code')
         logger.info(f"Starting sanction notice scraping for {agency_id}...")
@@ -302,7 +315,14 @@ class Pipeline:
                 "analysis_result": analysis_result,
                 "category": item.get('category', ArticleCategory.PRESS_RELEASE),
             }
-            self.supabase.table("articles").insert(data).execute()
+            for optional_key in ("source_org", "source_name", "subcategory", "dedup_key"):
+                if item.get(optional_key):
+                    data[optional_key] = item[optional_key]
+
+            if data.get("dedup_key"):
+                self.supabase.table("articles").upsert(data, on_conflict="dedup_key").execute()
+            else:
+                self.supabase.table("articles").insert(data).execute()
             logger.info("  > Saved to DB.")
         except Exception as e:
             logger.error(f"  > Failed to save to DB: {e}")
@@ -336,21 +356,28 @@ class Pipeline:
         scraper_agencies = [
             a for a in self.agency_map.values() if a.get('collection_method') == 'scraper'
         ]
-        last_crawled = self._load_last_crawled(scraper_agencies)
+        rss_first_agencies = [
+            a for a in self.agency_map.values() if a.get('collection_method') == 'rss_first'
+        ]
+        last_crawled = self._load_last_crawled(scraper_agencies + rss_first_agencies)
 
         all_items: List[Dict] = []
 
         # 1. RSS Collection
         all_items.extend(self._collect_rss())
 
-        # 2. Scraper Collection (non-sanction)
+        # 2. RSS-first Collection
+        for agency in rss_first_agencies:
+            all_items.extend(self._collect_rss_first(agency, last_crawled))
+
+        # 3. Scraper Collection (non-sanction)
         for agency in scraper_agencies:
             agency_id = agency.get('code') or agency.get('id')
             if is_sanction_agency(agency_id):
                 continue
             all_items.extend(self._collect_scraper(agency, last_crawled))
 
-        # 3. Sanction Notice Collection (separate handling)
+        # 4. Sanction Notice Collection (separate handling)
         sanction_codes = get_sanction_codes()
         sanction_targets = [
             a for a in self.agency_map.values() if a.get('code') in sanction_codes
@@ -364,7 +391,7 @@ class Pipeline:
 
         logger.info(f"Total items to process: {len(all_items)}")
 
-        # 4. Processing
+        # 5. Processing
         for item in all_items:
             self._process_single_item(item, existing_links, sanction_keys)
 

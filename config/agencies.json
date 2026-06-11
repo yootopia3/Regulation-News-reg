@@ -140,6 +140,24 @@
       }
     },
     {
+      "code": "KFB",
+      "name": "은행연합회",
+      "category": "press_release",
+      "collection_method": "rss_first",
+      "url": "https://m.kfb.or.kr/news/info_news.php",
+      "base_url": "https://m.kfb.or.kr",
+      "source_org": "KFB",
+      "source_name": "은행연합회",
+      "subcategory": "bank_association_press",
+      "selector": {
+        "list": "table tbody tr, .board_list li, .bbs-list li, .list li",
+        "title": "a",
+        "date": ".date, td.date, span.date, td:nth-of-type(3), td:nth-of-type(4)",
+        "content": ".view_cont, .board_view, .bbs_view, .content, #contents",
+        "attachment_links": "a[href*='download'], a[href$='.pdf'], a[href$='.hwp'], a[href$='.hwpx'], a[href$='.doc'], a[href$='.docx'], a[href$='.xls'], a[href$='.xlsx']"
+      }
+    },
+    {
       "code": "MAFRA",
       "name": "농식품부 (MAFRA)",
       "category": "press_release",

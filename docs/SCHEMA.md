@@ -22,12 +22,17 @@
 | `star_rating` | `integer` | Yes | - | Optional manual 1-5 rating used before AI score fallback |
 | `is_trending` | `boolean` | No | `false` | Reserved v2 field |
 | `category` | `varchar(50)` | Yes | `press_release` | Dashboard category: `press_release`, `regulation_notice`, or `sanction_notice` |
+| `source_org` | `text` | Yes | - | Source organization code for RSS-first collectors such as `KFB` |
+| `source_name` | `text` | Yes | - | Human-readable source organization name such as `은행연합회` |
+| `subcategory` | `text` | Yes | - | Collector-specific subtype such as `bank_association_press` |
+| `dedup_key` | `text` | Yes | - | Stable collector key used for upsert when available |
 
 ## 2. Constraints And Indexes
 
 - Primary key: `articles_pkey` on `id`
 - Unique key: `articles_link_key` on `link`
-- Check: `articles_agency_check` allows the current agency codes in `config/agencies.json`
+- Unique key: `articles_dedup_key_key` on `dedup_key` for collectors that provide stable source keys
+- Check: `articles_agency_check` allows the current agency codes in `config/agencies.json`, including `KFB`
 - Check: `articles_published_at_source_check` allows only `source`, `collected_fallback`, or `null`
 - Check: `star_rating` must be between 1 and 5 when present
 - Indexes: `articles_agency_idx`, `articles_published_at_idx`, `idx_articles_category`
@@ -60,7 +65,7 @@ Legacy anonymous write policies such as `"Enable insert for all users"` and `"En
 The dashboard client intentionally selects only these columns:
 
 ```text
-id,title,agency,category,published_at,published_at_source,created_at,link,analysis_result,view_count,star_rating
+id,title,agency,category,published_at,published_at_source,created_at,link,source_org,source_name,subcategory,analysis_result,view_count,star_rating
 ```
 
 `content` is not fetched by the dashboard client. AI report generation continues to call `/api/report` with `articleId`; the server route loads `content` from Supabase with the service role key when needed.

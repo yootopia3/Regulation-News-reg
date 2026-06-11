@@ -4,6 +4,7 @@ import logging
 import random
 import time
 from typing import Dict, Optional
+from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 
@@ -46,6 +47,18 @@ def fetch_content(url: str, agency_config: Dict) -> Optional[str]:
                 match.decompose()
 
         text_content = content_div.get_text(separator='\n', strip=True)
+
+        attachment_selector = scraper_config.get('attachment_links')
+        if attachment_selector:
+            attachments = []
+            for link in soup.select(attachment_selector):
+                href = link.get('href')
+                if not href:
+                    continue
+                label = link.get_text(' ', strip=True) or href
+                attachments.append(f"{label}: {urljoin(url, href)}")
+            if attachments:
+                text_content = text_content + "\n\nAttachments:\n" + "\n".join(attachments)
 
         # Data Integrity Check: Short Content Warning
         if len(text_content) < 50:

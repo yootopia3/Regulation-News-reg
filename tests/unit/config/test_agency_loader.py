@@ -38,8 +38,9 @@ def test_is_sanction_agency_accepts_enum():
 
 def test_load_agencies_returns_full_list():
     agencies = load_agencies()
-    assert len(agencies) == 10
+    assert len(agencies) == 11
     codes = {a["code"] for a in agencies}
     assert "FSS_SANCTION" in codes
     assert "FSS_MGMT_NOTICE" in codes
     assert "MAFRA" in codes
+    assert "KFB" in codes

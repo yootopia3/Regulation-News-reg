@@ -126,7 +126,7 @@ describe('/api/articles', () => {
 
   it('keeps the three category query contracts', async () => {
     await callGet()
-    const selectedColumns = 'id,title,agency,category,published_at,published_at_source,created_at,link,analysis_result,view_count,star_rating'
+    const selectedColumns = 'id,title,agency,category,published_at,published_at_source,created_at,link,source_org,source_name,subcategory,analysis_result,view_count,star_rating'
 
     expect(chains.map(chain => chain.fromTable)).toEqual(['articles', 'articles', 'articles'])
     expect(chains.map(chain => chain.select.mock.calls[0][0])).toEqual([selectedColumns, selectedColumns, selectedColumns])

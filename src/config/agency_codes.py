@@ -28,6 +28,7 @@ class AgencyCode(str, Enum):
     FSS_SANCTION = "FSS_SANCTION"
     FSS_MGMT_NOTICE = "FSS_MGMT_NOTICE"
     MAFRA = "MAFRA"
+    KFB = "KFB"
 
     def __str__(self) -> str:  # pragma: no cover - trivial
         return self.value
