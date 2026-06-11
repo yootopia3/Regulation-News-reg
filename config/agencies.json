@@ -146,6 +146,11 @@
       "collection_method": "rss_first",
       "url": "https://m.kfb.or.kr/news/info_news.php",
       "base_url": "https://m.kfb.or.kr",
+      "fallback_urls": [
+        "https://www.kfb.or.kr/news/info_news.php",
+        "http://m.kfb.or.kr/news/info_news.php",
+        "http://www.kfb.or.kr/news/info_news.php"
+      ],
       "source_org": "KFB",
       "source_name": "은행연합회",
       "subcategory": "bank_association_press",

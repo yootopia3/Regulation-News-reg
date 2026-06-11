@@ -31,6 +31,11 @@ KFB_SUBCATEGORY = "bank_association_press"
 FEED_TYPES = {"application/rss+xml", "application/atom+xml"}
 MAX_HTML_ITEMS = 30
 DEFAULT_HTML_LOOKBACK_DAYS = 30
+DEFAULT_FALLBACK_URLS = [
+    "https://www.kfb.or.kr/news/info_news.php",
+    "http://m.kfb.or.kr/news/info_news.php",
+    "http://www.kfb.or.kr/news/info_news.php",
+]
 
 
 def _with_kfb_metadata(item: Dict) -> Dict:
@@ -208,20 +213,42 @@ def _parse_html_items(page_url: str, html: bytes, agency_config: Dict, last_craw
     return items
 
 
+def _candidate_page_urls(primary_url: str, agency_config: Dict) -> List[str]:
+    urls: List[str] = [primary_url]
+    for candidate in agency_config.get("fallback_urls", DEFAULT_FALLBACK_URLS):
+        if candidate not in urls:
+            urls.append(candidate)
+    return urls
+
+
+def _fetch_press_page(agency_config: Dict) -> Tuple[Optional[str], Optional[bytes]]:
+    primary_url = agency_config.get("url")
+    if not primary_url:
+        logger.error("[KFB] Missing base press-release URL.")
+        return None, None
+
+    last_error: Optional[Exception] = None
+    for candidate_url in _candidate_page_urls(primary_url, agency_config):
+        try:
+            response = http.fetch(candidate_url, verify=get_ssl_verify(agency_config.get("code")))
+            if candidate_url != primary_url:
+                logger.info("KFB press page fallback URL used: %s", candidate_url)
+            return candidate_url, response.content
+        except Exception as exc:
+            last_error = exc
+            logger.warning("[KFB] Failed to fetch press-release candidate %s: %s", candidate_url, exc)
+
+    logger.error("[KFB] Failed to fetch press-release page: %s", last_error)
+    return None, None
+
+
 def collect_kfb_rss_first(agency_config: Dict, last_crawled_date=None) -> List[Dict]:
     """Collect KFB press releases using RSS/Atom first and HTML as fallback."""
-    page_url = agency_config.get("url")
-    if not page_url:
-        logger.error("[KFB] Missing base press-release URL.")
+    page_url, page_content = _fetch_press_page(agency_config)
+    if not page_url or not page_content:
         return []
 
-    try:
-        page_response = http.fetch(page_url, verify=get_ssl_verify(agency_config.get("code")))
-    except Exception as exc:
-        logger.error("[KFB] Failed to fetch press-release page: %s", exc)
-        return []
-
-    rss_url, rss_content = discover_rss_feed(page_url, page_response.content, agency_config)
+    rss_url, rss_content = discover_rss_feed(page_url, page_content, agency_config)
     if rss_url and rss_content:
         items = _parse_feed_items(rss_content)
         logger.info("KFB collection method: rss")
@@ -232,7 +259,7 @@ def collect_kfb_rss_first(agency_config: Dict, last_crawled_date=None) -> List[D
     else:
         logger.info("KFB RSS not found, fallback to HTML crawling")
 
-    items = _parse_html_items(page_url, page_response.content, agency_config, last_crawled_date)
+    items = _parse_html_items(page_url, page_content, agency_config, last_crawled_date)
     logger.info("KFB collection method: html")
     logger.info("KFB collected %s items via HTML.", len(items))
     return items
