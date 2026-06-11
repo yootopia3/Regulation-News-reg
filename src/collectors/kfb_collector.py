@@ -30,7 +30,7 @@ KFB_NAME = "은행연합회"
 KFB_SUBCATEGORY = "bank_association_press"
 FEED_TYPES = {"application/rss+xml", "application/atom+xml"}
 MAX_HTML_ITEMS = 30
-HTML_LOOKBACK_DAYS = 7
+DEFAULT_HTML_LOOKBACK_DAYS = 30
 
 
 def _with_kfb_metadata(item: Dict) -> Dict:
@@ -139,23 +139,29 @@ def _parse_html_items(page_url: str, html: bytes, agency_config: Dict, last_craw
     list_selector = selectors.get("list") or "table tbody tr, .board_list li, .bbs-list li, .list li"
     title_selector = selectors.get("title") or "a"
     date_selector = selectors.get("date")
+    lookback_days = int(agency_config.get("lookback_days", DEFAULT_HTML_LOOKBACK_DAYS))
 
     soup = BeautifulSoup(html, "html.parser")
     rows = soup.select(list_selector)
+    if not rows:
+        rows = soup.select("a[href]")
     now_kst = datetime.now(KST)
-    cutoff_date = now_kst - timedelta(days=HTML_LOOKBACK_DAYS)
+    cutoff_date = now_kst - timedelta(days=lookback_days)
     if last_crawled_date:
         cutoff_date = max(last_crawled_date - timedelta(days=1), cutoff_date)
+    logger.info("KFB HTML fallback rows: %s, cutoff: %s", len(rows), cutoff_date.date().isoformat())
 
     items: List[Dict] = []
     seen_links = set()
     for row in rows:
-        anchor = row.select_one(title_selector)
+        anchor = row if getattr(row, "name", None) == "a" else row.select_one(title_selector)
         if not anchor:
             continue
         title = anchor.get_text(" ", strip=True)
         href = anchor.get("href")
         if not title or not href or href.startswith("#") or href.lower().startswith("javascript:"):
+            continue
+        if getattr(row, "name", None) == "a" and "news" not in href.lower():
             continue
 
         link = urljoin(page_url, href)
@@ -169,7 +175,11 @@ def _parse_html_items(page_url: str, html: bytes, agency_config: Dict, last_craw
             if date_el:
                 date_text = date_el.get_text(" ", strip=True)
         if not date_text:
-            date_text = _extract_date_text(row.get_text(" ", strip=True))
+            row_text = row.get_text(" ", strip=True)
+            parent_text = row.parent.get_text(" ", strip=True) if row.parent else ""
+            date_text = _extract_date_text(f"{row_text} {parent_text}")
+        if getattr(row, "name", None) == "a" and not date_text:
+            continue
 
         published_at = parse_date(date_text)
         if published_at and published_at < cutoff_date:

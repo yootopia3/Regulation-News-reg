@@ -149,6 +149,7 @@
       "source_org": "KFB",
       "source_name": "은행연합회",
       "subcategory": "bank_association_press",
+      "lookback_days": 30,
       "selector": {
         "list": "table tbody tr, .board_list li, .bbs-list li, .list li",
         "title": "a",
