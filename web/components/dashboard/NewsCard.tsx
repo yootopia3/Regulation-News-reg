@@ -37,7 +37,7 @@ const agencyNames: Record<string, string> = {
     FSS: '금감원',
     MOEF: '기재부',
     BOK: '한은',
-    KFB: '은행연합회',
+    KFB: '연합회',
     MAFRA: '농식품부',
     FSC_REG: '금융위',
     FSS_REG: '금감원',

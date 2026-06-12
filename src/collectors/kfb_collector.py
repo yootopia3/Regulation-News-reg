@@ -31,6 +31,11 @@ KFB_SUBCATEGORY = "bank_association_press"
 FEED_TYPES = {"application/rss+xml", "application/atom+xml"}
 MAX_HTML_ITEMS = 30
 DEFAULT_HTML_LOOKBACK_DAYS = 30
+KFB_DATE_RE = re.compile(r"\d{4}[./-]\d{2}[./-]\d{2}")
+DOWNLOAD_URL_RE = re.compile(
+    r"""['"]([^'"]*(?:\.pdf|download|file=|down)[^'"]*)['"]""",
+    re.IGNORECASE,
+)
 DEFAULT_FALLBACK_URLS = [
     "https://www.kfb.or.kr/news/info_news.php",
     "http://m.kfb.or.kr/news/info_news.php",
@@ -135,8 +140,12 @@ def _parse_feed_items(feed_content: bytes) -> List[Dict]:
 
 
 def _extract_date_text(row_text: str) -> str:
-    match = re.search(r"\d{4}[.-]\d{2}[.-]\d{2}", row_text)
+    match = KFB_DATE_RE.search(row_text)
     return match.group(0) if match else ""
+
+
+def _parse_kfb_date(date_text: str) -> Optional[datetime]:
+    return parse_date(date_text.replace("/", "-"))
 
 
 def _text_without_date(text: str, date_text: str) -> str:
@@ -146,9 +155,35 @@ def _text_without_date(text: str, date_text: str) -> str:
     return text
 
 
+def _clean_title(text: str, date_text: str) -> str:
+    title = _text_without_date(text, date_text)
+    # KFB mobile rows often render as "title YYYY/MM/DD 46"; remove the
+    # trailing article/view number after the date has been stripped.
+    title = re.sub(r"\s+\d{1,6}\s*$", "", title).strip()
+    return title
+
+
+def _is_download_url(value: str) -> bool:
+    lower_value = value.lower()
+    return any(marker in lower_value for marker in (".pdf", "download", "file=", "down"))
+
+
+def _extract_download_url(page_url: str, text: str) -> Optional[str]:
+    if not text:
+        return None
+    match = DOWNLOAD_URL_RE.search(text)
+    if match:
+        return urljoin(page_url, match.group(1))
+    return None
+
+
 def _extract_javascript_url(page_url: str, script_text: str) -> Optional[str]:
     if not script_text:
         return None
+    download_url = _extract_download_url(page_url, script_text)
+    if download_url:
+        return download_url
+
     url_match = re.search(r"""['"]([^'"]+\.php(?:\?[^'"]*)?)['"]""", script_text)
     if url_match:
         return urljoin(page_url, url_match.group(1))
@@ -175,10 +210,12 @@ def _extract_link(page_url: str, row, anchor) -> Optional[str]:
 def _extract_pdf_link(page_url: str, row) -> Optional[str]:
     for candidate in row.select("a[href]"):
         href = candidate.get("href") or ""
-        lower_href = href.lower()
-        if ".pdf" in lower_href or "download" in lower_href or "file=" in lower_href:
+        if _is_download_url(href):
             return urljoin(page_url, href)
-    return None
+        onclick_url = _extract_download_url(page_url, candidate.get("onclick") or "")
+        if onclick_url:
+            return onclick_url
+    return _extract_download_url(page_url, str(row))
 
 
 def _parse_html_items(page_url: str, html: bytes, agency_config: Dict, last_crawled_date=None) -> List[Dict]:
@@ -219,38 +256,41 @@ def _parse_html_items(page_url: str, html: bytes, agency_config: Dict, last_craw
             continue
         seen_links.add(link)
 
+        row_text = row.get_text(" ", strip=True)
         date_text = ""
         if date_selector:
             date_el = row.select_one(date_selector)
             if date_el:
                 date_text = date_el.get_text(" ", strip=True)
         if not date_text:
-            row_text = row.get_text(" ", strip=True)
             parent_text = row.parent.get_text(" ", strip=True) if row.parent else ""
             date_text = _extract_date_text(f"{row_text} {parent_text}")
         if getattr(row, "name", None) == "a" and not date_text:
             skipped_no_date += 1
             continue
 
-        title = anchor.get_text(" ", strip=True) or _text_without_date(row.get_text(" ", strip=True), date_text)
+        title = _clean_title(anchor.get_text(" ", strip=True), date_text)
+        if not title:
+            title = _clean_title(row_text, date_text)
         if not title:
             skipped_no_title += 1
             continue
 
-        published_at = parse_date(date_text)
+        published_at = _parse_kfb_date(date_text)
         if published_at and published_at < cutoff_date:
             skipped_old += 1
             continue
 
-        has_source_time = has_specific_time(date_text)
         pdf_url = _extract_pdf_link(page_url, row)
+        if not pdf_url and _is_download_url(link):
+            pdf_url = link
         item = {
             "title": title,
             "link": link,
-            "published_at": (published_at if published_at and has_source_time else now_kst).isoformat(),
+            "published_at": (published_at or now_kst).isoformat(),
             "published_at_source": (
                 PublishedAtSource.SOURCE.value
-                if published_at and has_source_time
+                if published_at
                 else PublishedAtSource.COLLECTED_FALLBACK.value
             ),
             "source_published_at_str": date_text,
@@ -272,6 +312,7 @@ def _parse_html_items(page_url: str, html: bytes, agency_config: Dict, last_craw
         skipped_old,
         skipped_no_title,
     )
+    logger.info("KFB HTML fallback pdf links: %s", sum(1 for item in items if item.get("pdf_url")))
     return items
 
 
