@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
-const KFB_LIST_URLS = [
+const KFB_BASE_LIST_URLS = [
     'http://m.kfb.or.kr/news/info_news.php',
     'http://www.kfb.or.kr/news/info_news.php',
     'https://www.kfb.or.kr/news/info_news.php',
@@ -10,9 +10,11 @@ const KFB_LIST_URLS = [
 ]
 
 const LINK_RE = /(?:href|src)\s*=\s*["']([^"']+)["']|(?:onclick)\s*=\s*["']([^"']+)["']|["']([^"']*(?:\.pdf|download|file=|down|info_news)[^"']*)["']/gi
+const RAW_PDF_RE = /(?:https?:\/\/|\/|\.\/|\.\.\/)[^\s"'<>]+\.pdf(?:[^\s"'<>]*)?/gi
 const ROW_RE = /<(tr|li|div)\b[\s\S]*?<\/\1>/gi
 const KFB_TITLE_META_RE = /\s+\d{4}[./-]\d{2}[./-]\d{2}(?:\s+\d+)?\s*$/
-const KFB_ROW_ID_RE = /\d{4}[./-]\d{2}[./-]\d{2}\s+(\d{1,6})|\b(?:idx|num|no|seq|sn|board_no|article_no)\b\D{0,20}(\d{1,6})/gi
+const KFB_DETAIL_ID_RE = /info_news_view\.php[^"']*?[?&]idx=(\d{2,})|(?:go|fnc?|open)?(?:view|detail|read)\w*\s*\(\s*['"]?(\d{2,})|(?:idx|num|no|seq|sn|board_no|article_no)\b\D{0,20}(\d{2,})/gi
+const KFB_DETAIL_QUERY = 'col=&sw=&pg=1&gubun=&orderby=&code=&data_year=&SearchOffice=&SearchOpinion=&cate_idx=&BankAll='
 
 function normalizeTitle(value: string): string {
     return decodeEntities(value)
@@ -108,6 +110,10 @@ function findLinks(html: string, baseUrl: string): string[] {
             if (resolved) links.push(resolved)
         }
     }
+    for (const match of html.matchAll(RAW_PDF_RE)) {
+        const resolved = resolveUrl(match[0], baseUrl)
+        if (resolved) links.push(resolved)
+    }
     return Array.from(new Set(links))
 }
 
@@ -121,25 +127,41 @@ function getDirectoryUrl(baseUrl: string): string {
 
 function findArticleIds(block: string): string[] {
     const ids: string[] = []
-    for (const match of block.matchAll(KFB_ROW_ID_RE)) {
-        const id = match[1] || match[2]
-        if (id) ids.push(id)
+    for (const match of block.matchAll(KFB_DETAIL_ID_RE)) {
+        const id = match[1] || match[2] || match[3]
+        if (id && Number(id) >= 100) ids.push(id)
     }
     return Array.from(new Set(ids))
 }
 
+function buildDetailUrl(directoryUrl: string, id: string): string {
+    return new URL(`info_news_view.php?idx=${id}&${KFB_DETAIL_QUERY}`, directoryUrl).toString()
+}
+
 function buildDetailCandidates(block: string, listUrl: string): string[] {
     const directoryUrl = getDirectoryUrl(listUrl)
-    const candidates: string[] = []
-    for (const id of findArticleIds(block)) {
-        for (const fileName of ['info_news.php', 'info_news_view.php', 'view.php']) {
-            for (const param of ['idx', 'num', 'no', 'seq', 'sn']) {
-                candidates.push(new URL(`${fileName}?${param}=${id}`, directoryUrl).toString())
-                candidates.push(new URL(`${fileName}?mode=view&${param}=${id}`, directoryUrl).toString())
-            }
+    return findArticleIds(block).map(id => buildDetailUrl(directoryUrl, id))
+}
+
+function buildListUrls(title: string): string[] {
+    const searchTerm = title.trim()
+    const urls: string[] = []
+    for (const baseUrl of KFB_BASE_LIST_URLS) {
+        urls.push(baseUrl)
+        for (const page of [1, 2, 3]) {
+            const pageUrl = new URL(baseUrl)
+            pageUrl.searchParams.set('pg', String(page))
+            urls.push(pageUrl.toString())
+        }
+        if (searchTerm) {
+            const searchUrl = new URL(baseUrl)
+            searchUrl.searchParams.set('col', 'subject')
+            searchUrl.searchParams.set('sw', searchTerm)
+            searchUrl.searchParams.set('pg', '1')
+            urls.push(searchUrl.toString())
         }
     }
-    return candidates
+    return Array.from(new Set(urls))
 }
 
 function findMatchingBlock(html: string, targetTitle: string): string | null {
@@ -165,11 +187,20 @@ async function findPdfFromDetail(detailUrl: string): Promise<string | null> {
     return findLinks(html, detailUrl).find(isPdfLikeUrl) ?? null
 }
 
+function isKfbDetailUrl(value: string): boolean {
+    try {
+        const parsed = new URL(value)
+        return parsed.hostname.endsWith('kfb.or.kr') && parsed.pathname.endsWith('/info_news_view.php')
+    } catch {
+        return false
+    }
+}
+
 async function findKfbOriginal(title: string): Promise<string | null> {
     const targetTitle = normalizeTitle(title)
     if (!targetTitle) return null
 
-    for (const listUrl of KFB_LIST_URLS) {
+    for (const listUrl of buildListUrls(title)) {
         const html = await fetchHtml(listUrl)
         if (!html) continue
 
@@ -198,7 +229,12 @@ async function findKfbOriginal(title: string): Promise<string | null> {
 
 export async function GET(request: NextRequest) {
     const title = request.nextUrl.searchParams.get('title') ?? ''
-    const fallback = request.nextUrl.searchParams.get('fallback') || KFB_LIST_URLS[0]
+    const fallback = request.nextUrl.searchParams.get('fallback') || KFB_BASE_LIST_URLS[0]
+    if (isKfbDetailUrl(fallback)) {
+        const fallbackPdfUrl = await findPdfFromDetail(fallback)
+        if (fallbackPdfUrl) return NextResponse.redirect(fallbackPdfUrl)
+    }
+
     const originalUrl = await findKfbOriginal(title)
 
     return NextResponse.redirect(originalUrl || fallback)

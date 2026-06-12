@@ -36,6 +36,12 @@ DOWNLOAD_URL_RE = re.compile(
     r"""['"]([^'"]*(?:\.pdf|download|file=|down)[^'"]*)['"]""",
     re.IGNORECASE,
 )
+RAW_PDF_URL_RE = re.compile(r"""(?:https?://|/|\./|\.\./)[^\s"'<>]+\.pdf(?:[^\s"'<>]*)?""", re.IGNORECASE)
+DETAIL_ID_RE = re.compile(
+    r"""info_news_view\.php[^'"]*?[?&]idx=(\d{2,})|(?:go|fnc?|open)?(?:view|detail|read)\w*\s*\(\s*['"]?(\d{2,})|(?:idx|num|no|seq|sn|board_no|article_no)\b\D{0,20}(\d{2,})""",
+    re.IGNORECASE,
+)
+DETAIL_QUERY = "col=&sw=&pg=1&gubun=&orderby=&code=&data_year=&SearchOffice=&SearchOpinion=&cate_idx=&BankAll="
 DEFAULT_FALLBACK_URLS = [
     "https://www.kfb.or.kr/news/info_news.php",
     "http://m.kfb.or.kr/news/info_news.php",
@@ -174,6 +180,17 @@ def _extract_download_url(page_url: str, text: str) -> Optional[str]:
     match = DOWNLOAD_URL_RE.search(text)
     if match:
         return urljoin(page_url, match.group(1))
+    raw_match = RAW_PDF_URL_RE.search(text)
+    if raw_match:
+        return urljoin(page_url, raw_match.group(0))
+    return None
+
+
+def _extract_detail_id(script_text: str) -> Optional[str]:
+    for match in DETAIL_ID_RE.finditer(script_text):
+        detail_id = next((group for group in match.groups() if group), None)
+        if detail_id and int(detail_id) >= 100:
+            return detail_id
     return None
 
 
@@ -184,26 +201,26 @@ def _extract_javascript_url(page_url: str, script_text: str) -> Optional[str]:
     if download_url:
         return download_url
 
+    detail_id = _extract_detail_id(script_text)
+    if detail_id:
+        return urljoin(page_url, f"info_news_view.php?idx={detail_id}&{DETAIL_QUERY}")
+
     url_match = re.search(r"""['"]([^'"]+\.php(?:\?[^'"]*)?)['"]""", script_text)
     if url_match:
         return urljoin(page_url, url_match.group(1))
-
-    id_match = re.search(r"""['"]?(\d{2,})['"]?""", script_text)
-    if id_match:
-        separator = "&" if "?" in page_url else "?"
-        return f"{page_url}{separator}idx={id_match.group(1)}"
     return None
 
 
 def _extract_link(page_url: str, row, anchor) -> Optional[str]:
     href = anchor.get("href") or ""
-    if href and not href.startswith("#") and not href.lower().startswith("javascript:"):
-        return urljoin(page_url, href)
-
-    for raw in (href, anchor.get("onclick") or "", row.get("onclick") or ""):
+    for raw in (anchor.get("onclick") or "", row.get("onclick") or "", href):
         extracted = _extract_javascript_url(page_url, raw)
         if extracted:
             return extracted
+
+    if href and not href.startswith("#") and not href.lower().startswith("javascript:"):
+        return urljoin(page_url, href)
+
     return None
 
 
