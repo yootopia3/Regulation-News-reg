@@ -70,9 +70,6 @@ function getSubCategory(code: string): string | null {
 }
 
 function getOriginalLink(article: Article): string {
-    if (article.agency === 'KFB' && article.analysis_result?.pdf_url) {
-        return article.analysis_result.pdf_url
-    }
     if (article.agency === 'KFB') {
         const params = new URLSearchParams({
             title: article.title,

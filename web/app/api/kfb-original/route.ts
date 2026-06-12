@@ -10,7 +10,6 @@ const KFB_BASE_LIST_URLS = [
 ]
 
 const LINK_RE = /(?:href|src)\s*=\s*["']([^"']+)["']|(?:onclick)\s*=\s*["']([^"']+)["']|["']([^"']*(?:\.pdf|download|file=|down|info_news)[^"']*)["']/gi
-const RAW_PDF_RE = /(?:https?:\/\/|\/|\.\/|\.\.\/)[^\s"'<>]+\.pdf(?:[^\s"'<>]*)?/gi
 const ROW_RE = /<(tr|li|div)\b[\s\S]*?<\/\1>/gi
 const KFB_TITLE_META_RE = /\s+\d{4}[./-]\d{2}[./-]\d{2}(?:\s+\d+)?\s*$/
 const KFB_DETAIL_ID_RE = /info_news_view\.php[^"']*?[?&]idx=(\d{2,})|(?:go|fnc?|open)?(?:view|detail|read)\w*\s*\(\s*['"]?(\d{2,})|(?:idx|num|no|seq|sn|board_no|article_no)\b\D{0,20}(\d{2,})/gi
@@ -87,11 +86,6 @@ function resolveUrl(rawUrl: string, baseUrl: string): string | null {
     }
 }
 
-function isPdfLikeUrl(value: string): boolean {
-    const lower = value.toLowerCase()
-    return lower.includes('.pdf') || lower.includes('download') || lower.includes('file=') || lower.includes('down')
-}
-
 function findLinks(html: string, baseUrl: string): string[] {
     const links: string[] = []
     for (const match of html.matchAll(LINK_RE)) {
@@ -109,10 +103,6 @@ function findLinks(html: string, baseUrl: string): string[] {
             const resolved = resolveUrl(innerUrl, baseUrl)
             if (resolved) links.push(resolved)
         }
-    }
-    for (const match of html.matchAll(RAW_PDF_RE)) {
-        const resolved = resolveUrl(match[0], baseUrl)
-        if (resolved) links.push(resolved)
     }
     return Array.from(new Set(links))
 }
@@ -180,13 +170,6 @@ function findMatchingBlock(html: string, targetTitle: string): string | null {
     return html.slice(Math.max(0, roughIndex - 2000), roughIndex + 4000)
 }
 
-async function findPdfFromDetail(detailUrl: string): Promise<string | null> {
-    const html = await fetchHtml(detailUrl)
-    if (!html) return null
-
-    return findLinks(html, detailUrl).find(isPdfLikeUrl) ?? null
-}
-
 function isKfbDetailUrl(value: string): boolean {
     try {
         const parsed = new URL(value)
@@ -208,20 +191,13 @@ async function findKfbOriginal(title: string): Promise<string | null> {
         if (!block) continue
 
         const links = findLinks(block, listUrl)
-        const pdfUrl = links.find(isPdfLikeUrl)
-        if (pdfUrl) return pdfUrl
-
         const detailCandidates = [
-            ...links.filter(link => !isPdfLikeUrl(link) && link !== listUrl),
+            ...links.filter(isKfbDetailUrl),
             ...buildDetailCandidates(block, listUrl),
         ]
-        let firstDetailUrl: string | null = null
         for (const detailUrl of Array.from(new Set(detailCandidates))) {
-            const detailPdfUrl = await findPdfFromDetail(detailUrl)
-            if (detailPdfUrl) return detailPdfUrl
-            if (firstDetailUrl === null) firstDetailUrl = detailUrl
+            return detailUrl
         }
-        if (firstDetailUrl) return firstDetailUrl
     }
 
     return null
@@ -231,8 +207,7 @@ export async function GET(request: NextRequest) {
     const title = request.nextUrl.searchParams.get('title') ?? ''
     const fallback = request.nextUrl.searchParams.get('fallback') || KFB_BASE_LIST_URLS[0]
     if (isKfbDetailUrl(fallback)) {
-        const fallbackPdfUrl = await findPdfFromDetail(fallback)
-        if (fallbackPdfUrl) return NextResponse.redirect(fallbackPdfUrl)
+        return NextResponse.redirect(fallback)
     }
 
     const originalUrl = await findKfbOriginal(title)
