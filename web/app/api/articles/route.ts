@@ -20,6 +20,7 @@ type SafeAnalysisResult = {
     importance_score?: number
     risk_level?: string
     keywords?: string[]
+    pdf_url?: string
 }
 
 type SafeArticle = {
@@ -86,6 +87,7 @@ function sanitizeAnalysisResult(value: unknown): SafeAnalysisResult | null {
     if (typeof value.importance_score === 'number') result.importance_score = value.importance_score
     if (typeof value.risk_level === 'string') result.risk_level = value.risk_level
     if (isStringArray(value.keywords)) result.keywords = value.keywords
+    if (typeof value.pdf_url === 'string') result.pdf_url = value.pdf_url
 
     return Object.keys(result).length > 0 ? result : null
 }

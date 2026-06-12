@@ -1,5 +1,6 @@
 import logging
 import json
+import re
 from datetime import datetime
 from typing import Dict, List, Optional, Set, Tuple
 
@@ -16,6 +17,10 @@ logger = logging.getLogger(__name__)
 
 
 SanctionKey = Tuple[str, str, str]
+PDF_URL_RE = re.compile(
+    r"https?://[^\s)>\"]+(?:\.pdf|download|file=)[^\s)>\"]*",
+    re.IGNORECASE,
+)
 
 
 class Pipeline:
@@ -240,6 +245,8 @@ class Pipeline:
     ) -> bool:
         agency_id = item['agency']
         link = item['link']
+        if item.get('dedup_key'):
+            return False
         if is_sanction_agency(agency_id):
             exam_id, seq = extract_sanction_key(link)
             if exam_id and seq:
@@ -259,6 +266,10 @@ class Pipeline:
         content = self.scraper.fetch_content(link, agency_config)
         if content:
             item['content'] = content
+            if item.get('agency') == AgencyCode.KFB.value and not item.get('pdf_url'):
+                pdf_match = PDF_URL_RE.search(content)
+                if pdf_match:
+                    item['pdf_url'] = pdf_match.group(0)
             return content
         return title + "\n" + item.get('description', '')
 

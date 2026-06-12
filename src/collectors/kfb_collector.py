@@ -172,6 +172,15 @@ def _extract_link(page_url: str, row, anchor) -> Optional[str]:
     return None
 
 
+def _extract_pdf_link(page_url: str, row) -> Optional[str]:
+    for candidate in row.select("a[href]"):
+        href = candidate.get("href") or ""
+        lower_href = href.lower()
+        if ".pdf" in lower_href or "download" in lower_href or "file=" in lower_href:
+            return urljoin(page_url, href)
+    return None
+
+
 def _parse_html_items(page_url: str, html: bytes, agency_config: Dict, last_crawled_date=None) -> List[Dict]:
     selectors = agency_config.get("selector", {})
     list_selector = selectors.get("list") or "table tbody tr, .board_list li, .bbs-list li, .list li"
@@ -234,21 +243,23 @@ def _parse_html_items(page_url: str, html: bytes, agency_config: Dict, last_craw
             continue
 
         has_source_time = has_specific_time(date_text)
+        pdf_url = _extract_pdf_link(page_url, row)
+        item = {
+            "title": title,
+            "link": link,
+            "published_at": (published_at if published_at and has_source_time else now_kst).isoformat(),
+            "published_at_source": (
+                PublishedAtSource.SOURCE.value
+                if published_at and has_source_time
+                else PublishedAtSource.COLLECTED_FALLBACK.value
+            ),
+            "source_published_at_str": date_text,
+            "collection_source": "html",
+        }
+        if pdf_url:
+            item["pdf_url"] = pdf_url
         items.append(
-            _with_kfb_metadata(
-                {
-                    "title": title,
-                    "link": link,
-                    "published_at": (published_at if published_at and has_source_time else now_kst).isoformat(),
-                    "published_at_source": (
-                        PublishedAtSource.SOURCE.value
-                        if published_at and has_source_time
-                        else PublishedAtSource.COLLECTED_FALLBACK.value
-                    ),
-                    "source_published_at_str": date_text,
-                    "collection_source": "html",
-                }
-            )
+            _with_kfb_metadata(item)
         )
         if len(items) >= MAX_HTML_ITEMS:
             break
