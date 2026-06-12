@@ -40,6 +40,26 @@ type SafeArticle = {
     star_rating?: number | null
 }
 
+const KFB_TITLE_META_RE = /^(.+?)\s+(\d{4}[./-]\d{2}[./-]\d{2})(?:\s+\d+)?$/
+
+function normalizeKfbArticle(article: SafeArticle): SafeArticle {
+    if (article.agency !== 'KFB') return article
+
+    const match = article.title.match(KFB_TITLE_META_RE)
+    if (!match) return article
+
+    const cleanTitle = match[1].trim()
+    const cleanDate = match[2].replace(/\//g, '-').replace(/\./g, '-')
+    const publishedAt = `${cleanDate}T00:00:00+09:00`
+
+    return {
+        ...article,
+        title: cleanTitle,
+        published_at: publishedAt,
+        published_at_source: 'source',
+    }
+}
+
 function normalizeSupabaseUrl(value: string | undefined): string | undefined {
     const trimmed = value?.trim()
     if (!trimmed) return undefined
@@ -124,7 +144,7 @@ function sanitizeArticle(row: RawArticleRow): SafeArticle | null {
         }
     }
 
-    return article
+    return normalizeKfbArticle(article)
 }
 
 export async function GET() {

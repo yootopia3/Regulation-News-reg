@@ -73,6 +73,13 @@ function getOriginalLink(article: Article): string {
     if (article.agency === 'KFB' && article.analysis_result?.pdf_url) {
         return article.analysis_result.pdf_url
     }
+    if (article.agency === 'KFB') {
+        const params = new URLSearchParams({
+            title: article.title,
+            fallback: article.link,
+        })
+        return `/api/kfb-original?${params.toString()}`
+    }
     return getMafraDisplayLink(article.link, article.agency)
 }
 
