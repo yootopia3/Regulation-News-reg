@@ -10,7 +10,7 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 
 from src.config import settings
-from src.config.agency_codes import PublishedAtSource
+from src.config.agency_codes import AgencyCode, PublishedAtSource
 from src.config.agency_loader import get_ssl_verify
 from src.collectors import http
 from src.collectors.date_parser import KST, has_specific_time, parse_date
@@ -21,6 +21,33 @@ logger = logging.getLogger(__name__)
 
 
 MAX_PAGES = 15
+
+BOK_EXCLUDED_NOTICE_KEYWORDS = (
+    '채용',
+    '입찰',
+    '낙찰',
+    '계약직',
+    '신입직원',
+    '경력직원',
+    '직원 모집',
+    '직원모집',
+    '청년인턴',
+    '인턴 모집',
+    '제안요청',
+    '제안 요청',
+    '견적 제출',
+    '용역 공고',
+    '구매 공고',
+)
+
+
+def _is_bok_excluded_notice(agency_config: Dict, title: str, link: str) -> bool:
+    """Return True for BOK recruitment/procurement notices we do not collect."""
+    if agency_config.get('code') != AgencyCode.BOK.value:
+        return False
+
+    text = f"{title} {link}".casefold()
+    return any(keyword.casefold() in text for keyword in BOK_EXCLUDED_NOTICE_KEYWORDS)
 
 
 def fetch_list_items(
@@ -100,6 +127,10 @@ def fetch_list_items(
                             link = link_href
                     else:
                         link = base_url
+
+                    if _is_bok_excluded_notice(agency_config, title, link):
+                        logger.info(f"    > Skipping BOK excluded notice: {title[:60]}")
+                        continue
 
                     date_sel = selectors.get('date')
                     date_str = ""
