@@ -15,7 +15,7 @@
 - **Secondary (Dev/Debug)**: Local Python Environment (Manual Trigger).
 
 ### 2.2 Collection Schedule
-- **Schedule**: GitHub Actions native cron triggers `news_collector_v2_active.yml` three times per day at **08:05, 12:05, and 18:05 KST**. `workflow_dispatch` remains enabled for manual runs. The five-minute offset avoids GitHub Actions' busiest top-of-hour window.
+- **Schedule**: External cron-job.org triggers `news_collector_v2_active.yml` through `workflow_dispatch` three times per day at **08:00, 12:00, and 18:00 KST**. GitHub Actions native `schedule:` is intentionally disabled for the collector because scheduled runs can be delayed by GitHub's UTC-based queue.
 - **Legacy Setting**: `settings.COLLECTION_INTERVAL_MINUTES = 10` is **ignored** in Production.
 
 ---
