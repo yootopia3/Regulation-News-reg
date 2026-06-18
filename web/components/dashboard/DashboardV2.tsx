@@ -144,7 +144,7 @@ export default function DashboardV2() {
     const handleToggleSanction = () => { setIsSanctionExpanded(!isSanctionExpanded); setCurrentCategory('sanction_notice'); setSelectedAgency(null) }
 
     return (
-        <div className="min-h-screen bg-[#F5F7FA] text-gray-900 font-sans selection:bg-blue-500/40 lg:flex">
+        <div className="h-screen overflow-hidden bg-[#F5F7FA] text-gray-900 font-sans selection:bg-blue-500/40 lg:flex">
             <Sidebar
                 isMenuOpen={isMenuOpen}
                 onCloseMenu={handleCloseMenu}
@@ -159,7 +159,7 @@ export default function DashboardV2() {
             />
 
             {/* Main Content Area - Push effect on md+ screens */}
-            <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${isMenuOpen ? 'md:pl-[260px] lg:pl-0' : ''}`}>
+            <div className={`flex-1 flex h-screen min-w-0 flex-col overflow-y-auto transition-all duration-300 ${isMenuOpen ? 'md:pl-[260px] lg:pl-0' : ''}`}>
                 <Header
                     onMenuClick={() => setIsMenuOpen(prev => !prev)}
                     searchQuery={searchQuery}

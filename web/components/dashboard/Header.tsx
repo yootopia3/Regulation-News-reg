@@ -1,5 +1,5 @@
 import React from 'react'
-import { Menu, Settings, Search } from 'lucide-react'
+import { Menu, Search } from 'lucide-react'
 
 interface HeaderProps {
     onMenuClick: () => void;
@@ -10,14 +10,7 @@ interface HeaderProps {
 export default function Header({ onMenuClick, searchQuery, setSearchQuery }: HeaderProps) {
     return (
         <header className="sticky top-0 z-50 bg-white border-b border-gray-100 h-[88px] px-6 pt-5 flex items-center gap-6 justify-between">
-            {/* Left: Menu Button */}
-            <button
-                onClick={onMenuClick}
-                className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
-                aria-label="Menu"
-            >
-                <Menu size={28} />
-            </button>
+            <div className="w-11 flex-shrink-0" aria-hidden="true" />
 
             {/* Center: Search Bar */}
             <div className="flex-1 max-w-3xl mx-auto relative group">
@@ -33,12 +26,13 @@ export default function Header({ onMenuClick, searchQuery, setSearchQuery }: Hea
                 />
             </div>
 
-            {/* Right: Settings */}
+            {/* Right: Menu Button */}
             <button
-                className="p-2 -mr-2 text-gray-400 hover:text-gray-600 rounded-full transition-colors flex-shrink-0"
-                aria-label="Settings"
+                onClick={onMenuClick}
+                className="p-2 -mr-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
+                aria-label="전체 메뉴"
             >
-                <Settings size={28} />
+                <Menu size={28} />
             </button>
         </header>
     )

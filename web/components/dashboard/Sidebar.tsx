@@ -80,14 +80,22 @@ export default function Sidebar(props: SidebarProps): React.ReactElement {
 
             {/* Drawer - Always visible on lg:, slide-in on mobile */}
             <aside className={`
-                fixed inset-y-0 left-0 w-[260px] bg-gradient-to-b from-[#004C9B] via-[#0B63CE] to-[#002E6D] text-white z-[60]
+                fixed inset-y-0 left-0 h-screen w-[260px] bg-gradient-to-b from-[#004C9B] via-[#0B63CE] to-[#002E6D] text-white z-[60]
                 transform transition-transform duration-300 shadow-2xl
-                lg:translate-x-0 lg:static lg:z-auto
+                lg:translate-x-0 lg:sticky lg:top-0 lg:z-auto lg:shrink-0
                 ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}
             `}>
-                <div className="p-6 h-full flex flex-col">
+                <div className="h-full overflow-y-auto overscroll-contain p-6 flex flex-col">
                     {/* Brand Logo */}
-                    <div className="mb-10">
+                    <button
+                        type="button"
+                        onClick={() => {
+                            onSelectHome()
+                            onCloseMenu()
+                        }}
+                        className="mb-10 w-full text-left"
+                        aria-label="홈으로 이동"
+                    >
                         <div className="mb-3 rounded-lg bg-white px-3 py-3 shadow-sm">
                             <Image
                                 src="/ibk-regulatory-brand.png"
@@ -100,7 +108,7 @@ export default function Sidebar(props: SidebarProps): React.ReactElement {
                         <h2 className="leading-none pb-1">
                             <span className="mt-2 block text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/80">Regulatory News</span>
                         </h2>
-                    </div>
+                    </button>
 
                     {/* Menu Items */}
                     <nav className="flex-1 space-y-2">
