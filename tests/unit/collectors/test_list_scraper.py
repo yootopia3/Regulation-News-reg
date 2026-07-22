@@ -46,6 +46,30 @@ def test_bok_recruitment_and_bid_notices_are_excluded(monkeypatch):
     assert items[0]["agency"] == "BOK"
 
 
+def test_bok_rp_buy_sell_notices_are_excluded(monkeypatch):
+    html = """
+    <ul>
+      <li class="bbsRowCls">
+        <a class="title" href="/portal/bbs/view.do?nttId=1">2026.7.22(수) RP매입 실시 결과</a>
+      </li>
+      <li class="bbsRowCls">
+        <a class="title" href="/portal/bbs/view.do?nttId=2">2026.7.22(수) RP 매각 실시 정보</a>
+      </li>
+      <li class="bbsRowCls">
+        <a class="title" href="/portal/bbs/view.do?nttId=3">통화정책방향 관련 총재 기자간담회 자료</a>
+      </li>
+    </ul>
+    """
+
+    monkeypatch.setattr(list_scraper.time, "sleep", lambda _: None)
+    monkeypatch.setattr(list_scraper, "MAX_PAGES", 1)
+    monkeypatch.setattr(list_scraper.http, "fetch", lambda *args, **kwargs: _response(html))
+
+    items = list_scraper.fetch_list_items(_agency())
+
+    assert [item["title"] for item in items] == ["통화정책방향 관련 총재 기자간담회 자료"]
+
+
 def test_exclude_keywords_do_not_apply_to_other_agencies(monkeypatch):
     html = """
     <table><tbody>

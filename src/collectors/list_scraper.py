@@ -23,6 +23,10 @@ logger = logging.getLogger(__name__)
 MAX_PAGES = 15
 
 BOK_EXCLUDED_NOTICE_KEYWORDS = (
+    'RP매입',
+    'RP 매입',
+    'RP매각',
+    'RP 매각',
     '채용',
     '입찰',
     '낙찰',
