@@ -13,8 +13,8 @@
       "name": "기재부 (MOEF)",
       "category": "press_release",
       "collection_method": "rss",
-      "url": "https://www.korea.kr/rss/dept_mofe.xml",
-      "base_url": "https://www.korea.kr"
+      "url": "https://mofe.go.kr/com/detailRssTagService.do?bbsId=MOSFBBS_000000000028",
+      "base_url": "https://mofe.go.kr"
     },
     {
       "code": "FSS",

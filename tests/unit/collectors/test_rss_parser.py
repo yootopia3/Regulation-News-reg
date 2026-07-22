@@ -76,6 +76,15 @@ class TestParseDate:
     def test_returns_none_on_garbage(self):
         assert parse_date("not a date") is None
 
+    def test_parses_mofe_datetime_with_fraction(self):
+        result = parse_date("2026-07-22 00:00:00.0")
+        assert result is not None
+        assert result.year == 2026
+        assert result.month == 7
+        assert result.day == 22
+        assert result.hour == 0
+        assert result.utcoffset() == timedelta(hours=9)
+
 
 # ---------------------------------------------------------------------------
 # fetch_rss_feed
@@ -265,3 +274,23 @@ class TestFetchRssFeed:
         assert published_at.startswith("2026-04-02T09:00:00")
         # KST offset serialized.
         assert "+09:00" in published_at
+
+    def test_mofe_midnight_date_uses_source_date(
+        self, monkeypatch, no_sleep, fresh_agency
+    ):
+        entries = (
+            "<item><title>MOFE</title><link>http://mofe.go.kr/news/1</link>"
+            "<pubDate>2026-07-22 00:00:00.0</pubDate></item>"
+        )
+        xml = _rss_xml(entries)
+
+        def fake_get(url, **kwargs):
+            return _make_response(xml)
+
+        monkeypatch.setattr("requests.get", fake_get)
+
+        items = fetch_rss_feed(fresh_agency)
+        assert len(items) == 1
+        assert items[0]["link"] == "https://mofe.go.kr/news/1"
+        assert items[0]["published_at"].startswith("2026-07-22T00:00:00")
+        assert items[0]["published_at_source"] == "source"

@@ -8,7 +8,6 @@ from email.utils import parsedate_to_datetime
 from typing import List, Dict, Optional
 
 from src.config.agency_codes import PublishedAtSource
-from src.collectors.date_parser import has_specific_time
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +45,16 @@ def parse_date(date_str: str) -> Optional[datetime]:
         # Convert to KST if it's UTC
         return dt.astimezone(KST)
     except Exception:
-        return None
+        pass
+
+    for fmt in ('%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'):
+        try:
+            parsed = datetime.strptime(date_str.strip(), fmt)
+            return parsed.replace(tzinfo=KST)
+        except ValueError:
+            continue
+
+    return None
 
 def fetch_rss_feed(agency: Dict) -> List[Dict]:
     """
@@ -128,26 +136,16 @@ def fetch_rss_feed(agency: Dict) -> List[Dict]:
         # Date parsing - try 'published' first, then 'updated' as fallback
         published = entry.get('published', '') or entry.get('updated', '')
         
-        # FSC RSS uses 'YYYY-MM-DD HH:MM:SS' format in 'updated' field
         published_at = parse_date(published)
-        if not published_at and published:
-            # Try parsing FSC format: "2026-01-02 00:00:00"
-            try:
-                from datetime import datetime as dt
-                parsed = dt.strptime(published, '%Y-%m-%d %H:%M:%S')
-                published_at = parsed.replace(tzinfo=KST)
-            except ValueError:
-                pass
         
         # Get ID (support 'code' or 'id')
         agency_id = agency.get('code') or agency.get('id')
         
         if published_at:
             real_dates.append(published_at)
-        has_source_time = has_specific_time(published)
         published_at_source = (
             PublishedAtSource.SOURCE.value
-            if published_at and has_source_time
+            if published_at
             else PublishedAtSource.COLLECTED_FALLBACK.value
         )
 
@@ -157,7 +155,7 @@ def fetch_rss_feed(agency: Dict) -> List[Dict]:
             'link': link,
             'published_at': (
                 published_at.isoformat()
-                if published_at and has_source_time
+                if published_at
                 else datetime.now(KST).isoformat()
             ),
             'published_at_source': published_at_source,
