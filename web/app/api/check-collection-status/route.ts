@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 
+import { getWorkflowRunsUrl } from '@/lib/github'
+
 const WORKFLOW_FILE = 'news_collector_v2_active.yml'
 
 type WorkflowRun = {
@@ -18,7 +20,7 @@ export async function GET() {
 
         // Get recent runs (check for in_progress first)
         const response = await fetch(
-            `https://api.github.com/repos/orbzodiac84/Regulation-News-reg/actions/workflows/${WORKFLOW_FILE}/runs?per_page=5`,
+            getWorkflowRunsUrl(WORKFLOW_FILE),
             {
                 headers: {
                     'Accept': 'application/vnd.github.v3+json',

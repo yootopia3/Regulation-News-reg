@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 
+import { getWorkflowDispatchUrl } from '@/lib/github'
+
 const WORKFLOW_FILE = 'news_collector_v2_active.yml'
 
 export async function POST() {
@@ -16,7 +18,7 @@ export async function POST() {
 
         // Trigger GitHub Actions workflow
         const response = await fetch(
-            `https://api.github.com/repos/orbzodiac84/Regulation-News-reg/actions/workflows/${WORKFLOW_FILE}/dispatches`,
+            getWorkflowDispatchUrl(WORKFLOW_FILE),
             {
                 method: 'POST',
                 headers: {
