@@ -16,6 +16,14 @@ beforeEach(() => {
 })
 afterEach(() => vi.unstubAllEnvs())
 describe('published-only public API', () => {
+    it('looks up an exact article server-side and rejects invalid article IDs', async () => {
+        const res = await GET(request(`?articleId=${id}&offset=100`))
+        expect(res.status).toBe(200)
+        expect(query.eq).toHaveBeenCalledWith('article_id', id)
+        expect(query.range).toHaveBeenCalledWith(0, 19)
+        expect((await res.json()).nextOffset).toBeNull()
+        expect((await GET(request('?articleId=not-a-uuid'))).status).toBe(400)
+    })
     it('requires a valid dashboard session for JSON and direct Excel URLs', async () => {
         verify.mockResolvedValue(null)
         expect((await GET(request())).status).toBe(401)

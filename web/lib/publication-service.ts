@@ -24,9 +24,10 @@ export async function checkPublication(db: SupabaseClient, id: string, revision:
     catch { throw new AdminError(400, 'publication_review_required') }
 }
 
-export async function publishedReports(db: SupabaseClient, offset = 0, id?: string): Promise<PublishedReport[]> {
+export async function publishedReports(db: SupabaseClient, offset = 0, id?: string, articleId?: string): Promise<PublishedReport[]> {
     let query = db.from('sanction_publications').select('inspection_id,article_id,published_at,report,articles(title,link,published_at)').eq('status', 'published')
     if (id) query = query.eq('inspection_id', id)
+    if (articleId) query = query.eq('article_id', articleId)
     const { data, error } = await query.order('published_at', { ascending: false }).order('inspection_id').range(offset, offset+19)
     if (error) throw new AdminError(503, 'reports_unavailable')
     try {

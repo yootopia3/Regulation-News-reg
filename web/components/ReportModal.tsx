@@ -6,6 +6,8 @@ import ReactMarkdown from 'react-markdown'
 import type { Components } from 'react-markdown'
 import { X, Printer } from 'lucide-react'
 import type { Article } from './dashboard/NewsCard'
+import SanctionReportModal from './SanctionReportModal'
+import { sanctionAgencies } from './dashboard/constants'
 
 interface ReportModalProps {
     isOpen: boolean
@@ -13,7 +15,14 @@ interface ReportModalProps {
     article: Article | null
 }
 
-export default function ReportModal({ isOpen, onClose, article }: ReportModalProps) {
+export default function ReportModal(props: ReportModalProps) {
+    if (props.article && sanctionAgencies.some(code => code === props.article!.agency)) {
+        return props.isOpen ? <SanctionReportModal key={props.article.id} article={props.article} onClose={props.onClose} /> : null
+    }
+    return <StandardReportModal {...props} />
+}
+
+function StandardReportModal({ isOpen, onClose, article }: ReportModalProps) {
     const [loading, setLoading] = useState(false)
     const [report, setReport] = useState<string | null>(null)
     const articleId = article?.id

@@ -6,7 +6,13 @@
 
 ## 1. High-Level Architecture
 
-2026-09-10 Report 진입점 추가(로컬 구현): Sidebar의 `Report → 재제공시 리포트`는
+2026-09-10 사용자 UI 변경: 제재/경영유의 카드의 기존 `AI 심층 보고서` 버튼이
+`SanctionReportModal`을 연다. 게시 API를 기사 UUID로 조회해 요약 브리핑과
+당행 부서·업무·점검 포인트를 보여준다. 일반 기사는 기존 생성 모달을 유지한다.
+별도 제재 Report 하위 메뉴는 제거했고 과거 `/reports/sanctions` 직접 URL은 호환용으로 유지한다.
+사용자가 확인한 운영 주소는 `https://regulation-news-reg-fiu7.vercel.app/`이다.
+
+초기 Report 진입점 구현(아래 내용은 이전 진입점, 현재 주 경로는 카드 모달): Sidebar의 `Report → 재제공시 리포트`는
 `/reports/sanctions`로 연결한다. 기존 인증된 `/api/articles`의 공개 공시 필드만
 `web/lib/sanction-report.ts`에서 변환하고 `useSanctionSources`가 조회 상태를 관리한다.
 이 화면은 최신 공시 최대 1,000건 조회·검색·원문 열기를 제공한다.
