@@ -5,6 +5,13 @@
 **Status**: Round 6-8 hardening complete
 
 ## 1. High-Level Architecture
+
+2026-09-10 Report 진입점 추가(로컬 구현): Sidebar의 `Report → 재제공시 리포트`는
+`/reports/sanctions`로 연결한다. 기존 인증된 `/api/articles`의 공개 공시 필드만
+`web/lib/sanction-report.ts`에서 변환하고 `useSanctionSources`가 조회 상태를 관리한다.
+이 화면은 최신 공시 최대 1,000건 조회·검색·원문 열기를 제공한다.
+내부 문서 API를 호출하지 않으며 Stage B/C의 AI 부서 매칭·검토 게시 결과는 아직 연결하지 않았다.
+
 The system follows a **Serverless Event-Driven** pattern using GitHub Actions as the primary execution environment.
 
 ```mermaid
@@ -208,3 +215,27 @@ passcode는 `/api/auth/login` route 에서 서버측 `APP_PASSCODE` 환경변수
 None일 때 내부 헬퍼로 기본 구성하고, 단위 테스트는 fake를 주입해 외부 I/O 없이
 오케스트레이션 흐름을 검증한다. 프로덕션 호출 경로(`src/main.py`)는 None만
 넘기므로 동작이 동일하다.
+
+### 4.8 Private document administration (Stage A; deployment pending)
+
+`web/app/admin/` 및 `web/app/api/admin/`은 내부 HWP 관리 기능이다.
+기존 passcode와 별도로 Supabase Auth 사용자와 서버 `ADMIN_USER_IDS`를 검증한다.
+관리 API는 자체 권한 확인·Origin 검사·private 응답을 사용하며 일반 쿠키로 접근할 수 없다.
+`INTERNAL_DOCUMENTS_ENABLED`의 명시적 true가 없으면 사용할 수 없다.
+
+문서와 작업은 신규 비공개 테이블·Storage에 기록한다. 독립 실행 진입점
+`python -m src.services.internal_documents.worker`가 작업을 claim하고
+격리된 `parser` subprocess에서 HWP를 조문/업무로 추출한다. 일반 수집기와
+Gemini 경로는 이 문서 데이터를 사용하지 않는다. 원문 검토·활성화 후의
+제재 연결과 일반 결과 게시(Stage B/C)를 아래 별도 경로로 처리한다.
+`src/services/sanction_inspections/`에 공개 페이지 텍스트와 선택 내부 조문을 분리해
+Responses API로 처리하는 분석 라이브러리를 추가했다. 관리자 `/admin/inspections`와
+`/api/admin/inspections`가 비공개 DB 큐에 연결되며 별도
+`python -m src.services.sanction_inspections.worker`가 FSS PDF 다운로드·격리 추출·분석을 수행한다.
+관리자 검토본 편집·게시·철회와 일반 사용자 게시 조회 및 XLSX 내보내기를 추가했다.
+`/api/sanction-publications`는 서명된 일반 세션을 확인하고 별도 게시 테이블에서
+허용된 DTO만 반환한다. 규정 변경·재분석 때 게시 snapshot도 무효화한다.
+운영 배포는 미적용이다. 게시 설정은 `docs/sanction-inspection-publication.md`를 참고한다.
+상세는 `docs/sanction-inspection-execution.md`를 참고한다.
+
+운영 서비스 설정 및 검증은 `docs/internal-documents-setup.md`를 참고한다.

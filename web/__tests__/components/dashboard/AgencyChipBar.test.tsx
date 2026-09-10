@@ -14,7 +14,7 @@ describe('chipLabels', () => {
         expect(chipLabels.FSC).toBe('금융위')
         expect(chipLabels.FSS).toBe('금감원')
         expect(chipLabels.BOK).toBe('한은')
-        expect(chipLabels.KFB).toBe('은행연합회')
+        expect(chipLabels.KFB).toBe('연합회')
     })
 
     it('maps all regulation agencies to Korean short names', async () => {
@@ -52,7 +52,7 @@ describe('AgencyChipBar rendering', () => {
         expect(screen.getByText('금감원')).toBeInTheDocument()
         expect(screen.getByText('기재부')).toBeInTheDocument()
         expect(screen.getByText('한은')).toBeInTheDocument()
-        expect(screen.getByText('은행연합회')).toBeInTheDocument()
+        expect(screen.getByText('연합회')).toBeInTheDocument()
         expect(screen.queryByText('농식품부')).not.toBeInTheDocument()
         expect(screen.getAllByRole('button')).toHaveLength(6)
     })

@@ -7,13 +7,19 @@ const SESSION_COOKIE_NAME = 'mp_session'
 export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl
 
+    // Admin pages and APIs verify their separate Supabase identity themselves.
+    // The common dashboard passcode must never grant document access.
+    if (pathname === '/admin' || pathname.startsWith('/admin/') || pathname.startsWith('/api/admin/')) {
+        return NextResponse.next()
+    }
+
     // Whitelist: login page, login API, Next internals, static files
     if (
         pathname === '/login' ||
         pathname.startsWith('/login/') ||
         pathname === '/api/auth/login' ||
-        pathname.startsWith('/_next') ||
-        pathname.includes('.')
+        pathname.startsWith('/_next/') ||
+        ['/favicon.ico', '/robots.txt'].includes(pathname)
     ) {
         return NextResponse.next()
     }

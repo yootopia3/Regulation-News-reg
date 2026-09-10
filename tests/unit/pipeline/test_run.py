@@ -13,6 +13,12 @@ import pytest
 from src.pipeline import Pipeline
 
 
+@pytest.fixture(autouse=True)
+def isolate_rss_first_network(monkeypatch):
+    # KFB has a dedicated path outside FakeScraper; individual KFB tests override this.
+    monkeypatch.setattr('src.pipeline.collect_kfb_rss_first', lambda *args, **kwargs: [])
+
+
 # ---------------------------------------------------------------------------
 # Fake dependencies
 # ---------------------------------------------------------------------------

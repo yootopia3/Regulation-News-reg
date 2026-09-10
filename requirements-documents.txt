@@ -1,0 +1,6 @@
+# Isolated private worker only; not installed in the public collector workflow.
+-r requirements.txt
+# pyhwp is AGPL-3.0-or-later. Review distribution/service obligations before deployment.
+pyhwp==0.1b15
+olefile==0.47
+lxml>=5.3,<7

@@ -3,6 +3,7 @@
 import React from 'react'
 import Image from 'next/image'
 import AgencyIcon from './AgencyIcon'
+import { SANCTION_REPORT } from '@/lib/sanction-report'
 import {
     agencyOrder,
     sanctionAgencyOrder,
@@ -300,6 +301,7 @@ export default function Sidebar(props: SidebarProps): React.ReactElement {
                         <div className="my-2 border-t border-white/15"></div>
                         <button
                             onClick={() => setIsReportExpanded(!isReportExpanded)}
+                            aria-expanded={isReportExpanded}
                             className="flex items-center justify-between w-full px-4 py-3 text-blue-50 hover:text-white hover:bg-white/10 rounded-xl transition-all"
                         >
                             <div className="flex items-center gap-2">
@@ -323,6 +325,9 @@ export default function Sidebar(props: SidebarProps): React.ReactElement {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6M8 4h8l4 4v12a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2z" />
                                     </svg>
                                     <span className="text-sm">아침에 읽는 규제변화</span>
+                                </a>
+                                <a href={SANCTION_REPORT.path} onClick={onCloseMenu} className="flex items-center gap-3 w-full text-left px-4 py-2.5 rounded-xl transition-all text-blue-100/80 hover:text-white hover:bg-white/10">
+                                    <span className="text-sm">{SANCTION_REPORT.label}</span>
                                 </a>
                             </div>
                         )}

@@ -50,6 +50,11 @@
 ## 4. Analysis & Scoring (분석 요건)
 
 ### 4.0 Runtime Enablement
+
+Private HWP administration is separately gated by `INTERNAL_DOCUMENTS_ENABLED=true`.
+It requires a server service-role key and `ADMIN_USER_IDS`; the shared dashboard
+passcode grants no document access. Stage A extracts documents without AI calls.
+See `docs/internal-documents-setup.md` for deployment prerequisites.
 Gemini-backed analysis is disabled by default. Backend Tier 1/Tier 2
 analysis and the web `/api/report` route run only when `GEMINI_ENABLED` is
 explicitly set to one of `true`, `1`, `yes`, or `on`. If the flag is absent

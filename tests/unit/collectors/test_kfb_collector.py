@@ -57,10 +57,13 @@ def test_kfb_uses_discovered_rss_feed(monkeypatch, caplog):
 
 
 def test_kfb_falls_back_to_html_when_rss_missing(monkeypatch, caplog):
+    from datetime import datetime
+    from src.collectors.date_parser import KST
+    today = datetime.now(KST).strftime('%Y-%m-%d')
     page_html = (
         "<html><body><table><tbody><tr>"
         '<td><a href="/news/view.php?idx=2">HTML 보도자료</a></td>'
-        "<td>2026-06-09</td>"
+        f"<td>{today}</td>"
         "</tr></tbody></table></body></html>"
     )
 

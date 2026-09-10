@@ -57,6 +57,17 @@ describe('proxy', () => {
   })
 
   describe('auth failure', () => {
+    it('protects the sanction report page', async () => {
+      verifySessionMock.mockResolvedValue(null)
+      const res = await proxy(makeRequest('http://localhost/reports/sanctions'))
+      expect(res.status).toBe(307)
+      expect(res.headers.get('location')).toBe('http://localhost/login')
+    })
+    it('does not whitelist API paths containing a dot', async () => {
+      verifySessionMock.mockResolvedValue(null)
+      const res = await proxy(makeRequest('http://localhost/api/private.json'))
+      expect(res.status).toBe(401)
+    })
     it('returns 401 JSON for /api/* when verifySession returns null', async () => {
       verifySessionMock.mockResolvedValue(null)
       const res = await proxy(makeRequest('http://localhost/api/x'))

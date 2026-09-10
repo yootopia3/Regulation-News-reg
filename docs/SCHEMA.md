@@ -102,3 +102,37 @@ Typical payload:
   "report_generated_at": "optional ISO timestamp"
 }
 ```
+
+## 7. 내부 문서 Stage A (migration 추가, live 적용 미확인)
+
+`db/migrations/202609100001_internal_documents.sql`은 `internal_documents`,
+`internal_document_units`, `internal_document_jobs`, `internal_document_events`,
+`internal_admin_limits`를 추가한다. 신규 테이블과 RPC는 service_role 전용이며
+anon/authenticated/PUBLIC 권한은 회수한다. 문서별 조문 키가 유일하고,
+삭제 완료 문서를 제외한 SHA-256과 문서 종류별 활성 버전이 유일하다.
+
+`internal-documents` Storage bucket은 private이며 기존의 광범위 허용 정책이
+있더라도 해당 bucket을 일반 클라이언트가 읽고 쓰지 못하도록 restrictive
+정책을 추가한다. 내부 원문/추출문은 `articles.analysis_result`에 저장하지 않는다.
+
+문서 상태는 uploading/queued/processing/review/active/retired/failed/
+deleting/delete_failed/deleted이다. 검토 수정은 revision 충돌을 검사하고
+활성화·교체는 트랜잭션으로 처리한다. worker는 lease token으로 완료를 확인한다.
+세부 적용·복구 절차는 `docs/internal-documents-setup.md`에 기록한다.
+
+## 8. 제재 분석 작업 (migration 추가, live 미적용)
+
+`202609100002_sanction_inspections.sql`은 service_role 전용 `sanction_inspections`를 추가한다.
+기사당 하나의 작업에 요청 ID, 활성 문서 revision 집합, lease, 비공개 초안을 저장한다.
+상태는 queued/processing/needs_review/failed/stale이다. 관리자 enqueue와 worker claim/finish는
+기존 문서 작업과 같은 advisory lock을 사용한다. 문서 버전 집합 변경 시 statement trigger가
+결과를 지우고 lease를 무효화한다. 결과는 공개 `articles.analysis_result`에 저장하지 않는다.
+
+## 9. 관리자 검토본·게시 snapshot (live 미적용)
+
+`202609100003_inspection_publications.sql`은 분석 작업에 review_revision/review_draft를 추가하고
+`sanction_publications`와 `inspection_review_events`를 생성한다. 모두 service_role 전용이다.
+게시 snapshot에는 공개 DTO만 저장한다. 상태는 published/withdrawn이며 철회하면 report를 null로 지운다.
+검토 저장·게시·철회는 revision과 활성 문서 버전을 검사하는 RPC로 처리한다.
+재분석/문서 무효화는 검토본과 게시본도 지운다. 원문 인용 검사 및 DTO 검증은 관리자 서버에서
+수행하고, 검사 때 읽은 revision과 같은 revision만 DB에서 게시할 수 있다.

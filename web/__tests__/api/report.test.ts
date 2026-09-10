@@ -3,11 +3,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 type SupabaseSingleResult = { data: unknown; error: unknown }
 type SupabaseUpdateResult = { error: unknown }
 type QueryChain = {
-  from: ReturnType<typeof vi.fn>
-  select: ReturnType<typeof vi.fn>
-  eq: ReturnType<typeof vi.fn>
-  single: ReturnType<typeof vi.fn>
-  update: ReturnType<typeof vi.fn>
+  from: ReturnType<typeof vi.fn<unknown[], QueryChain>>
+  select: ReturnType<typeof vi.fn<unknown[], QueryChain>>
+  eq: ReturnType<typeof vi.fn<unknown[], QueryChain>>
+  single: ReturnType<typeof vi.fn<unknown[], Promise<SupabaseSingleResult>>>
+  update: ReturnType<typeof vi.fn<unknown[], QueryChain>>
   then: (resolve: (value: SupabaseUpdateResult) => unknown) => unknown
 }
 
@@ -27,10 +27,10 @@ const googleGenerativeAIMock = vi.fn().mockImplementation(() => ({
 const updateMock = vi.fn()
 const createClientMock = vi.fn(() => {
   const chain = {} as QueryChain
-  chain.from = vi.fn(() => chain)
-  chain.select = vi.fn(() => chain)
-  chain.eq = vi.fn(() => chain)
-  chain.single = vi.fn(() => Promise.resolve(supabaseState.fetchSingle))
+  chain.from = vi.fn<unknown[], QueryChain>(() => chain)
+  chain.select = vi.fn<unknown[], QueryChain>(() => chain)
+  chain.eq = vi.fn<unknown[], QueryChain>(() => chain)
+  chain.single = vi.fn<unknown[], Promise<SupabaseSingleResult>>(() => Promise.resolve(supabaseState.fetchSingle))
   chain.update = vi.fn((...args: unknown[]) => {
     updateMock(...args)
     return chain
