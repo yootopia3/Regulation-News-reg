@@ -136,3 +136,13 @@ deleting/delete_failed/deleted이다. 검토 수정은 revision 충돌을 검사
 검토 저장·게시·철회는 revision과 활성 문서 버전을 검사하는 RPC로 처리한다.
 재분석/문서 무효화는 검토본과 게시본도 지운다. 원문 인용 검사 및 DTO 검증은 관리자 서버에서
 수행하고, 검사 때 읽은 revision과 같은 revision만 DB에서 게시할 수 있다.
+
+## 10. 자동 분석·게시 (202609170001, 운영 적용 별도)
+`sanction_inspections.automation_status`: none / pending / published / needs_attention / manual.
+기존 작업은 none, 신규/명시적 재분석은 pending, 실패/규정 변경은 needs_attention.
+자동 enqueue의 created_by는 null(시스템 작업), 관리자 실행은 기존 사용자 ID 유지.
+`sanction_publications.publication_source`: manual / automatic; 기존 게시본은 manual.
+자동 게시 RPC는 revision, 현재 규정 버전, pending, review_draft=null을 동시에 검사한다.
+수동 save/publish/withdraw는 automation_status=manual로 전환하여 자동 덮어쓰기를 막는다.
+source_key는 agency+examMgmtNo+emOpenSeq(없으면 원문 URL)이며 중복 URL의 게시 조회도 연결한다.
+신규 RPC는 service_role 전용. 공개 API는 인증 후 정해진 DTO만 반환한다.

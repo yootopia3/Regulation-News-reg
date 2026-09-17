@@ -3,4 +3,5 @@
 # pyhwp is AGPL-3.0-or-later. Review distribution/service obligations before deployment.
 pyhwp==0.1b15
 olefile==0.47
+six>=1.16,<2
 lxml>=5.3,<7

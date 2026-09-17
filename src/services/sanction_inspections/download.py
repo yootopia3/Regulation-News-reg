@@ -6,6 +6,7 @@ import ssl
 import time
 from urllib.parse import urljoin, urlsplit
 
+from src.config.settings import USER_AGENT
 from .models import InspectionError
 
 MAX_PDF_BYTES = 10 * 1024 * 1024
@@ -41,7 +42,7 @@ def download_pdf(url):
                 except Exception:
                     raw.close()
                     raise
-                connection.request('GET', path, headers={'Host': host, 'Accept': 'application/pdf', 'Accept-Encoding': 'identity'})
+                connection.request('GET', path, headers={'Host': host, 'User-Agent': USER_AGENT, 'Accept': 'application/pdf', 'Accept-Encoding': 'identity'})
                 response = connection.getresponse()
                 if response.status in (301, 302, 303, 307, 308):
                     location = response.getheader('Location')

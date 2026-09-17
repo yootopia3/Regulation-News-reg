@@ -11,14 +11,14 @@ export const ReportItem = z.object({
 export const PublicationReport = z.object({ items: z.array(ReportItem).min(1).max(30) }).strict()
 export type PublicationReport = z.infer<typeof PublicationReport>
 export type PublicationSource = { title: string; published_at: string; url: string | null }
-export type PublishedReport = { id: string; article_id: string; published_at: string; report: PublicationReport; source: PublicationSource }
+export type PublishedReport = { id: string; article_id: string; published_at: string; report: PublicationReport; source: PublicationSource; publication_source?: 'manual' | 'automatic' }
 
-// Editor seed is NOT a publishable approval. Related work requires administrator input.
+// Editor seed is not approval; legacy drafts without related_work still require input.
 export function initialReport(draft: InspectionDraft): PublicationReport {
     return { items: draft.findings.map(f => {
         const matches = draft.matches.filter(m => m.finding_id === f.id)
         return { finding_id: f.id, title: f.title, summary: f.summary,
-            departments: [...new Set(matches.map(m => m.department))], related_work: '',
+            departments: [...new Set(matches.map(m => m.department))], related_work: [...new Set(matches.map(m => m.related_work?.trim()).filter(Boolean))].join('; '),
             source_pages: [...new Set(f.evidence.map(e => e.page))],
             checks: matches.length ? matches.flatMap(m => m.checks).map(c => ({ question: c.question, evidence_to_request: c.evidence_to_request })) : [{ question: '', evidence_to_request: '' }],
         }

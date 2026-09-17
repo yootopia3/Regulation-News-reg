@@ -21,7 +21,7 @@ def finding():
 
 
 def match():
-    return {'finding_id': 'F1', 'department_ref': 'doc:1', 'rationale': '담보 평가 기준을 관리하는 부서로 검토가 필요합니다.',
+    return {'finding_id': 'F1', 'department_ref': 'doc:1', 'related_work': '대출 담보 심사', 'rationale': '담보 평가 기준을 관리하는 부서로 검토가 필요합니다.',
             'evidence': [{'ref': 'doc:1', 'quote': PRIVATE}],
             'checks': [{'question': '최근 취급 건의 평가 승인 여부를 확인했는가?', 'evidence_to_request': '승인 이력 및 표본 점검 결과'}]}
 

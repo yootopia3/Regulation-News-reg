@@ -121,3 +121,22 @@ def test_download_checks_redirect_destination_and_stream_limit(monkeypatch):
     monkeypatch.setattr(download, 'MAX_PDF_BYTES', 5)
     with pytest.raises(InspectionError, match='pdf_limit'):
         download.download_pdf('https://www.fss.or.kr/a')
+
+
+def test_download_identifies_client_for_fss_pdf_endpoint(monkeypatch):
+    from src.services.sanction_inspections import download
+    monkeypatch.setattr('socket.getaddrinfo', lambda *a, **k: [(None, None, None, None, ('8.8.8.8', 443))])
+    monkeypatch.setattr('socket.create_connection', Mock())
+    monkeypatch.setattr('ssl.create_default_context', Mock())
+    connection = Mock()
+
+    def response_for_request():
+        headers = connection.request.call_args.kwargs['headers']
+        body = b'%PDF-fixture' if headers.get('User-Agent') else b'<script>File Not Found</script>'
+        response = Mock(status=200)
+        response.read1.side_effect = [body, b'']
+        return response
+
+    connection.getresponse.side_effect = response_for_request
+    monkeypatch.setattr('http.client.HTTPSConnection', Mock(return_value=connection))
+    assert download.download_pdf('https://www.fss.or.kr/a') == b'%PDF-fixture'

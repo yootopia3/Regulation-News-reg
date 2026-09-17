@@ -59,6 +59,7 @@ class Match(StrictModel):
     finding_id: str = Field(pattern=r'^F[1-9][0-9]?$')
     department_ref: str = Field(min_length=1, max_length=100)
     rationale: str = Field(min_length=1, max_length=500)
+    related_work: str = Field(min_length=1, max_length=160)
     evidence: list[InternalEvidence] = Field(min_length=1, max_length=5)
     checks: list[Check] = Field(min_length=1, max_length=6)
 

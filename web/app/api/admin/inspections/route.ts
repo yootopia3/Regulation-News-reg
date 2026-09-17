@@ -5,7 +5,7 @@ import { PublicationReport } from '@/lib/publication'
 import { checkPublication } from '@/lib/publication-service'
 
 const RequestBody = z.object({ article_id: z.string().uuid(), request_id: z.string().uuid() }).strict()
-const JOB_COLUMNS = 'id,article_id,status,error_code,updated_at'
+const JOB_COLUMNS = 'id,article_id,status,error_code,updated_at,automation_status'
 
 export async function GET(request: NextRequest) {
     try {

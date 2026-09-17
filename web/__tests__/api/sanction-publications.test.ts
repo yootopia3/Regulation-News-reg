@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { NextRequest } from 'next/server'
-const { db, query, verify } = vi.hoisted(() => ({ db: { from: vi.fn() }, query: { select: vi.fn(), eq: vi.fn(), order: vi.fn(), range: vi.fn() }, verify: vi.fn() }))
+const { db, query, verify } = vi.hoisted(() => ({ db: { from: vi.fn(), rpc: vi.fn() }, query: { select: vi.fn(), eq: vi.fn(), order: vi.fn(), range: vi.fn() }, verify: vi.fn() }))
 vi.mock('@/lib/auth', () => ({ verifySession: verify }))
 vi.mock('@/lib/admin-auth', async importOriginal => ({ ...await importOriginal<typeof import('@/lib/admin-auth')>(), adminClient: () => db }))
 import { GET } from '@/app/api/sanction-publications/route'
@@ -11,11 +11,21 @@ beforeEach(() => {
     vi.clearAllMocks(); vi.stubEnv('SANCTION_PUBLICATIONS_ENABLED', 'true')
     verify.mockResolvedValue({ exp: 9999999999 })
     db.from.mockReturnValue(query)
+    db.rpc.mockResolvedValue({ data: null, error: null })
     query.select.mockReturnValue(query); query.eq.mockReturnValue(query); query.order.mockReturnValue(query)
     query.range.mockResolvedValue({ data: [{ inspection_id: id, article_id: id, published_at: '2026-09-10', report, articles: { title: '합성 은행 공시', link: 'https://www.fss.or.kr/fss/notice', published_at: '2026-09-09' }, internal_extra: 'PRIVATE_CANARY' }], error: null })
 })
 afterEach(() => vi.unstubAllEnvs())
 describe('published-only public API', () => {
+    it('resolves identical public notices and preserves the requested card identity', async () => {
+        query.range.mockResolvedValueOnce({ data: [], error: null })
+        db.rpc.mockResolvedValue({ data: id, error: null })
+        const alias = 'e133b1af-bd10-4fb6-ae61-558f89c8bd02'
+        const res = await GET(request(`?articleId=${alias}`))
+        expect(res.status).toBe(200)
+        expect(db.rpc).toHaveBeenCalledWith('inspection_publication_alias', { p_article: alias })
+        expect((await res.json()).reports[0].article_id).toBe(alias)
+    })
     it('looks up an exact article server-side and rejects invalid article IDs', async () => {
         const res = await GET(request(`?articleId=${id}&offset=100`))
         expect(res.status).toBe(200)

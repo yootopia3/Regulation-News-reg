@@ -19,12 +19,13 @@ export default function PublishedInspections() {
     }
     return <section className="mt-8 rounded-2xl border bg-white p-6" aria-label="게시된 점검 리포트">
         <div className="flex justify-between gap-3"><h2 className="text-xl font-bold">게시된 점검 리포트</h2><button onClick={() => load()} disabled={state === 'loading'} className="text-blue-900 disabled:opacity-40">{state === 'idle' ? '리포트 조회' : '리포트 새로고침'}</button></div>
-        <p className="text-sm text-slate-500 mt-2">관리자가 검토하고 게시한 소관부서·관련 업무·사고예방 점검표입니다.</p>
+        <p className="text-sm text-slate-500 mt-2">소관부서·관련 업무·사고예방 점검표입니다. AI 자동 분석 결과는 담당자 확인이 필요합니다.</p>
         {state === 'loading' && <p role="status" className="mt-4">리포트를 불러오는 중입니다…</p>}
         {state === 'disabled' && <p className="mt-4">리포트 게시 기능을 준비하고 있습니다.</p>}
         {state === 'error' && <p role="alert" className="mt-4 text-red-800">리포트를 불러오지 못했습니다. 로그인 상태를 확인하고 다시 조회해 주세요.</p>}
         {state === 'ready' && !reports.length && <p className="mt-4 text-slate-500">게시된 리포트가 없습니다.</p>}
         {state === 'ready' && reports.map(report => <article key={report.id} className="border-t mt-5 pt-5">
+            {report.publication_source === 'automatic' && <p className="text-sm text-amber-800">AI 자동 분석 · 담당자 확인 필요</p>}
             <h3 className="text-lg font-bold mb-2">{report.source.title}</h3>
             {report.source.url && <a href={report.source.url} target="_blank" rel="noopener noreferrer" className="inline-block mb-3 text-sm text-blue-900 underline">금감원 공시 원문 열기</a>}
             <div className="flex justify-between gap-3"><p className="text-sm text-slate-500">게시일 {new Date(report.published_at).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })}</p><a href={`/api/sanction-publications?id=${encodeURIComponent(report.id)}&format=xlsx`} className="text-sm text-blue-900 underline">점검표 Excel 다운로드</a></div>

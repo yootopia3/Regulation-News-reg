@@ -245,3 +245,11 @@ Responses API로 처리하는 분석 라이브러리를 추가했다. 관리자 
 상세는 `docs/sanction-inspection-execution.md`를 참고한다.
 
 운영 서비스 설정 및 검증은 `docs/internal-documents-setup.md`를 참고한다.
+
+### 4.9 Automatic sanction publication (2026-09-17)
+수집 성공 → 독립 sanction_automation workflow → Python batch → 기존 분석 worker →
+토큰 인증 `/api/admin/inspections/automation` → 기존 공개 DTO/내부 원문 검사 → CAS 자동 게시 RPC.
+새 schema를 먼저 적용하고 웹/Actions 환경변수를 활성화해야 동작한다.
+원문/초안은 private DB에만, 워크플로에는 건수만 출력하며 artifact를 생성하지 않는다.
+같은 공시의 URL 별칭은 동일 게시 결과를 보여주며, 자동 결과는 화면/Excel에 담당자 확인 표식을 둔다.
+운영 안내는 `docs/sanction-automation-setup.md`.

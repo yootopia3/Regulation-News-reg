@@ -5,6 +5,7 @@ import { PublicationReport, type PublishedReport } from '@/lib/publication'
 import { publicSanctionUrl } from '@/lib/sanction-report'
 
 const ResponseReport = z.object({ id: z.string().uuid(), article_id: z.string().uuid(), published_at: z.string(), report: PublicationReport,
+    publication_source: z.enum(['manual', 'automatic']).optional(),
     source: z.object({ title: z.string(), published_at: z.string(), url: z.string().nullable() }),
 })
 type State = 'loading' | 'ready' | 'empty' | 'disabled' | 'unauthorized' | 'error'

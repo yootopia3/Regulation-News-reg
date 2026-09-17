@@ -9,9 +9,9 @@ export const INSPECTION_ERRORS: Record<string, string> = {
     documents_changed: '업무규정이 변경되었습니다. 다시 분석해 주세요.', lease_expired: '작업 시간이 초과되었습니다. 재실행 전에 worker 상태를 확인해 주세요.',
     rate_limited: 'AI 요청 한도를 초과했습니다. 잠시 후 다시 실행해 주세요.',
 }
-export type InspectionJob = { id: string; article_id: string; status: string; error_code: string | null; result?: InspectionDraft | null; review_revision?: number; review_draft?: import('./publication').PublicationReport | null }
+export type InspectionJob = { automation_status?: string; id: string; article_id: string; status: string; error_code: string | null; result?: InspectionDraft | null; review_revision?: number; review_draft?: import('./publication').PublicationReport | null }
 export type InspectionDraft = {
     findings: { id: string; title: string; summary: string; evidence: { page: number; quote: string }[] }[]
-    matches: { finding_id: string; department: string; rationale: string; evidence: { ref: string; quote: string }[]; checks: { question: string; evidence_to_request: string }[] }[]
+    matches: { finding_id: string; department: string; rationale: string; related_work?: string; evidence: { ref: string; quote: string }[]; checks: { question: string; evidence_to_request: string }[] }[]
     unmatched_finding_ids: string[]
 }

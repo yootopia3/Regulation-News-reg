@@ -13,6 +13,14 @@ const response = (body: unknown, status = 200) => new Response(JSON.stringify(bo
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
 describe('dashboard sanction deep report', () => {
+    it('labels automatic reports without claiming administrator approval', async () => {
+        const data = payload()
+        Object.assign(data.reports[0], { publication_source: 'automatic' })
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response(data)))
+        render(<ReportModal isOpen article={article} onClose={() => {}} />)
+        await screen.findByText('AI 자동 분석 · 담당자 확인 필요')
+        expect(screen.queryByText('관리자 검토 완료')).not.toBeInTheDocument()
+    })
     it('opens the per-article published briefing and bank checks without calling generation APIs', async () => {
         const fetchMock = vi.fn().mockResolvedValue(response(payload()))
         vi.stubGlobal('fetch', fetchMock)

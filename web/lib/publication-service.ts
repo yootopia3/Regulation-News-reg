@@ -4,12 +4,9 @@ import { publicReport, validatePublication, type PublishedReport } from './publi
 import { z } from 'zod'
 import { publicSanctionUrl } from './sanction-report'
 
-export async function checkPublication(db: SupabaseClient, id: string, revision: number) {
-    const { data: job, error } = await db.from('sanction_inspections').select('result,review_draft,review_revision,versions,status').eq('id', id).maybeSingle()
-    if (error) throw new AdminError(500, 'request_failed')
-    if (!job || job.review_revision !== revision || job.status !== 'needs_review' || !job.result || !job.review_draft) throw new AdminError(409, 'review_conflict')
+export async function privatePublicationTexts(db: SupabaseClient, versions: Record<string, number>) {
     const texts: string[] = []
-    for (const documentId of Object.keys(job.versions)) {
+    for (const documentId of Object.keys(versions)) {
         for (let offset = 0; ; offset += 1000) {
             const response = await db.from('internal_document_units').select('body').eq('document_id', documentId).order('article_key').range(offset, offset+999)
             if (response.error) throw new AdminError(500, 'request_failed')
@@ -20,20 +17,34 @@ export async function checkPublication(db: SupabaseClient, id: string, revision:
         if (meta.error) throw new AdminError(500, 'request_failed')
         texts.push(meta.data.title, meta.data.object_key)
     }
+    return texts
+}
+
+export async function checkPublication(db: SupabaseClient, id: string, revision: number) {
+    const { data: job, error } = await db.from('sanction_inspections').select('result,review_draft,review_revision,versions,status').eq('id', id).maybeSingle()
+    if (error) throw new AdminError(500, 'request_failed')
+    if (!job || job.review_revision !== revision || job.status !== 'needs_review' || !job.result || !job.review_draft) throw new AdminError(409, 'review_conflict')
+    const texts = await privatePublicationTexts(db, job.versions)
     try { validatePublication(publicReport(job.review_draft), job.result, texts) }
     catch { throw new AdminError(400, 'publication_review_required') }
 }
 
 export async function publishedReports(db: SupabaseClient, offset = 0, id?: string, articleId?: string): Promise<PublishedReport[]> {
-    let query = db.from('sanction_publications').select('inspection_id,article_id,published_at,report,articles(title,link,published_at)').eq('status', 'published')
+    let query = db.from('sanction_publications').select('inspection_id,article_id,published_at,report,publication_source,articles(title,link,published_at)').eq('status', 'published')
     if (id) query = query.eq('inspection_id', id)
     if (articleId) query = query.eq('article_id', articleId)
     const { data, error } = await query.order('published_at', { ascending: false }).order('inspection_id').range(offset, offset+19)
     if (error) throw new AdminError(503, 'reports_unavailable')
+    if (articleId && !id && !data?.length) {
+        const alias = await db.rpc('inspection_publication_alias', { p_article: articleId })
+        if (alias.error) throw new AdminError(503, 'reports_unavailable')
+        if (alias.data) return (await publishedReports(db, 0, alias.data)).map(report => ({ ...report, article_id: articleId }))
+    }
     try {
         return (data || []).map(row => {
             const source = z.object({ title: z.string().min(1), link: z.string(), published_at: z.string() }).parse(row.articles)
             return { id: row.inspection_id, article_id: row.article_id, published_at: row.published_at,
+                publication_source: z.enum(['manual', 'automatic']).parse(row.publication_source ?? 'manual'),
                 report: publicReport(row.report), source: { title: source.title, published_at: source.published_at, url: publicSanctionUrl(source.link) } }
         })
     } catch { throw new AdminError(503, 'reports_unavailable') }

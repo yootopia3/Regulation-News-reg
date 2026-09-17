@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
         if (format === 'xlsx') {
             if (!reports.length) return NextResponse.json({ error: 'not_found' }, { status: 404, headers: PRIVATE_HEADERS })
             const { reportWorkbook } = await import('@/lib/publication-export')
-            return new NextResponse(await reportWorkbook(reports[0].report, reports[0].source), { headers: { ...PRIVATE_HEADERS,
+            return new NextResponse(await reportWorkbook(reports[0].report, reports[0].source, reports[0].publication_source === 'automatic'), { headers: { ...PRIVATE_HEADERS,
                 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 'Content-Disposition': 'attachment; filename="sanction-inspection.xlsx"',
             } })
