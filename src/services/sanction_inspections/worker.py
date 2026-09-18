@@ -18,12 +18,15 @@ def load_units(db, versions):
         raise InspectionError('documents_changed')
     units = []
     for document_id, revision in versions.items():
+        document = db.table('internal_documents').select('document_kind,status,revision').eq('id', document_id).single().execute().data
+        if document != {'document_kind': 'organization', 'status': 'active', 'revision': revision}:
+            raise InspectionError('documents_changed')
         for offset in range(0, 2000, 1000):
-            rows = db.table('internal_document_units').select('article_key,department,body,reviewed').eq('document_id', document_id).order('article_key').range(offset, offset+999).execute().data
+            rows = db.table('internal_document_units').select('article_key,department,body,reviewed,organization_names').eq('document_id', document_id).order('article_key').range(offset, offset+999).execute().data
             for row in rows:
                 if row['reviewed'] is not True:
                     raise InspectionError('documents_changed')
-                units.append(Unit(document_id=document_id, revision=revision, active=True, **row))
+                units.append(Unit(document_id=document_id, revision=revision, active=True, document_kind='organization', **row))
             if len(rows) < 1000:
                 break
         else:
@@ -52,7 +55,7 @@ def run_once(db, client, downloader=download_pdf, parser=parse_isolated):
         if parsed.get('error'):
             raise InspectionError(parsed['error'])
         units = load_units(db, job['versions'])
-        result = analyze([Page(**page) for page in parsed['pages']], units, client)
+        result = analyze([Page(**page) for page in parsed['pages']], units, client, organization=True)
         result['pdf_sha256'] = hashlib.sha256(data).hexdigest()
     except InspectionError as exc:
         error = str(exc)

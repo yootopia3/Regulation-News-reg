@@ -3,6 +3,7 @@ import re
 
 ARTICLE = re.compile(r'^제\s*(\d+)\s*조(?:\s*의\s*(\d+))?\s*[(（]([^）)]+)[)）]')
 BOUNDARY = re.compile(r'^(?:제\s*\d+\s*[장절]|부\s*칙(?:\s|[(（]|$))')
+SUPPLEMENT = re.compile(r'^부\s*칙(?:\s|[<〈《\[(（]|$)')
 ORGANIZATION = re.compile(r'(?:부|팀|실|센터|지점|본부|위원회)$')
 MAX_PARAGRAPHS = 20000
 # Keep administrator JSON responses below the hosting response-size ceiling,
@@ -17,17 +18,26 @@ def split_articles(paragraphs):
     units, warnings, seen = [], [], set()
     current = None
     unassigned = []
+    in_supplement = False
 
     def finish(end):
         nonlocal current
         if current is not None:
             current['end_paragraph'] = end
             current['body'] = '\n'.join(paragraphs[current['start_paragraph'] - 1:end])
+            current['organization_names'] = organization_candidates(current['body'])
             units.append(current)
             current = None
 
     for index, raw in enumerate(paragraphs):
         text = raw.strip()
+        if SUPPLEMENT.match(text):
+            finish(index)
+            in_supplement = True
+        if in_supplement:
+            if text:
+                unassigned.append((index + 1, text))
+            continue
         match = ARTICLE.match(text)
         if match or BOUNDARY.match(text):
             finish(index)
@@ -55,3 +65,17 @@ def split_articles(paragraphs):
         warnings.append('조문 밖 문단 — 목차·개정 이력·별첨 여부를 확인하세요.\n' + '\n'.join(f'{i}: {t}' for i, t in unassigned))
     warnings.append('부서명은 조문 제목에서 찾은 후보입니다. 공통업무·교차참조와 하위 조직을 원본에서 확인하세요.')
     return {'units': units, 'warnings': warnings}
+
+
+def organization_candidates(body):
+    """Conservative names from list/table cells; administrator must review omissions."""
+    names = []
+    for line in body.splitlines():
+        if re.search(r'삭\s*제', line):
+            continue
+        line = re.sub(r'^\s*(?:[0-9]+[.)]|[가-힣][.)]|[①-⑳ㆍ·•-])\s*', '', line).strip()
+        for text in re.split(r'[,，ㆍ·]|\s{2,}', line):
+            name = text.strip()
+            if re.fullmatch(r'[가-힣A-Za-z0-9& ]{2,60}(?:부|팀|실|센터|지점|본부|위원회|사무소)', name) and name not in names:
+                names.append(name)
+    return names[:200]

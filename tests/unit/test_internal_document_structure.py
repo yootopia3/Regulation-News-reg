@@ -23,6 +23,16 @@ def test_deleted_and_common_articles_have_no_department():
     assert any('삭제' in w for w in result['warnings'])
 
 
+@pytest.mark.parametrize('heading', ['부칙', '부 칙 <2026.7.14.>', '부칙(2026.7.14.)', '부칙<2026.7.14.>'])
+def test_supplement_repeated_numbering_is_preserved_for_review_not_as_current_duties(heading):
+    result = split_articles(['제1조(목적) 조직 정의', '제2조(가상부) 현행 역할', heading,
+                             '제1조(시행일) 시행 내용', '제2조(경과조치) 과거 조직명',
+                             '부칙<2025.1.1.>', '제1조(시행일) 종전 시행 내용'])
+    assert [u['article_key'] for u in result['units']] == ['1', '2']
+    assert all('과거 조직명' not in u['body'] for u in result['units'])
+    assert any('과거 조직명' in w and '종전 시행 내용' in w for w in result['warnings'])
+
+
 @pytest.mark.parametrize('paragraphs,code', [
     (['제1조(가상업무부)', '1. 처리', '제1조(가상지원부)'], 'unsupported_hwp'),
     (['아무 조문도 없음'], 'unsupported_hwp'),
@@ -31,3 +41,8 @@ def test_deleted_and_common_articles_have_no_department():
 def test_ambiguous_and_excessive_documents_fail_closed(paragraphs, code):
     with pytest.raises(ValueError, match=code):
         split_articles(paragraphs)
+
+
+def test_organization_candidates_are_suggestions_not_reviewed_duties():
+    from src.services.internal_documents.structure import organization_candidates
+    assert organization_candidates('1. 여신심사부\n인사부\n삭제 관리부\n부서가 아닌 설명 문장입니다.') == ['여신심사부', '인사부']

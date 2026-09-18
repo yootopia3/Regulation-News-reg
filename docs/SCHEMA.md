@@ -146,3 +146,6 @@ deleting/delete_failed/deleted이다. 검토 수정은 revision 충돌을 검사
 수동 save/publish/withdraw는 automation_status=manual로 전환하여 자동 덮어쓰기를 막는다.
 source_key는 agency+examMgmtNo+emOpenSeq(없으면 원문 URL)이며 중복 URL의 게시 조회도 연결한다.
 신규 RPC는 service_role 전용. 공개 API는 인증 후 정해진 DTO만 반환한다.
+
+## 11. 직제규정 기반 분석 (202609180001)
+문서 종류 organization과 internal_document_units.organization_names(JSONB 문자열 배열)을 추가한다. 원문 포함·중복·길이를 DB에서 검증하고, 검토 저장 후 조직명 없는 문서는 활성화하지 못한다. inspection_versions는 활성 organization만 반환한다. migration 적용 시 이전 기준 초안/게시본도 무효화한다. 공개 report.analysis_basis는 선택적 organization 리터럴이며 추정 표시를 보존한다.

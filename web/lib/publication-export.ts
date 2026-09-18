@@ -1,5 +1,5 @@
 import ExcelJS from 'exceljs'
-import { publicReport, type PublicationSource } from './publication'
+import { publicReport, ORGANIZATION_INFERENCE_NOTICE, type PublicationSource } from './publication'
 
 export async function reportWorkbook(value: unknown, source?: PublicationSource, automatic = false) {
     const report = publicReport(value)
@@ -22,6 +22,7 @@ export async function reportWorkbook(value: unknown, source?: PublicationSource,
     sheet.eachRow(row => { row.alignment = { wrapText: true, vertical: 'top' }; row.height = 48 })
     sheet.views = [{ state: 'frozen', ySplit: 1 }]
     sheet.autoFilter = { from: 'A1', to: source ? 'J1' : 'G1' }
+    if (report.analysis_basis === 'organization') sheet.addRow([ORGANIZATION_INFERENCE_NOTICE])
     if (automatic) sheet.addRow(['AI 자동 분석 · 담당자 확인 필요'])
     return new Uint8Array(await book.xlsx.writeBuffer())
 }

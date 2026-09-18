@@ -34,7 +34,7 @@ export default function DocumentsPage() {
         <form onSubmit={upload} className="bg-white border rounded-2xl p-6 mt-8 grid md:grid-cols-2 gap-4">
             <h2 className="text-lg font-bold md:col-span-2">문서 등록</h2>
             <label className="text-sm">문서 제목<input name="title" required maxLength={120} className="block w-full border rounded-lg p-2 mt-1" /></label>
-            <label className="text-sm">문서 종류<select name="document_kind" className="block w-full border rounded-lg p-2 mt-1"><option value="allocation">업무분장규정</option><option value="analysis">업무분석서</option></select></label>
+            <label className="text-sm">문서 종류<select name="document_kind" className="block w-full border rounded-lg p-2 mt-1"><option value="organization">직제규정 (AI 추정 기준)</option><option value="allocation">업무분장규정</option><option value="analysis">업무분석서</option></select></label>
             <label className="text-sm">시행일<input name="effective_date" type="date" required className="block w-full border rounded-lg p-2 mt-1" /></label>
             <label className="text-sm">HWP 파일 · 최대 2MB<input name="file" type="file" accept=".hwp,.HWP" required className="block w-full p-2 mt-1" /></label>
             <p className="text-sm text-slate-500 md:col-span-2">암호화된 문서와 HWPX는 현재 지원하지 않습니다. 이 단계에서는 외부 AI 분석을 실행하지 않습니다.</p>

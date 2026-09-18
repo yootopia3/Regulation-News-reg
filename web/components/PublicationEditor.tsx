@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { initialReport, type PublicationReport } from '@/lib/publication'
+import { initialReport, ORGANIZATION_INFERENCE_NOTICE, type PublicationReport } from '@/lib/publication'
 import type { InspectionJob } from '@/lib/inspection-ui'
 import { documentRequest } from '@/lib/document-ui'
 
@@ -14,7 +14,7 @@ export default function PublicationEditor({ job }: { job: InspectionJob }) {
     const [message, setMessage] = useState('')
     const [error, setError] = useState('')
     function edit(index: number, value: Partial<PublicationReport['items'][number]>) {
-        setReport(current => ({ items: current.items.map((item, i) => i === index ? { ...item, ...value } : item) }))
+        setReport(current => ({ ...current, items: current.items.map((item, i) => i === index ? { ...item, ...value } : item) }))
         setSaved(false); setReviewed(false); setMessage('')
     }
     async function action(action: 'save' | 'publish' | 'withdraw') {
@@ -30,6 +30,7 @@ export default function PublicationEditor({ job }: { job: InspectionJob }) {
     const input = 'block w-full border border-slate-300 rounded p-2 mt-1 bg-white'
     return <section className="mt-8 border-t pt-6"><h2 className="text-xl font-bold">공개용 검토본 편집</h2>
         <p className="text-sm text-slate-600 mt-2">전체 지적사항을 확인하고 관련 업무를 작성하세요. 내부규정 원문·인용·파일명은 공개용 문장에 넣지 마세요. 저장하면 기존 게시본이 철회됩니다.</p>
+        {report.analysis_basis === 'organization' && <p className="mt-3 text-sm text-amber-900">{ORGANIZATION_INFERENCE_NOTICE}</p>}
         <fieldset disabled={busy} className="disabled:opacity-60">{report.items.map((item, i) => <div key={item.finding_id} className="mt-6 border rounded-xl p-4 space-y-3">
             <h3 className="font-semibold">{item.finding_id} · 공개 원문 {item.source_pages.join(', ')}쪽</h3>
             <label className="block text-sm">지적사항 제목<input value={item.title} maxLength={160} onChange={e => edit(i, { title: e.target.value })} className={input} /></label>

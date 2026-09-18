@@ -7,7 +7,7 @@ export const DOCUMENT_BUCKET = 'internal-documents'
 export const MAX_DOCUMENT_BYTES = 2 * 1024 * 1024
 export const DOCUMENT_COLUMNS = 'id,title,document_kind,effective_date,status,revision,error_code,created_at'
 export const DocumentId = z.string().uuid()
-export const UnitEdit = z.object({ article_key: z.string().min(1).max(80), department: z.string().max(120), reviewed: z.boolean() }).strict()
+export const UnitEdit = z.object({ article_key: z.string().min(1).max(80), department: z.string().max(120), reviewed: z.boolean(), organization_names: z.array(z.string().trim().min(2).max(120)).max(200).optional() }).strict()
 export const DocumentAction = z.discriminatedUnion('action', [
     z.object({ action: z.literal('review'), revision: z.number().int().nonnegative(), units: z.array(UnitEdit).min(1).max(500), warnings_acknowledged: z.boolean() }).strict(),
     z.object({ action: z.literal('activate'), revision: z.number().int().nonnegative() }).strict(),
@@ -20,7 +20,7 @@ export async function uploadDocument(db: SupabaseClient, userId: string, request
     let form: FormData
     try { form = await new Response(bytes.buffer as ArrayBuffer, { headers: { 'Content-Type': request.headers.get('content-type') || '' } }).formData() }
     catch { throw new AdminError(400, 'invalid_upload') }
-    const meta = z.object({ title: z.string().trim().min(1).max(120), document_kind: z.enum(['allocation', 'analysis']), effective_date: z.string().date() }).safeParse({
+    const meta = z.object({ title: z.string().trim().min(1).max(120), document_kind: z.enum(['allocation', 'analysis', 'organization']), effective_date: z.string().date() }).safeParse({
         title: form.get('title'), document_kind: form.get('document_kind'), effective_date: form.get('effective_date'),
     })
     const file = form.get('file')
@@ -50,7 +50,7 @@ export async function getDocument(db: SupabaseClient, id: string) {
     if (!data) throw new AdminError(404, 'not_found')
     const units: unknown[] = []
     for (let offset = 0; ; offset += 1000) {
-        const result = await db.from('internal_document_units').select('article_key,heading,department,body,start_paragraph,end_paragraph,reviewed').eq('document_id', id).order('start_paragraph').range(offset, offset + 999)
+        const result = await db.from('internal_document_units').select('article_key,heading,department,body,start_paragraph,end_paragraph,reviewed,organization_names').eq('document_id', id).order('start_paragraph').range(offset, offset + 999)
         if (result.error) throw new AdminError(500, 'request_failed')
         units.push(...(result.data || []))
         if (!result.data || result.data.length < 1000) break

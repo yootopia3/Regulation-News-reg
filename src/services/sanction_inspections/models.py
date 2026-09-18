@@ -1,5 +1,6 @@
 """Strict boundaries for public evidence and private candidate drafts."""
 from pydantic import BaseModel, ConfigDict, Field
+from typing import Literal
 
 
 class InspectionError(Exception):
@@ -32,6 +33,8 @@ class Findings(StrictModel):
 
 
 class Unit(StrictModel):
+    document_kind: Literal['allocation', 'analysis', 'organization'] = 'allocation'
+    organization_names: list[str] = Field(default_factory=list, max_length=200)
     document_id: str = Field(min_length=1, max_length=64)
     revision: int = Field(ge=0)
     article_key: str = Field(pattern=r'^[0-9]+(?:-[0-9]+)?$')
@@ -66,4 +69,13 @@ class Match(StrictModel):
 
 class Matches(StrictModel):
     matches: list[Match] = Field(max_length=90)
+    unmatched_finding_ids: list[str] = Field(max_length=30)
+
+
+class OrganizationMatch(Match):
+    department_name: str = Field(min_length=1, max_length=120)
+
+
+class OrganizationMatches(StrictModel):
+    matches: list[OrganizationMatch] = Field(max_length=90)
     unmatched_finding_ids: list[str] = Field(max_length=30)

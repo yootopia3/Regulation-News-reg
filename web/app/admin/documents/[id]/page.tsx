@@ -4,8 +4,8 @@ import { use, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { DOCUMENT_STATUS, documentRequest } from '@/lib/document-ui'
 
-type Unit = { article_key: string; heading: string; department: string; body: string; start_paragraph: number; end_paragraph: number; reviewed: boolean }
-type Doc = { title: string; status: string; revision: number; warnings: string[]; warnings_acknowledged: boolean; error_code: string | null }
+type Unit = { organization_names?: string[]; article_key: string; heading: string; department: string; body: string; start_paragraph: number; end_paragraph: number; reviewed: boolean }
+type Doc = { document_kind: string; title: string; status: string; revision: number; warnings: string[]; warnings_acknowledged: boolean; error_code: string | null }
 export default function DocumentReview({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params)
     const [doc, setDoc] = useState<Doc | null>(null)
@@ -24,7 +24,7 @@ export default function DocumentReview({ params }: { params: Promise<{ id: strin
         if (!doc) return
         setBusy(true); setError(''); setSaved(false)
         try {
-            const body = kind === 'review' ? { action: kind, revision: doc.revision, units: units.map(({ article_key, department, reviewed }) => ({ article_key, department, reviewed })), warnings_acknowledged: doc.warnings_acknowledged } : { action: kind, revision: doc.revision }
+            const body = kind === 'review' ? { action: kind, revision: doc.revision, units: units.map(({ article_key, department, reviewed, organization_names }) => ({ article_key, department, reviewed, ...(doc.document_kind === 'organization' ? { organization_names: (organization_names || []).map(n => n.trim()).filter(Boolean) } : {}) })), warnings_acknowledged: doc.warnings_acknowledged } : { action: kind, revision: doc.revision }
             await documentRequest(`/api/admin/documents/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
             await load(); setDeleting(false); setSaved(true)
         } catch (e) { setError((e as Error).message) }
@@ -39,7 +39,7 @@ export default function DocumentReview({ params }: { params: Promise<{ id: strin
             {doc.warnings.length > 0 && <section className="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-4"><h2 className="font-bold">추출 확인 사항</h2><ul>{doc.warnings.map((warning, i) => <li key={i} className="whitespace-pre-wrap text-sm mt-2">{warning}</li>)}</ul></section>}
             <p className="mt-5 text-sm text-slate-600">각 조문의 부서명을 확인하세요. 공통 규정은 부서명을 비워둘 수 있습니다. 원문과 비교한 뒤 검토 완료를 선택해주세요.</p>
             {units.map((unit, i) => <section key={unit.article_key} className="mt-4 bg-white border rounded-xl p-5"><h2 className="font-bold">제{unit.article_key}조 · {unit.heading}</h2><p className="text-xs text-slate-500 mt-1">추출 문단 {unit.start_paragraph}–{unit.end_paragraph} (페이지 번호 아님)</p>
-                <label className="block text-sm mt-3">소관부서 후보<input maxLength={120} disabled={doc.status !== 'review' || busy} value={unit.department} onChange={event => { setDirty(true); setUnits(old => old.map((u, j) => j === i ? { ...u, department: event.target.value, reviewed: false } : u)) }} className="block border rounded-lg p-2 mt-1 w-full" /></label>
+                {doc.document_kind === 'organization' ? <label className="block text-sm mt-3">이 조문에 명시된 조직명 · 한 줄에 하나<textarea disabled={doc.status !== 'review' || busy} value={(unit.organization_names || []).join('\n')} onChange={event => { setDirty(true); setUnits(old => old.map((u, j) => j === i ? { ...u, organization_names: event.target.value.split('\n'), reviewed: false } : u)) }} className="block border rounded-lg p-2 mt-1 w-full min-h-28" /><span className="text-xs text-slate-500">원문에 있는 조직명만 남겨 주세요. 조직 목록이 없는 조문은 비워두세요. 업무는 AI 추정으로 표시됩니다.</span></label> : <label className="block text-sm mt-3">소관부서 후보<input maxLength={120} disabled={doc.status !== 'review' || busy} value={unit.department} onChange={event => { setDirty(true); setUnits(old => old.map((u, j) => j === i ? { ...u, department: event.target.value, reviewed: false } : u)) }} className="block border rounded-lg p-2 mt-1 w-full" /></label>}
                 <pre className="whitespace-pre-wrap font-sans text-sm leading-7 mt-4 bg-slate-50 p-4 rounded-lg">{unit.body}</pre>
                 <label className="flex gap-2 mt-3 text-sm"><input type="checkbox" disabled={doc.status !== 'review' || busy} checked={unit.reviewed} onChange={event => { setDirty(true); setUnits(old => old.map((u, j) => j === i ? { ...u, reviewed: event.target.checked } : u)) }} />이 조문의 부서와 업무를 확인했습니다.</label>
             </section>)}

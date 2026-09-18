@@ -1,4 +1,5 @@
 'use client'
+import { ORGANIZATION_INFERENCE_NOTICE } from '@/lib/publication'
 import { useState } from 'react'
 import type { PublishedReport } from '@/lib/publication'
 
@@ -25,7 +26,8 @@ export default function PublishedInspections() {
         {state === 'error' && <p role="alert" className="mt-4 text-red-800">리포트를 불러오지 못했습니다. 로그인 상태를 확인하고 다시 조회해 주세요.</p>}
         {state === 'ready' && !reports.length && <p className="mt-4 text-slate-500">게시된 리포트가 없습니다.</p>}
         {state === 'ready' && reports.map(report => <article key={report.id} className="border-t mt-5 pt-5">
-            {report.publication_source === 'automatic' && <p className="text-sm text-amber-800">AI 자동 분석 · 담당자 확인 필요</p>}
+            {report.report.analysis_basis === 'organization' && <p className="my-3 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">{ORGANIZATION_INFERENCE_NOTICE}</p>}
+                    {report.publication_source === 'automatic' && <p className="text-sm text-amber-800">AI 자동 분석 · 담당자 확인 필요</p>}
             <h3 className="text-lg font-bold mb-2">{report.source.title}</h3>
             {report.source.url && <a href={report.source.url} target="_blank" rel="noopener noreferrer" className="inline-block mb-3 text-sm text-blue-900 underline">금감원 공시 원문 열기</a>}
             <div className="flex justify-between gap-3"><p className="text-sm text-slate-500">게시일 {new Date(report.published_at).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })}</p><a href={`/api/sanction-publications?id=${encodeURIComponent(report.id)}&format=xlsx`} className="text-sm text-blue-900 underline">점검표 Excel 다운로드</a></div>

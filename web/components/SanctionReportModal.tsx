@@ -1,4 +1,5 @@
 'use client'
+import { ORGANIZATION_INFERENCE_NOTICE } from '@/lib/publication'
 import { useEffect, useRef } from 'react'
 import { X, Sparkles, ExternalLink, Download } from 'lucide-react'
 import type { Article } from './dashboard/NewsCard'
@@ -47,6 +48,7 @@ export default function SanctionReportModal({ article, onClose }: { article: Art
                     </section><section className="mt-4 bg-blue-50 rounded-xl p-5"><h2 className="font-bold text-blue-950">당행 관점 점검</h2><p className="text-sm leading-6 text-blue-900 mt-2">{state === 'disabled' ? '당행 관점 리포트 제공을 준비하고 있습니다.' : '아직 게시된 당행 관점 리포트가 없습니다.'} 분석과 검증이 완료되면 소관부서·소관업무·점검 포인트를 확인할 수 있습니다.</p>{state === 'empty' && <button onClick={retry} className="mt-3 text-sm font-semibold text-blue-700 underline">분석 결과 새로고침</button>}</section>
                 </>}
                 {state === 'ready' && report && <>
+                    {report.report.analysis_basis === 'organization' && <p className="my-3 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">{ORGANIZATION_INFERENCE_NOTICE}</p>}
                     {report.publication_source === 'automatic' && <p className="mb-4 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">AI 자동 분석 · 담당자 확인 필요</p>}
                     <section className="mt-6 bg-slate-50 border border-slate-200 rounded-2xl p-5 sm:p-6"><h2 className="text-lg font-bold">제재공시 요약 브리핑</h2><ol className="mt-4 space-y-4">{report.report.items.map((item, index) => <li key={item.finding_id}><h3 className="font-semibold">{index+1}. {item.title}</h3><p className="text-sm leading-7 text-slate-600 mt-1 whitespace-pre-line">{item.summary}</p></li>)}</ol></section>
                     <h2 className="mt-8 text-lg font-bold">당행 관점 사고예방 점검</h2>

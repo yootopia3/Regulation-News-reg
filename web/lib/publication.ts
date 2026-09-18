@@ -8,14 +8,14 @@ export const ReportItem = z.object({
     source_pages: z.array(z.number().int().min(1).max(200)).min(1).max(5),
     checks: z.array(z.object({ question: Text(400), evidence_to_request: Text(300) }).strict()).min(1).max(30),
 }).strict()
-export const PublicationReport = z.object({ items: z.array(ReportItem).min(1).max(30) }).strict()
+export const PublicationReport = z.object({ analysis_basis: z.literal('organization').optional(), items: z.array(ReportItem).min(1).max(30) }).strict()
 export type PublicationReport = z.infer<typeof PublicationReport>
 export type PublicationSource = { title: string; published_at: string; url: string | null }
 export type PublishedReport = { id: string; article_id: string; published_at: string; report: PublicationReport; source: PublicationSource; publication_source?: 'manual' | 'automatic' }
 
 // Editor seed is not approval; legacy drafts without related_work still require input.
 export function initialReport(draft: InspectionDraft): PublicationReport {
-    return { items: draft.findings.map(f => {
+    return { ...(draft.analysis_basis ? { analysis_basis: draft.analysis_basis } : {}), items: draft.findings.map(f => {
         const matches = draft.matches.filter(m => m.finding_id === f.id)
         return { finding_id: f.id, title: f.title, summary: f.summary,
             departments: [...new Set(matches.map(m => m.department))], related_work: [...new Set(matches.map(m => m.related_work?.trim()).filter(Boolean))].join('; '),
@@ -27,22 +27,29 @@ export function initialReport(draft: InspectionDraft): PublicationReport {
 
 export function publicReport(value: unknown): PublicationReport {
     const parsed = PublicationReport.parse(value)
-    return { items: parsed.items.map(i => ({ finding_id: i.finding_id, title: i.title, summary: i.summary,
+    return { ...(parsed.analysis_basis ? { analysis_basis: parsed.analysis_basis } : {}), items: parsed.items.map(i => ({ finding_id: i.finding_id, title: i.title, summary: i.summary,
         departments: [...i.departments], related_work: i.related_work, source_pages: [...i.source_pages],
         checks: i.checks.map(c => ({ question: c.question, evidence_to_request: c.evidence_to_request })),
     })) }
 }
 
+export const ORGANIZATION_INFERENCE_NOTICE = '직제규정의 조직 목록을 기준으로 소관부서 후보·소관업무·점검포인트를 AI가 추정했습니다. 확정된 업무분장이 아니므로 담당자 확인이 필요합니다.'
+
 const compact = (text: string) => text.normalize('NFKC').replace(/[\s\p{P}\p{Cf}]+/gu, '').toLowerCase()
 export function validatePublication(report: PublicationReport, draft: InspectionDraft, privateTexts: string[]) {
+    if (report.analysis_basis !== draft.analysis_basis) throw new Error('analysis_basis_mismatch')
     const ids = report.items.map(i => i.finding_id)
     if (new Set(ids).size !== ids.length || ids.length !== draft.findings.length || draft.findings.some(f => !ids.includes(f.id))) throw new Error('finding_coverage_failed')
     for (const item of report.items) {
         const finding = draft.findings.find(f => f.id === item.finding_id)!
+        if (draft.analysis_basis === 'organization') {
+            const allowed = new Set(draft.matches.filter(m => m.finding_id === item.finding_id).map(m => m.department))
+            if (item.departments.some(name => !allowed.has(name))) throw new Error('invalid_department')
+        }
         const pages = new Set(finding.evidence.map(e => e.page))
         if (item.source_pages.some(p => !pages.has(p))) throw new Error('invalid_public_evidence')
     }
-    const fields = report.items.flatMap(i => [i.title, i.summary, ...i.departments, i.related_work, ...i.checks.flatMap(c => [c.question, c.evidence_to_request])]).map(compact)
+    const fields = report.items.flatMap(i => [i.title, i.summary, ...(draft.analysis_basis === 'organization' ? [] : i.departments), i.related_work, ...i.checks.flatMap(c => [c.question, c.evidence_to_request])]).map(compact)
     // Check concatenated fields too, so splitting a quote across fields cannot bypass detection.
     const output = fields.join('')
     const windows = new Set(Array.from({ length: Math.max(0, output.length-23) }, (_, i) => output.slice(i, i+24)))

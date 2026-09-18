@@ -6,7 +6,7 @@ export const DOCUMENT_ERRORS: Record<string, string> = {
     review_conflict: '다른 수정 또는 규정 변경이 있습니다. 새로고침 후 다시 검토해 주세요.',
     publication_review_required: '지적사항·공개 페이지 또는 내부 내용 포함 여부를 다시 확인해 주세요.',
     invalid_request: '필수 항목과 입력 길이를 확인해 주세요.',
-    no_active_documents: '검토를 마친 업무규정을 먼저 활성화해 주세요.', invalid_article: '분석할 수 있는 제재공시가 아닙니다.',
+    no_active_documents: '조직 목록을 검토한 직제규정을 먼저 활성화해 주세요.', invalid_article: '분석할 수 있는 제재공시가 아닙니다.',
     disabled: '문서 관리가 비활성화되어 있습니다.', not_configured: '관리자 문서 관리 설정이 필요합니다.',
     unauthorized: '로그인이 만료되었습니다. 다시 로그인해주세요.', forbidden: '관리자 권한이 필요합니다.',
     duplicate_document: '동일한 파일이 이미 등록되어 있습니다.', too_large: '파일은 2MB 이하로 등록해주세요.',

@@ -11,6 +11,7 @@ export const INSPECTION_ERRORS: Record<string, string> = {
 }
 export type InspectionJob = { automation_status?: string; id: string; article_id: string; status: string; error_code: string | null; result?: InspectionDraft | null; review_revision?: number; review_draft?: import('./publication').PublicationReport | null }
 export type InspectionDraft = {
+    analysis_basis?: 'organization'
     findings: { id: string; title: string; summary: string; evidence: { page: number; quote: string }[] }[]
     matches: { finding_id: string; department: string; rationale: string; related_work?: string; evidence: { ref: string; quote: string }[]; checks: { question: string; evidence_to_request: string }[] }[]
     unmatched_finding_ids: string[]

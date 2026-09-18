@@ -86,13 +86,14 @@ def test_worker_connects_trusted_pdf_and_database_units_to_private_finish(monkey
     versions = {'doc': 1}
     job = {'id': 'job', 'article_id': 'article', 'lease_token': 'lease', 'versions': versions}
     db.rpc.side_effect = lambda name, args: SimpleNamespace(execute=lambda: SimpleNamespace(data=job if name == 'inspection_claim' else versions))
-    article_query, units_query = Mock(), Mock()
-    for query in (article_query, units_query):
+    article_query, units_query, doc_query = Mock(), Mock(), Mock()
+    for query in (article_query, units_query, doc_query):
         for method in ('select', 'eq', 'single', 'order', 'range'):
             getattr(query, method).return_value = query
     article_query.execute.return_value.data = {'agency': 'FSS_SANCTION', 'category': 'sanction_notice', 'analysis_result': {'pdf_url': 'https://www.fss.or.kr/a'}}
     units_query.execute.return_value.data = [{'article_key': '1', 'department': 'Synthetic team', 'body': 'Synthetic duty', 'reviewed': True}]
-    db.table.side_effect = lambda name: article_query if name == 'articles' else units_query
+    doc_query.execute.return_value.data = {'document_kind': 'organization', 'status': 'active', 'revision': 1}
+    db.table.side_effect = lambda name: article_query if name == 'articles' else doc_query if name == 'internal_documents' else units_query
     engine = Mock(return_value={'status': 'needs_review', 'document_versions': versions})
     monkeypatch.setattr('src.services.sanction_inspections.worker.analyze', engine)
     downloader = Mock(return_value=b'%PDF-fixture')
