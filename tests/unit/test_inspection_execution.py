@@ -82,6 +82,7 @@ def test_disabled_worker_does_not_claim():
 
 
 def test_worker_connects_trusted_pdf_and_database_units_to_private_finish(monkeypatch):
+    monkeypatch.setattr('src.services.sanction_inspections.worker.load_master', lambda *_: None)
     db, client = Mock(), Mock()
     versions = {'doc': 1}
     job = {'id': 'job', 'article_id': 'article', 'lease_token': 'lease', 'versions': versions}

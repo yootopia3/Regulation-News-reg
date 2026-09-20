@@ -1,5 +1,6 @@
 'use client'
-import { ORGANIZATION_INFERENCE_NOTICE } from '@/lib/publication'
+import { reportBasisNotice } from '@/lib/publication'
+import DutyBasis from './DutyBasis'
 import { useState } from 'react'
 import type { PublishedReport } from '@/lib/publication'
 
@@ -26,12 +27,12 @@ export default function PublishedInspections() {
         {state === 'error' && <p role="alert" className="mt-4 text-red-800">리포트를 불러오지 못했습니다. 로그인 상태를 확인하고 다시 조회해 주세요.</p>}
         {state === 'ready' && !reports.length && <p className="mt-4 text-slate-500">게시된 리포트가 없습니다.</p>}
         {state === 'ready' && reports.map(report => <article key={report.id} className="border-t mt-5 pt-5">
-            {report.report.analysis_basis === 'organization' && <p className="my-3 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">{ORGANIZATION_INFERENCE_NOTICE}</p>}
+            {reportBasisNotice(report.report) && <p className="my-3 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">{reportBasisNotice(report.report)}</p>}
                     {report.publication_source === 'automatic' && <p className="text-sm text-amber-800">AI 자동 분석 · 담당자 확인 필요</p>}
             <h3 className="text-lg font-bold mb-2">{report.source.title}</h3>
             {report.source.url && <a href={report.source.url} target="_blank" rel="noopener noreferrer" className="inline-block mb-3 text-sm text-blue-900 underline">금감원 공시 원문 열기</a>}
             <div className="flex justify-between gap-3"><p className="text-sm text-slate-500">게시일 {new Date(report.published_at).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })}</p><a href={`/api/sanction-publications?id=${encodeURIComponent(report.id)}&format=xlsx`} className="text-sm text-blue-900 underline">점검표 Excel 다운로드</a></div>
-            {report.report.items.map(item => <div key={item.finding_id} className="mt-5"><h3 className="font-bold">{item.title}</h3><p className="mt-2">{item.summary}</p><p className="text-sm mt-3"><strong>소관부서</strong> {item.departments.join(', ') || '검토 필요'}</p><p className="text-sm mt-2"><strong>관련 업무</strong> {item.related_work}</p><ul className="list-disc pl-5 mt-3 space-y-2">{item.checks.map((c, i) => <li key={i}>{c.question}<p className="text-sm text-slate-500">요청 증빙: {c.evidence_to_request}</p></li>)}</ul><p className="text-xs mt-3 text-slate-500">공개 PDF {item.source_pages.join(', ')}쪽</p></div>)}
+            {report.report.items.map(item => <div key={item.finding_id} className="mt-5"><h3 className="font-bold">{item.title}</h3><p className="mt-2">{item.summary}</p><p className="text-sm mt-3"><strong>소관부서</strong> {item.departments.join(', ') || '검토 필요'}</p><DutyBasis item={item} /><p className="text-sm mt-2"><strong>관련 업무</strong> {item.related_work}</p><ul className="list-disc pl-5 mt-3 space-y-2">{item.checks.map((c, i) => <li key={i}>{c.department && <strong>{c.department} · </strong>}{c.question}<p className="text-sm text-slate-500">요청 증빙: {c.evidence_to_request}</p></li>)}</ul><p className="text-xs mt-3 text-slate-500">공개 PDF {item.source_pages.join(', ')}쪽</p></div>)}
         </article>)}
         {state === 'ready' && next !== null && <button onClick={() => load(next)} className="mt-5 border rounded px-4 py-2">리포트 더 보기</button>}
     </section>

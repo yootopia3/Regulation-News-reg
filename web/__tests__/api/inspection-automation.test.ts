@@ -17,7 +17,7 @@ beforeEach(() => {
     query.maybeSingle.mockResolvedValue({ data: job(), error: null }); db.rpc.mockResolvedValue({ error: null })
     vi.mocked(privatePublicationTexts).mockResolvedValue(['INTERNAL_ONLY_WORDS_MUST_NOT_LEAK_IN_ANY_PUBLIC_REPORT'])
 })
-afterEach(() => vi.unstubAllEnvs())
+afterEach(() => { vi.unstubAllEnvs() })
 it('requires the dedicated token, never a dashboard cookie', async () => {
     expect((await POST(request(false))).status).toBe(401)
     token = 'wrong'; expect((await POST(request())).status).toBe(401)
@@ -59,6 +59,18 @@ it('blocks internal original text in the generated related work', async () => {
     query.maybeSingle.mockResolvedValue({ data: job({ result }), error: null })
     expect(await (await POST(request())).json()).toEqual({ status: 'needs_attention' })
     expect(db.rpc.mock.calls.some(([name]) => name === 'inspection_auto_publish')).toBe(false)
+})
+it('holds limited master evidence for review and retains inferred labels when publishing', async () => {
+    const result = { ...draft(), analysis_basis: 'duty_master', master_version: 'fixture-v1', master_fingerprint: 'a'.repeat(64),
+        matches: draft().matches.map(m => ({ ...m, duty_ids: ['HQ-001'], duty_basis: 'limited' })) }
+    query.maybeSingle.mockResolvedValue({ data: job({ result }), error: null })
+    expect(await (await POST(request())).json()).toEqual({ status: 'needs_attention' })
+    expect(db.rpc.mock.calls.some(([name]) => name === 'inspection_auto_publish')).toBe(false)
+    db.rpc.mockClear()
+    result.matches[0].duty_basis = 'inferred'
+    expect(await (await POST(request())).json()).toEqual({ status: 'published' })
+    expect(privatePublicationTexts).toHaveBeenLastCalledWith(db, { doc: 1 }, true)
+    expect(db.rpc.mock.calls[0][1].p_report.items[0].department_basis[0].basis).toBe('inferred')
 })
 it('sanitizes database conflicts and never retries publishing', async () => {
     db.rpc.mockResolvedValue({ error: { message: 'PRIVATE_CANARY' } })

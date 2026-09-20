@@ -8,11 +8,16 @@ export const INSPECTION_ERRORS: Record<string, string> = {
     reference_review_required: '법령 또는 조문 참조를 확인해야 합니다.', context_review_required: '관련 조문 범위를 검토해야 합니다.',
     documents_changed: '업무규정이 변경되었습니다. 다시 분석해 주세요.', lease_expired: '작업 시간이 초과되었습니다. 재실행 전에 worker 상태를 확인해 주세요.',
     rate_limited: 'AI 요청 한도를 초과했습니다. 잠시 후 다시 실행해 주세요.',
+    invalid_duty_master: '업무원장의 형식 또는 버전을 확인해야 합니다.',
+    invalid_duty_reference: 'AI가 선택한 업무 ID를 확인해야 합니다.',
+    finding_coverage_failed: '일부 지적사항의 부서 연결이 누락되어 검토가 필요합니다.',
 }
 export type InspectionJob = { automation_status?: string; id: string; article_id: string; status: string; error_code: string | null; result?: InspectionDraft | null; review_revision?: number; review_draft?: import('./publication').PublicationReport | null }
 export type InspectionDraft = {
-    analysis_basis?: 'organization'
+    analysis_basis?: 'organization' | 'duty_master'
+    master_version?: string
+    master_fingerprint?: string
     findings: { id: string; title: string; summary: string; evidence: { page: number; quote: string }[] }[]
-    matches: { finding_id: string; department: string; rationale: string; related_work?: string; evidence: { ref: string; quote: string }[]; checks: { question: string; evidence_to_request: string }[] }[]
+    matches: { finding_id: string; department: string; rationale: string; related_work?: string; duty_ids?: string[]; duty_basis?: 'explicit' | 'inferred' | 'limited'; duty_sources?: { unit: string; document: string; article: string; location: string }[]; evidence: { ref: string; quote: string }[]; checks: { question: string; evidence_to_request: string }[] }[]
     unmatched_finding_ids: string[]
 }

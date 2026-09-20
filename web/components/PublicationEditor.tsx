@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { initialReport, ORGANIZATION_INFERENCE_NOTICE, type PublicationReport } from '@/lib/publication'
+import { initialReport, reportBasisNotice, withMasterDepartments, newPublicationCheck, DUTY_BASIS_LABELS, type PublicationReport } from '@/lib/publication'
 import type { InspectionJob } from '@/lib/inspection-ui'
 import { documentRequest } from '@/lib/document-ui'
 
@@ -13,6 +13,7 @@ export default function PublicationEditor({ job }: { job: InspectionJob }) {
     const [busy, setBusy] = useState(false)
     const [message, setMessage] = useState('')
     const [error, setError] = useState('')
+    const master = report.analysis_basis === 'duty_master'
     function edit(index: number, value: Partial<PublicationReport['items'][number]>) {
         setReport(current => ({ ...current, items: current.items.map((item, i) => i === index ? { ...item, ...value } : item) }))
         setSaved(false); setReviewed(false); setMessage('')
@@ -30,19 +31,20 @@ export default function PublicationEditor({ job }: { job: InspectionJob }) {
     const input = 'block w-full border border-slate-300 rounded p-2 mt-1 bg-white'
     return <section className="mt-8 border-t pt-6"><h2 className="text-xl font-bold">공개용 검토본 편집</h2>
         <p className="text-sm text-slate-600 mt-2">전체 지적사항을 확인하고 관련 업무를 작성하세요. 내부규정 원문·인용·파일명은 공개용 문장에 넣지 마세요. 저장하면 기존 게시본이 철회됩니다.</p>
-        {report.analysis_basis === 'organization' && <p className="mt-3 text-sm text-amber-900">{ORGANIZATION_INFERENCE_NOTICE}</p>}
+        {reportBasisNotice(report) && <p className="mt-3 text-sm text-amber-900">{reportBasisNotice(report)}{master && ` 원장 ${report.master_version}`}</p>}
         <fieldset disabled={busy} className="disabled:opacity-60">{report.items.map((item, i) => <div key={item.finding_id} className="mt-6 border rounded-xl p-4 space-y-3">
             <h3 className="font-semibold">{item.finding_id} · 공개 원문 {item.source_pages.join(', ')}쪽</h3>
             <label className="block text-sm">지적사항 제목<input value={item.title} maxLength={160} onChange={e => edit(i, { title: e.target.value })} className={input} /></label>
             <label className="block text-sm">요약<textarea value={item.summary} maxLength={1000} onChange={e => edit(i, { summary: e.target.value })} className={input} /></label>
-            <label className="block text-sm">소관부서 · 쉼표로 구분<input value={departmentText[i]} onChange={e => { setDepartmentText(current => current.map((text, n) => n === i ? e.target.value : text)); edit(i, { departments: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }) }} className={input} /></label>
+            {master ? <fieldset className="text-sm space-y-2"><legend>소관부서 후보 · 해제하면 해당 부서의 점검 항목도 제외됩니다.</legend>{job.result?.matches.filter(m => m.finding_id === item.finding_id).map(m => <label key={m.department} className="block"><input type="checkbox" checked={item.departments.includes(m.department)} disabled={item.departments.length === 1 && item.departments.includes(m.department)} onChange={e => edit(i, withMasterDepartments(item, job.result!, e.target.checked ? [...item.departments, m.department] : item.departments.filter(d => d !== m.department)))} className="mr-2" />{m.department} · {m.duty_basis && DUTY_BASIS_LABELS[m.duty_basis]}</label>)}</fieldset> : <label className="block text-sm">소관부서 · 쉼표로 구분<input value={departmentText[i]} onChange={e => { setDepartmentText(current => current.map((text, n) => n === i ? e.target.value : text)); edit(i, { departments: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }) }} className={input} /></label>}
             <label className="block text-sm">관련 업무<textarea value={item.related_work} maxLength={500} onChange={e => edit(i, { related_work: e.target.value })} className={input} /></label>
             {item.checks.map((check, n) => <div key={n} className="border-l-2 border-blue-200 pl-3 space-y-2">
+                {master && <label className="block text-sm">담당 후보 {n+1}<select value={check.department || ''} onChange={e => edit(i, { checks: item.checks.map((c, j) => j === n ? { ...c, department: e.target.value } : c) })} className={input}><option value="" disabled>부서를 선택하세요</option>{item.departments.map(d => <option key={d} value={d}>{d}</option>)}</select></label>}
                 <label className="block text-sm">점검 질문 {n+1}<textarea value={check.question} maxLength={400} onChange={e => edit(i, { checks: item.checks.map((c, j) => j === n ? { ...c, question: e.target.value } : c) })} className={input} /></label>
                 <label className="block text-sm">요청 증빙 {n+1}<input value={check.evidence_to_request} maxLength={300} onChange={e => edit(i, { checks: item.checks.map((c, j) => j === n ? { ...c, evidence_to_request: e.target.value } : c) })} className={input} /></label>
                 <button type="button" className="text-sm text-red-800" onClick={() => edit(i, { checks: item.checks.filter((_, j) => j !== n) })}>점검 항목 삭제</button>
             </div>)}
-            <button type="button" disabled={item.checks.length >= 30} className="text-sm text-blue-900 disabled:opacity-40" onClick={() => edit(i, { checks: [...item.checks, { question: '', evidence_to_request: '' }] })}>점검 항목 추가</button>
+            <button type="button" disabled={item.checks.length >= 30 || (master && !item.departments.length)} className="text-sm text-blue-900 disabled:opacity-40" onClick={() => edit(i, { checks: [...item.checks, newPublicationCheck(item, master)] })}>점검 항목 추가</button>
         </div>)}</fieldset>
         <label className="block text-sm mt-5"><input type="checkbox" checked={reviewed} disabled={!saved || busy} onChange={e => setReviewed(e.target.checked)} className="mr-2" />저장된 전체 지적사항·부서·점검 항목을 검토했으며 내부 문서 내용이 공개되지 않음을 확인했습니다.</label>
         {error && <p role="alert" className="text-red-800 mt-3">{error}</p>}{message && <p role="status" className="text-blue-900 mt-3">{message}</p>}

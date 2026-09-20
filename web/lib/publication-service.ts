@@ -4,9 +4,18 @@ import { publicReport, validatePublication, type PublishedReport } from './publi
 import { z } from 'zod'
 import { publicSanctionUrl } from './sanction-report'
 
-export async function privatePublicationTexts(db: SupabaseClient, versions: Record<string, number>) {
+export async function privatePublicationTexts(db: SupabaseClient, versions: Record<string, number>, masterBasis = false) {
     const texts: string[] = []
     for (const documentId of Object.keys(versions)) {
+        if (masterBasis) {
+            const master = await db.from('inspection_duty_masters').select('id,revision,active,payload').eq('id', documentId).maybeSingle()
+            if (master.error) throw new AdminError(500, 'request_failed')
+            if (!master.data || !master.data.active || master.data.revision !== versions[documentId]) throw new AdminError(409, 'review_conflict')
+            const payload = z.object({ duties: z.array(z.object({ task: z.string(), detail: z.string(), boundary: z.string(),
+                sources: z.array(z.object({ document: z.string(), article: z.string(), location: z.string() })) })) }).parse(master.data.payload)
+            texts.push(...payload.duties.flatMap(d => [d.detail, d.boundary, ...d.sources.flatMap(s => [s.document])]))
+            continue
+        }
         for (let offset = 0; ; offset += 1000) {
             const response = await db.from('internal_document_units').select('body').eq('document_id', documentId).order('article_key').range(offset, offset+999)
             if (response.error) throw new AdminError(500, 'request_failed')
@@ -24,7 +33,7 @@ export async function checkPublication(db: SupabaseClient, id: string, revision:
     const { data: job, error } = await db.from('sanction_inspections').select('result,review_draft,review_revision,versions,status').eq('id', id).maybeSingle()
     if (error) throw new AdminError(500, 'request_failed')
     if (!job || job.review_revision !== revision || job.status !== 'needs_review' || !job.result || !job.review_draft) throw new AdminError(409, 'review_conflict')
-    const texts = await privatePublicationTexts(db, job.versions)
+    const texts = await privatePublicationTexts(db, job.versions, job.result.analysis_basis === 'duty_master')
     try { validatePublication(publicReport(job.review_draft), job.result, texts) }
     catch { throw new AdminError(400, 'publication_review_required') }
 }
