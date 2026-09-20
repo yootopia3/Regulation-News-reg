@@ -1,5 +1,6 @@
 'use client'
-import { ORGANIZATION_INFERENCE_NOTICE } from '@/lib/publication'
+import { reportBasisNotice } from '@/lib/publication'
+import DutyBasis from './DutyBasis'
 import { useEffect, useRef } from 'react'
 import { X, Sparkles, ExternalLink, Download } from 'lucide-react'
 import type { Article } from './dashboard/NewsCard'
@@ -48,13 +49,15 @@ export default function SanctionReportModal({ article, onClose }: { article: Art
                     </section><section className="mt-4 bg-blue-50 rounded-xl p-5"><h2 className="font-bold text-blue-950">당행 관점 점검</h2><p className="text-sm leading-6 text-blue-900 mt-2">{state === 'disabled' ? '당행 관점 리포트 제공을 준비하고 있습니다.' : '아직 게시된 당행 관점 리포트가 없습니다.'} 분석과 검증이 완료되면 소관부서·소관업무·점검 포인트를 확인할 수 있습니다.</p>{state === 'empty' && <button onClick={retry} className="mt-3 text-sm font-semibold text-blue-700 underline">분석 결과 새로고침</button>}</section>
                 </>}
                 {state === 'ready' && report && <>
-                    {report.report.analysis_basis === 'organization' && <p className="my-3 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">{ORGANIZATION_INFERENCE_NOTICE}</p>}
+                    {reportBasisNotice(report.report) && <p className="my-3 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">{reportBasisNotice(report.report)}</p>}
+                    {report.report.master_version && <p className="text-xs text-slate-500">업무원장 기준: {report.report.master_version}</p>}
                     {report.publication_source === 'automatic' && <p className="mb-4 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">AI 자동 분석 · 담당자 확인 필요</p>}
                     <section className="mt-6 bg-slate-50 border border-slate-200 rounded-2xl p-5 sm:p-6"><h2 className="text-lg font-bold">제재공시 요약 브리핑</h2><ol className="mt-4 space-y-4">{report.report.items.map((item, index) => <li key={item.finding_id}><h3 className="font-semibold">{index+1}. {item.title}</h3><p className="text-sm leading-7 text-slate-600 mt-1 whitespace-pre-line">{item.summary}</p></li>)}</ol></section>
                     <h2 className="mt-8 text-lg font-bold">당행 관점 사고예방 점검</h2>
                     {report.report.items.map((item, index) => <section key={item.finding_id} className="mt-4 border border-slate-200 rounded-2xl overflow-hidden"><h3 className="bg-blue-50 px-5 py-4 font-semibold text-blue-950">{index+1}. {item.title}</h3><div className="p-5 space-y-5">
                         <dl className="grid gap-4 sm:grid-cols-2"><div><dt className="text-xs font-semibold text-slate-500 mb-2">소관부서</dt><dd className="font-semibold">{item.departments.join(' · ') || '추가 검토 필요'}</dd></div><div><dt className="text-xs font-semibold text-slate-500 mb-2">소관업무</dt><dd className="text-sm leading-6 whitespace-pre-line">{item.related_work}</dd></div></dl>
-                        <div><h4 className="font-semibold mb-3">점검 포인트</h4><ul className="space-y-3">{item.checks.map((check, i) => <li key={i} className="rounded-xl bg-slate-50 p-4"><p className="text-sm font-medium leading-6">{i+1}. {check.question}</p><p className="text-xs text-slate-500 mt-2 leading-5">확인할 증빙: {check.evidence_to_request}</p></li>)}</ul></div><p className="text-xs text-slate-400">공시 원문 {item.source_pages.join(', ')}쪽</p>
+                        <DutyBasis item={item} />
+                        <div><h4 className="font-semibold mb-3">점검 포인트</h4><ul className="space-y-3">{item.checks.map((check, i) => <li key={i} className="rounded-xl bg-slate-50 p-4">{check.department && <p className="text-xs font-semibold text-blue-800 mb-2">{check.department}</p>}<p className="text-sm font-medium leading-6">{i+1}. {check.question}</p><p className="text-xs text-slate-500 mt-2 leading-5">확인할 증빙: {check.evidence_to_request}</p></li>)}</ul></div><p className="text-xs text-slate-400">공시 원문 {item.source_pages.join(', ')}쪽</p>
                     </div></section>)}
                 </>}
             </div>

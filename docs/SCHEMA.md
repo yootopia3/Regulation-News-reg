@@ -149,3 +149,20 @@ source_key는 agency+examMgmtNo+emOpenSeq(없으면 원문 URL)이며 중복 URL
 
 ## 11. 직제규정 기반 분석 (202609180001)
 문서 종류 organization과 internal_document_units.organization_names(JSONB 문자열 배열)을 추가한다. 원문 포함·중복·길이를 DB에서 검증하고, 검토 저장 후 조직명 없는 문서는 활성화하지 못한다. inspection_versions는 활성 organization만 반환한다. migration 적용 시 이전 기준 초안/게시본도 무효화한다. 공개 report.analysis_basis는 선택적 organization 리터럴이며 추정 표시를 보존한다.
+
+## 12. 본부 업무원장 (202609200001, 운영 적용 별도)
+`inspection_duty_masters`는 service_role 전용 RLS 테이블이다. UUID id, revision=1,
+version, 고유 SHA-256 fingerprint, payload JSONB, active, created_at을 저장한다.
+payload는 headquarters_only 범위, departments 및 duties를 가지며 duty는
+id/department/parent/task/detail/boundary/basis/sources로 구성된다.
+basis는 explicit/inferred/limited이며 승인된 업무분장 또는 제재 관련성의 확정도가 아니다.
+내용·버전·해시는 갱신할 수 없고 변경 시 새 행을 등록한다. 동시에 활성인 행은 최대 하나다.
+`inspection_master_activate`는 공통 advisory lock 내에서 버전을 전환한다.
+`inspection_versions`는 활성 원장의 {id:revision}, 없으면 활성 직제규정 버전을 반환한다.
+원장 변경 trigger는 기존 inspection_invalidate를 사용해 작업·lease·게시본을 무효화한다.
+
+private result의 analysis_basis=duty_master에는 master_version/master_fingerprint,
+matches[].duty_ids/duty_basis/duty_sources를 저장한다.
+공개 report는 version/fingerprint와 items[].department_basis(부서, 수준, 업무 ID),
+checks[].department를 보존한다. 원장 출처/설명 및 비공개 rationale은 공개 DTO에서 제외한다.
+기존 organization/미지정 basis 게시본은 기존 형식 그대로 읽는다.

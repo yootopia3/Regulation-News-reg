@@ -4,6 +4,7 @@ import Link from 'next/link'
 import PublicationEditor from '@/components/PublicationEditor'
 import { documentRequest } from '@/lib/document-ui'
 import { INSPECTION_ERRORS, INSPECTION_STATUS, type InspectionJob } from '@/lib/inspection-ui'
+import { DUTY_BASIS_LABELS } from '@/lib/publication'
 
 export default function InspectionsPage() {
     const [articles, setArticles] = useState<{ id: string; title: string }[]>([])
@@ -28,7 +29,7 @@ export default function InspectionsPage() {
     }
     return <main className="min-h-screen bg-slate-50 text-slate-900 p-6 md:p-10"><div className="max-w-5xl mx-auto">
         <nav className="flex gap-5 text-sm text-blue-900"><Link href="/">대시보드</Link><Link href="/admin/documents">내부 문서 관리</Link></nav>
-        <h1 className="text-3xl font-bold mt-6">제재공시 분석 관리</h1><p className="mt-3 text-slate-600">활성 업무규정으로 부서와 점검 항목을 제안합니다. 자동화가 활성화되면 검증을 통과한 결과는 자동 게시됩니다. 아래 내부 근거는 관리자만 볼 수 있습니다.</p>
+        <h1 className="text-3xl font-bold mt-6">제재공시 분석 관리</h1><p className="mt-3 text-slate-600">활성 업무원장 또는 업무규정으로 부서와 점검 항목을 제안합니다. 자동화가 활성화되면 검증을 통과한 결과는 자동 게시됩니다. 아래 내부 근거는 관리자만 볼 수 있습니다.</p>
         {error && <p role="alert" className="mt-5 text-red-800">{error}</p>}{notice && <p role="status" className="mt-5 text-blue-900">{notice}</p>}
         {!enabled && <p className="mt-5 text-amber-900">분석 실행이 비활성 상태입니다. 운영 설정을 확인해 주세요.</p>}
         <form onSubmit={e => { e.preventDefault(); void execute(selected) }} className="mt-6 p-5 bg-white border rounded-xl flex flex-wrap gap-4">
@@ -43,8 +44,9 @@ export default function InspectionsPage() {
             </li>)}</ul>
         </section>
         {detail?.status === 'needs_review' && detail.result && <section className="mt-8 border border-blue-200 bg-white rounded-xl p-6"><h2 className="text-xl font-bold">관리자 검토용 초안</h2><p className="text-sm mt-2 text-slate-500">아래 공개용 검토본을 저장·확인한 뒤 게시하세요.</p>
+            {detail.result.analysis_basis === 'duty_master' && <p className="text-sm mt-3 text-blue-900">본부 업무원장 {detail.result.master_version} · 부서 귀속 추정과 확정 분장을 구분하여 검토하세요.</p>}
             {detail.result.findings.map(f => <article key={f.id} className="border-t mt-6 pt-5"><h3 className="font-bold">{f.title}</h3><p className="mt-2">{f.summary}</p>{f.evidence.map((e, i) => <p key={i} className="mt-2 text-sm text-slate-500">원문 {e.page}쪽: {e.quote}</p>)}
-                {detail.result!.matches.filter(m => m.finding_id === f.id).map((m, i) => <div key={i} className="mt-4 bg-blue-50 p-4 rounded"><h4 className="font-semibold">후보 부서: {m.department}</h4><p className="mt-2">{m.rationale}</p><ul className="mt-3 space-y-2">{m.checks.map((c, n) => <li key={n}>{c.question}<p className="text-sm text-slate-600">요청 증빙: {c.evidence_to_request}</p></li>)}</ul><details className="mt-3 text-sm"><summary>내부 근거 · 관리자 전용</summary>{m.evidence.map((e, n) => <p key={n} className="mt-2">{e.ref}: {e.quote}</p>)}</details></div>)}
+                {detail.result!.matches.filter(m => m.finding_id === f.id).map((m, i) => <div key={i} className="mt-4 bg-blue-50 p-4 rounded"><h4 className="font-semibold">후보 부서: {m.department}</h4>{m.duty_basis && <p className="mt-1 text-sm text-blue-800">{DUTY_BASIS_LABELS[m.duty_basis]} · {m.duty_ids?.join(', ')}</p>}<p className="mt-2">{m.rationale}</p><ul className="mt-3 space-y-2">{m.checks.map((c, n) => <li key={n}>{c.question}<p className="text-sm text-slate-600">요청 증빙: {c.evidence_to_request}</p></li>)}</ul><details className="mt-3 text-sm"><summary>내부 근거 · 관리자 전용</summary>{m.evidence.map((e, n) => <p key={n} className="mt-2">{e.ref}: {e.quote}</p>)}{m.duty_sources?.map((s, n) => <p key={`source-${n}`} className="mt-2">{s.document} · {s.article} · {s.location} ({s.unit})</p>)}</details></div>)}
                 {detail.result!.unmatched_finding_ids.includes(f.id) && <p className="mt-3 text-amber-900">담당 부서를 선정하지 못했습니다. 직접 검토가 필요합니다.</p>}
             </article>)}
             <PublicationEditor key={detail.id} job={detail} />

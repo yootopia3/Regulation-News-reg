@@ -17,13 +17,14 @@ export async function autoPublish(db: SupabaseClient, id: string) {
         const draft = job.result as InspectionDraft
         if (!draft || draft.unmatched_finding_ids.length || draft.findings.some(f => !draft.matches.some(m => m.finding_id === f.id))) throw new Error()
         if (draft.matches.some(m => !m.related_work?.trim() || !m.department.trim())) throw new Error()
+        if (draft.analysis_basis === 'duty_master' && draft.matches.some(m => m.duty_basis === 'limited')) throw new Error()
         report = publicReport(initialReport(draft))
     } catch {
         const marked = await db.rpc('inspection_auto_attention', { p_id: id, p_revision: job.review_revision })
         if (marked.error) throw new AdminError(503, 'request_failed')
         return 'needs_attention'
     }
-    const texts = await privatePublicationTexts(db, job.versions)
+    const texts = await privatePublicationTexts(db, job.versions, job.result.analysis_basis === 'duty_master')
     try { validatePublication(report, job.result, texts) }
     catch {
         const marked = await db.rpc('inspection_auto_attention', { p_id: id, p_revision: job.review_revision })

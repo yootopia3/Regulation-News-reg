@@ -11,6 +11,21 @@ from .client import InspectionClient, Settings
 from .download import download_pdf
 from .engine import analyze
 from .models import InspectionError, Page, Unit
+from .duty_master import parse_master
+from .master_engine import analyze_master
+
+
+def load_master(db, versions):
+    rows = db.table('inspection_duty_masters').select('id,revision,version,fingerprint,payload').eq('active', True).limit(1).execute().data
+    if not rows:
+        return None
+    row = rows[0]
+    if versions != {row['id']: row['revision']}:
+        raise InspectionError('documents_changed')
+    master = parse_master(row['payload'])
+    if master.fingerprint != row['fingerprint'] or master.version != row['version']:
+        raise InspectionError('invalid_duty_master')
+    return master
 
 
 def load_units(db, versions):
@@ -54,8 +69,13 @@ def run_once(db, client, downloader=download_pdf, parser=parse_isolated):
         parsed = parser(data, module='src.services.sanction_inspections.pdf_parser', suffix='.pdf')
         if parsed.get('error'):
             raise InspectionError(parsed['error'])
-        units = load_units(db, job['versions'])
-        result = analyze([Page(**page) for page in parsed['pages']], units, client, organization=True)
+        pages = [Page(**page) for page in parsed['pages']]
+        master = load_master(db, job['versions'])
+        if master:
+            result = analyze_master(pages, master, client, versions=job['versions'])
+        else:
+            units = load_units(db, job['versions'])
+            result = analyze(pages, units, client, organization=True)
         result['pdf_sha256'] = hashlib.sha256(data).hexdigest()
     except InspectionError as exc:
         error = str(exc)

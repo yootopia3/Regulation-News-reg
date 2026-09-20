@@ -9,7 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:documents-db": "node ../tests/db/internal_documents.cjs && node ../tests/db/inspection_jobs.cjs && node ../tests/db/inspection_automation.cjs && node ../tests/db/organization_basis.cjs"
+    "test:documents-db": "node ../tests/db/internal_documents.cjs && node ../tests/db/inspection_jobs.cjs && node ../tests/db/inspection_automation.cjs && node ../tests/db/organization_basis.cjs && node ../tests/db/duty_masters.cjs"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

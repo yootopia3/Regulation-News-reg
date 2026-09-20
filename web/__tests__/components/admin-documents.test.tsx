@@ -7,7 +7,7 @@ import ReviewPage from '@/app/admin/documents/[id]/page'
 
 const { documentRequest } = vi.hoisted(() => ({ documentRequest: vi.fn() }))
 vi.mock('@/lib/document-ui', async importOriginal => ({ ...await importOriginal<typeof import('@/lib/document-ui')>(), documentRequest }))
-beforeEach(() => vi.clearAllMocks())
+beforeEach(() => { vi.clearAllMocks() })
 afterEach(cleanup)
 
 describe('document management UI', () => {

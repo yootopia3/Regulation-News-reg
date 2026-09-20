@@ -13,6 +13,17 @@ const response = (body: unknown, status = 200) => new Response(JSON.stringify(bo
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
 describe('dashboard sanction deep report', () => {
+    it('shows master version, inferred duty basis and question owners', async () => {
+        const data = payload()
+        Object.assign(data.reports[0].report, { analysis_basis: 'duty_master', master_version: 'fixture-v1', master_fingerprint: 'a'.repeat(64) })
+        Object.assign(data.reports[0].report.items[0], { department_basis: [{ department: '여신심사부', duty_ids: ['HQ-001'], basis: 'inferred' }] })
+        Object.assign(data.reports[0].report.items[0].checks[0], { department: '여신심사부' })
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response(data)))
+        render(<ReportModal isOpen article={article} onClose={() => {}} />)
+        expect(await screen.findByText(/업무 귀속 추정/)).toBeInTheDocument()
+        expect(screen.getByText(/fixture-v1/)).toBeInTheDocument()
+        expect(screen.getByText(/영업조직은 대상에서 제외/)).toBeInTheDocument()
+    })
     it('labels automatic reports without claiming administrator approval', async () => {
         const data = payload()
         Object.assign(data.reports[0], { publication_source: 'automatic' })

@@ -31,7 +31,7 @@ describe('publication boundary', () => {
         const data = { items: [{ ...report.items[0], title: '=HYPERLINK("https://example.test")', summary: '+SUM(1,2)' }] }
         const bytes = await reportWorkbook(data, { title: '합성 은행 공시', published_at: '2026-09-09', url: 'https://www.fss.or.kr/fss/notice' })
         const book = new ExcelJS.Workbook()
-        await book.xlsx.load(Buffer.from(bytes))
+        await book.xlsx.load(bytes as unknown as Parameters<typeof book.xlsx.load>[0])
         expect(book.worksheets).toHaveLength(1)
         const sheet = book.worksheets[0]
         expect(sheet.state).toBe('visible')

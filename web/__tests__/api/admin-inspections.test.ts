@@ -18,7 +18,7 @@ beforeEach(() => {
     query.maybeSingle.mockResolvedValue({ data: { id, status: 'needs_review', result: { private_evidence: 'PRIVATE_CANARY' } }, error: null })
     db.rpc.mockResolvedValue({ data: id, error: null })
 })
-afterEach(() => vi.unstubAllEnvs())
+afterEach(() => { vi.unstubAllEnvs() })
 describe('private inspection API', () => {
     it('guards publication actions with admin identity, Origin and explicit confirmation', async () => {
         expect((await PATCH(request('PATCH', false, { action: 'publish', id, revision: 0, reviewed: true }))).status).toBe(401)

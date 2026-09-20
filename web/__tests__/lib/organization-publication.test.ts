@@ -41,7 +41,7 @@ describe('organization publication',()=>{
  it('includes inference notice even in manually published Excel',async()=>{
   const bytes=await reportWorkbook(initialReport(draft))
   const book=new ExcelJS.Workbook()
-  await book.xlsx.load(Buffer.from(bytes))
+  await book.xlsx.load(bytes as unknown as Parameters<typeof book.xlsx.load>[0])
   expect(JSON.stringify(book.worksheets[0].getSheetValues())).toContain(ORGANIZATION_INFERENCE_NOTICE)
  })
  it('rejects blank roster names at the admin input boundary',()=>{

@@ -15,7 +15,7 @@ beforeEach(() => {
     query.select.mockReturnValue(query); query.eq.mockReturnValue(query); query.order.mockReturnValue(query)
     query.range.mockResolvedValue({ data: [{ inspection_id: id, article_id: id, published_at: '2026-09-10', report, articles: { title: '합성 은행 공시', link: 'https://www.fss.or.kr/fss/notice', published_at: '2026-09-09' }, internal_extra: 'PRIVATE_CANARY' }], error: null })
 })
-afterEach(() => vi.unstubAllEnvs())
+afterEach(() => { vi.unstubAllEnvs() })
 describe('published-only public API', () => {
     it('resolves identical public notices and preserves the requested card identity', async () => {
         query.range.mockResolvedValueOnce({ data: [], error: null })
