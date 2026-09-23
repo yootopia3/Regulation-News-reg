@@ -13,16 +13,16 @@ const response = (body: unknown, status = 200) => new Response(JSON.stringify(bo
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
 describe('dashboard sanction deep report', () => {
-    it('shows master version, inferred duty basis and question owners', async () => {
+    it('shows public-regulation inference wording without internal master details', async () => {
         const data = payload()
         Object.assign(data.reports[0].report, { analysis_basis: 'duty_master', master_version: 'fixture-v1', master_fingerprint: 'a'.repeat(64) })
         Object.assign(data.reports[0].report.items[0], { department_basis: [{ department: '여신심사부', duty_ids: ['HQ-001'], basis: 'inferred' }] })
         Object.assign(data.reports[0].report.items[0].checks[0], { department: '여신심사부' })
         vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response(data)))
         render(<ReportModal isOpen article={article} onClose={() => {}} />)
-        expect(await screen.findByText(/업무 귀속 추정/)).toBeInTheDocument()
-        expect(screen.getByText(/fixture-v1/)).toBeInTheDocument()
-        expect(screen.getByText(/영업조직은 대상에서 제외/)).toBeInTheDocument()
+        expect(await screen.findByText(/직제규정 등 공시내규 기반 추정/)).toBeInTheDocument()
+        expect(screen.queryByText(/fixture-v1/)).not.toBeInTheDocument()
+        expect(screen.getByRole('region', { name: '점검 포인트' })).toBeInTheDocument()
     })
     it('labels automatic reports without claiming administrator approval', async () => {
         const data = payload()
@@ -43,7 +43,8 @@ describe('dashboard sanction deep report', () => {
         expect(screen.getByText('소관업무')).toBeInTheDocument()
         expect(screen.getByText('담보 평가 및 승인 관리')).toBeInTheDocument()
         expect(screen.getByText('점검 포인트')).toBeInTheDocument()
-        expect(screen.getByText('확인할 증빙: 승인 기록과 평가 보고서')).toBeInTheDocument()
+        expect(screen.getByText('점검자료 예시')).toBeInTheDocument()
+        expect(screen.getByText('승인 기록과 평가 보고서')).toBeInTheDocument()
         expect(fetchMock).toHaveBeenCalledTimes(1)
         expect(fetchMock.mock.calls[0][0]).toBe(`/api/sanction-publications?articleId=${id}`)
         expect(fetchMock.mock.calls[0][1].method).toBeUndefined()
