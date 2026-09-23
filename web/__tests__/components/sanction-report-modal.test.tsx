@@ -13,6 +13,21 @@ const response = (body: unknown, status = 200) => new Response(JSON.stringify(bo
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
 describe('dashboard sanction deep report', () => {
+    it('keeps each finding with its own summary, department and checks', async () => {
+        const data = payload()
+        data.reports[0].report.items.push({ finding_id: 'F2', title: '고객 통지 누락', summary: '두 번째 지적 요약', departments: ['금융소비자지원부'], related_work: '고객 안내 관리', source_pages: [3], checks: [{ question: '처리결과를 고객에게 통지했는가?', evidence_to_request: '고객 통지 기록' }] })
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response(data)))
+        render(<ReportModal isOpen article={article} onClose={() => {}} />)
+        const first = await screen.findByRole('article', { name: '지적사항 1: 담보 확인 누락' })
+        const second = screen.getByRole('article', { name: '지적사항 2: 고객 통지 누락' })
+        expect(within(first).getByText('여신심사부')).toBeInTheDocument()
+        expect(within(first).getByText('승인 기록과 평가 보고서')).toBeInTheDocument()
+        expect(within(first).queryByText('고객 통지 기록')).not.toBeInTheDocument()
+        expect(within(second).getByText('두 번째 지적 요약')).toBeInTheDocument()
+        expect(within(second).getByText('금융소비자지원부')).toBeInTheDocument()
+        expect(within(second).getByText('고객 통지 기록')).toBeInTheDocument()
+        expect(within(first).getAllByRole('heading', { level: 3 }).map(h => h.textContent)).toEqual(['01제재공시 요약 브리핑', '02당행 관점 사고예방 점검', '03점검 포인트'])
+    })
     it('shows public-regulation inference wording without internal master details', async () => {
         const data = payload()
         Object.assign(data.reports[0].report, { analysis_basis: 'duty_master', master_version: 'fixture-v1', master_fingerprint: 'a'.repeat(64) })
