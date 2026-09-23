@@ -138,7 +138,7 @@ export default function NewsCard({ article, onGenerateReport }: NewsCardProps) {
             {isExpanded && (
                 <div className="px-4 pb-4 pt-0 border-t border-gray-50 bg-gray-50/30">
                     <div className="mt-3 space-y-3">
-                        {article.analysis_result?.summary ? (
+                        {article.analysis_result?.summary && (
                             <div className="bg-slate-50/50 p-3.5 rounded-xl border border-gray-200 text-sm text-gray-900 font-medium space-y-1">
                                 <div className="flex items-center gap-1.5 text-xs font-bold text-blue-600 mb-2">
                                     <Sparkles size={12} />
@@ -150,8 +150,6 @@ export default function NewsCard({ article, onGenerateReport }: NewsCardProps) {
                                     ))}
                                 </ul>
                             </div>
-                        ) : (
-                            <p className="text-sm text-gray-400 italic p-2">AI 요약이 아직 생성되지 않았습니다.</p>
                         )}
 
                         <div className="grid grid-cols-2 gap-2 mt-2">
