@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
@@ -38,7 +39,16 @@ export default function LoginPage() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
             <div className="w-full max-w-sm bg-white p-8 rounded-xl shadow-md border border-gray-100">
-                <h1 className="text-xl font-bold text-center text-gray-900 mb-6">규제정보 플랫폼</h1>
+                <div className="flex items-center justify-center gap-3 mb-6">
+                    <Image
+                        src="/ibk-icon.svg"
+                        alt="IBK기업은행"
+                        width={48}
+                        height={48}
+                        className="shrink-0"
+                    />
+                    <h1 className="text-xl font-bold text-center text-gray-900">규제정보 플랫폼</h1>
+                </div>
 
                 <form onSubmit={handleLogin} className="space-y-4">
                     <div>
