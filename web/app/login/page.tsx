@@ -38,12 +38,12 @@ export default function LoginPage() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
             <div className="w-full max-w-sm bg-white p-8 rounded-xl shadow-md border border-gray-100">
-                <h1 className="text-xl font-bold text-center text-gray-900 mb-6">MarketPulse-Reg 🔒</h1>
+                <h1 className="text-xl font-bold text-center text-gray-900 mb-6">규제정보 플랫폼</h1>
 
                 <form onSubmit={handleLogin} className="space-y-4">
                     <div>
                         <label htmlFor="passcode" className="block text-sm font-medium text-gray-700 mb-1">
-                            Enter Passcode
+                            비밀번호를 입력해주세요
                         </label>
                         <input
                             type="password"
