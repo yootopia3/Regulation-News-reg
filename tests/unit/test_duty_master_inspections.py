@@ -34,12 +34,18 @@ def match():
             'related_work': '고객정보 재확인', 'checks': [{'question': '경보 접수 후 재확인 완료까지 추적하는가?', 'evidence_to_request': '처리 이력과 표본'}]}
 
 
+def assessment(**updates):
+    return dict(finding_id='F1', duty_ids=['HQ-001'], decision='included',
+        applicability='거래 고객의 정보 재확인 대상과 일치한다.', role='본부 통제기준이며 현장 거래 실행과 구분한다.',
+        reason='경보 후 고객확인 기준 검토가 필요하다.', public_evidence=[{'page':1,'quote':PUBLIC}]) | updates
+
+
 class Client:
     settings = SimpleNamespace(check=lambda: None, model='fixture-model')
 
     def __init__(self, answers=None):
         self.calls = []
-        self.answers = answers or [{'findings': [finding()]}, {'matches': [match()], 'unmatched_finding_ids': []}]
+        self.answers = answers or [{'findings': [finding()]}, {'matches': [match()], 'unmatched_finding_ids': [], 'department_assessments':[assessment()]}]
 
     def generate(self, instruction, data, schema):
         self.calls.append((instruction, data))
@@ -85,12 +91,12 @@ def test_basis_and_department_come_from_master_not_provider():
 def test_non_candidate_or_duplicate_ids_are_rejected(ids):
     m = match(); m['duty_ids'] = ids
     with pytest.raises(InspectionError, match='invalid_duty_reference'):
-        run(Client([{'findings': [finding()]}, {'matches': [m], 'unmatched_finding_ids': []}]))
+        run(Client([{'findings': [finding()]}, {'matches': [m], 'unmatched_finding_ids': [], 'department_assessments':[]}]))
 
 
 def test_finding_coverage_and_public_evidence():
     with pytest.raises(InspectionError, match='finding_coverage_failed'):
-        run(Client([{'findings': [finding()]}, {'matches': [], 'unmatched_finding_ids': []}]))
+        run(Client([{'findings': [finding()]}, {'matches': [], 'unmatched_finding_ids': [], 'department_assessments':[]}]))
     f = finding(); f['evidence'][0]['page'] = 2
     client = Client([{'findings': [f]}])
     with pytest.raises(InspectionError, match='invalid_public_evidence'): run(client)
@@ -99,7 +105,7 @@ def test_finding_coverage_and_public_evidence():
 
 def test_no_relevant_duties_can_be_left_unmatched():
     data = payload(); data['duties'] = data['duties'][1:]; data['departments'] = ['합성지원부']
-    client = Client([{'findings': [finding()]}, {'matches': [], 'unmatched_finding_ids': ['F1']}]); result = run(client, data)
+    client = Client([{'findings': [finding()]}, {'matches': [], 'unmatched_finding_ids': ['F1'], 'department_assessments':[]}]); result = run(client, data)
     assert result['unmatched_finding_ids'] == ['F1'] and not result['matches']
     assert len(client.calls) == 2
 

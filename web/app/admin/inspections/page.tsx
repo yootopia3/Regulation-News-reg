@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import PublicationEditor from '@/components/PublicationEditor'
+import DepartmentAssessments from '@/components/DepartmentAssessments'
 import { documentRequest } from '@/lib/document-ui'
 import { INSPECTION_ERRORS, INSPECTION_STATUS, type InspectionJob } from '@/lib/inspection-ui'
 import { DUTY_BASIS_LABELS } from '@/lib/publication'
@@ -48,6 +49,7 @@ export default function InspectionsPage() {
             {detail.result.findings.map(f => <article key={f.id} className="border-t mt-6 pt-5"><h3 className="font-bold">{f.title}</h3><p className="mt-2">{f.summary}</p>{f.evidence.map((e, i) => <p key={i} className="mt-2 text-sm text-slate-500">원문 {e.page}쪽: {e.quote}</p>)}
                 {detail.result!.matches.filter(m => m.finding_id === f.id).map((m, i) => <div key={i} className="mt-4 bg-blue-50 p-4 rounded"><h4 className="font-semibold">후보 부서: {m.department}</h4>{m.duty_basis && <p className="mt-1 text-sm text-blue-800">{DUTY_BASIS_LABELS[m.duty_basis]} · {m.duty_ids?.join(', ')}</p>}<p className="mt-2">{m.rationale}</p><ul className="mt-3 space-y-2">{m.checks.map((c, n) => <li key={n}>{c.question}<p className="text-sm text-slate-600">요청 증빙: {c.evidence_to_request}</p></li>)}</ul><details className="mt-3 text-sm"><summary>내부 근거 · 관리자 전용</summary>{m.evidence.map((e, n) => <p key={n} className="mt-2">{e.ref}: {e.quote}</p>)}{m.duty_sources?.map((s, n) => <p key={`source-${n}`} className="mt-2">{s.document} · {s.article} · {s.location} ({s.unit})</p>)}</details></div>)}
                 {detail.result!.unmatched_finding_ids.includes(f.id) && <p className="mt-3 text-amber-900">담당 부서를 선정하지 못했습니다. 직접 검토가 필요합니다.</p>}
+                <DepartmentAssessments assessments={detail.result!.department_assessments?.filter(a => a.finding_id === f.id)} />
             </article>)}
             <PublicationEditor key={detail.id} job={detail} />
         </section>}

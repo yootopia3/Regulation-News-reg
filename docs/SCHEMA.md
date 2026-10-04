@@ -163,6 +163,10 @@ basis는 explicit/inferred/limited이며 승인된 업무분장 또는 제재 �
 
 private result의 analysis_basis=duty_master에는 master_version/master_fingerprint,
 matches[].duty_ids/duty_basis/duty_sources를 저장한다.
+`duty-master-v2` private result에는 `department_assessments[]`가 추가된다.
+각 항목은 finding_id, 서버가 원장으로 결합한 department, duty_ids, decision(included/excluded/uncertain),
+applicability, role, reason, public_evidence(page/quote)를 가진다. 기존 JSONB 내 선택적 확장이므로
+DB migration은 없다. 공개 report DTO에는 이 관리자 판단 기록을 포함하지 않는다.
 공개 report는 version/fingerprint와 items[].department_basis(부서, 수준, 업무 ID),
 checks[].department를 보존한다. 원장 출처/설명 및 비공개 rationale은 공개 DTO에서 제외한다.
 기존 organization/미지정 basis 게시본은 기존 형식 그대로 읽는다.

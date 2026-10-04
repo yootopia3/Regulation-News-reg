@@ -11,13 +11,27 @@ export const INSPECTION_ERRORS: Record<string, string> = {
     invalid_duty_master: '업무원장의 형식 또는 버전을 확인해야 합니다.',
     invalid_duty_reference: 'AI가 선택한 업무 ID를 확인해야 합니다.',
     finding_coverage_failed: '일부 지적사항의 부서 연결이 누락되어 검토가 필요합니다.',
+    invalid_department_assessment: '부서 선정 결과와 포함·제외 판단 기록이 일치하지 않아 검토가 필요합니다.',
 }
+export const DEPARTMENT_DECISIONS = { included: '포함', excluded: '제외', uncertain: '판단 유보' } as const
 export type InspectionJob = { automation_status?: string; id: string; article_id: string; status: string; error_code: string | null; result?: InspectionDraft | null; review_revision?: number; review_draft?: import('./publication').PublicationReport | null }
 export type InspectionDraft = {
     analysis_basis?: 'organization' | 'duty_master'
     master_version?: string
     master_fingerprint?: string
+    department_assessments?: { finding_id: string; department: string; duty_ids: string[]; decision: keyof typeof DEPARTMENT_DECISIONS; applicability: string; role: string; reason: string; public_evidence: { page: number; quote: string }[] }[]
     findings: { id: string; title: string; summary: string; evidence: { page: number; quote: string }[] }[]
     matches: { finding_id: string; department: string; rationale: string; related_work?: string; duty_ids?: string[]; duty_basis?: 'explicit' | 'inferred' | 'limited'; duty_sources?: { unit: string; document: string; article: string; location: string }[]; evidence: { ref: string; quote: string }[]; checks: { question: string; evidence_to_request: string }[] }[]
     unmatched_finding_ids: string[]
+}
+
+export function groupDepartmentAssessments(assessments: InspectionDraft['department_assessments']) {
+    const groups = new Map<string, { finding_id: string; department: string; items: NonNullable<InspectionDraft['department_assessments']> }>()
+    for (const assessment of assessments || []) {
+        const key = `${assessment.finding_id}:${assessment.department}`
+        const group = groups.get(key) || { finding_id: assessment.finding_id, department: assessment.department, items: [] }
+        group.items.push(assessment)
+        groups.set(key, group)
+    }
+    return [...groups.values()]
 }
