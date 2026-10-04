@@ -141,3 +141,30 @@ supabase-py `.eq()` 0행 매치 → sanction dedup 빈 캐시 → unique violati
 - **중복 코드 금지.** 기존 helper 재사용 또는 공통 유틸 추출.
 - **방어적 코드는 시스템 boundary에서만.** 내부 함수에 validation /
   try-except 남발 금지.
+
+## Cloud 인계 및 제재 분석 작업
+
+- 새 세션은 `docs/CODEX_HANDOFF.md`의 준비 상태·보안 보류 사항부터 읽는다.
+  문서의 로컬 검증 완료를 GitHub push 또는 Cloud 환경 생성 완료로 간주하지 않는다.
+- 웹은 `web/`의 Next.js 16 / React 19, npm 및 `package-lock.json`을 사용한다.
+  CI 기준은 Node 20, Python 3.10이다. Python은 requirements 파일을 사용하며 lockfile은 없다.
+- 공개 기사 수집·Gemini 분석과 비공개 제재 분석은 별도 경로다.
+  OpenAI 호출은 `src/services/sanction_inspections/client.py`를 재사용한다.
+  모델은 `OPENAI_INSPECTION_MODEL`로 설정하며, Astra 비교 실험을 운영 전환으로 해석하지 않는다.
+- 활성 업무원장이 있으면 원장 경로, 없으면 검토된 활성 직제규정 경로를 사용한다.
+  업무분장규정으로 임의 fallback하지 않는다. 조직 후보 ID / 업무 ID 밖의 부서를 만들지 않는다.
+- `department_assessments`의 included/excluded/uncertain 판단 및 공개 인용을 검증한다.
+  포함 업무와 실제 선택 업무의 집합이 일치해야 한다. 관리자 판단 기록·내부 출처는 공개 DTO에서 제외한다.
+  원장상 명시/추정/자료 부족과 실제 소관 확정을 구분한다.
+- DB 변경은 `db/migrations/`를 사용하고 `docs/SCHEMA.md`를 함께 갱신한다.
+  데이터 흐름 변경은 `docs/ARCHITECTURE.md`를 갱신한다. 개발 setup에서 운영 migration을 실행하지 않는다.
+- 실제 credential은 Git·문서·테스트·로그에 기록하지 않는다. `.env` 및 `.env.local`은 로컬 전용이다.
+  example 파일과 추적 중인 `notepad.env`에 실제 값을 넣지 않는다.
+  과거 키 노출의 폐기 여부가 미확인이면 인계 문서의 보류 조건을 따른다.
+- Cloud 기본 검증에는 운영 키가 필요 없다. 수집기·worker·batch는 DB 쓰기와 유료 호출을 할 수 있으므로
+  setup/test 명령으로 실행하지 않는다. 원본 HWP·활성 업무원장·운영 데이터는 소스 clone에 포함되지 않는다.
+- 변경 전에 관련 코드와 하위 지침을 읽고, 변경 후 관련 테스트를 실행한다.
+  검증 명령: `python -m pytest -q`; 웹에서는 `npm test`, `npm run test:documents-db`,
+  `npx tsc --noEmit --incremental false`, `npm run lint -- --no-cache`, `npm run build`.
+  첫 설치와 세부 옵션은 인계 문서를 따른다. `next-env.d.ts`는 Next.js 자동생성 파일이므로
+  실행환경에 따른 참조 경로 변경을 기능 변경에 섞지 않는다.
