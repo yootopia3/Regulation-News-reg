@@ -37,7 +37,7 @@ describe('sanction reports page', () => {
         fireEvent.click(await screen.findByRole('button', { name: '다시 시도' }))
         await screen.findByText('수집된 제재공시가 없습니다.')
     })
-    it('links to the board and keeps the morning report within the board', async () => {
+    it('links to the board without showing the morning report link', async () => {
         const noop = () => {}
         const props: SidebarProps = { isMenuOpen: true, onCloseMenu: noop, currentCategory: 'press_release', selectedAgency: null, onSelectHome: noop, onSelectPress: noop, onSelectReg: noop, onSelectSanction: noop, isAgencyExpanded: false, isRegExpanded: false, isFSSRegGroupExpanded: false, isSanctionExpanded: false, onToggleAgency: noop, onToggleReg: noop, onToggleFSSRegGroup: noop, onToggleSanction: noop, hasNewPress: false, hasNewReg: false, hasNewSanction: false }
         const view = render(<Sidebar {...props} />)
@@ -45,6 +45,6 @@ describe('sanction reports page', () => {
         expect(screen.queryByRole('button', { name: 'Report' })).not.toBeInTheDocument()
         expect(screen.getByRole('link', { name: '게시판' })).toHaveAttribute('href', '/board')
         view.rerender(<BoardShell><p>게시판 내용</p></BoardShell>)
-        expect(screen.getByRole('link', { name: /아침에 읽는 규제변화/ })).toHaveAttribute('href', '/api/daily-report')
+        expect(screen.queryByRole('link', { name: /아침에 읽는 규제변화/ })).not.toBeInTheDocument()
     })
 })
