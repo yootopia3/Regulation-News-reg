@@ -166,3 +166,21 @@ matches[].duty_ids/duty_basis/duty_sources를 저장한다.
 공개 report는 version/fingerprint와 items[].department_basis(부서, 수준, 업무 ID),
 checks[].department를 보존한다. 원장 출처/설명 및 비공개 rationale은 공개 DTO에서 제외한다.
 기존 organization/미지정 basis 게시본은 기존 형식 그대로 읽는다.
+
+
+## 13. 게시판 (202610050001, 운영 적용 별도)
+
+`board_posts`는 id, author_name, title, body, category(general/notice/resources),
+status(draft/published), password_hash(scrypt+salt), attachments(JSONB 배열),
+is_pinned, revision, created_at/updated_at/published_at을 저장한다.
+첨부 항목은 id/name/size/path/mime이며 API DTO에서는 path/mime/password_hash를 제외한다.
+일반 목록은 body도 제외한다. 이름은 이용자 입력이며 신원이 검증된 개인 계정 이름이 아니다.
+수정·삭제는 API의 비밀번호/관리자 검증 후 revision을 조건으로 실행한다.
+비공개 글은 일반 목록/상세/다운로드에서 제외하고 별도 비밀번호 인증 편집 응답만 허용한다.
+
+`board_request_limits`와 `board_rate_limit(text,integer,integer)`는 원자적인 시간 창별 요청 제한이다.
+두 테이블/RPC는 service_role 전용이며 anon/authenticated/PUBLIC 권한을 회수한다.
+Storage의 `board-attachments`는 private이며 기존 광범위 정책이 있어도 해당 bucket의 일반 클라이언트
+접근을 차단하는 restrictive policy를 추가한다. 기존 내부 문서 테이블에는 의존하지 않는다.
+첨부 수/요청 바이트/형식은 API에서 검사한다. bucket 파일 크기 상한은 3 MiB이다.
+설치·롤백·미참조 파일 복구는 `docs/board-setup.md`를 따른다.

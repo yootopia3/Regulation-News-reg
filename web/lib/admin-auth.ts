@@ -9,21 +9,28 @@ export class AdminError extends Error {
     constructor(public status: number, public code: string) { super(code) }
 }
 
-export function adminClient() {
-    if (process.env.INTERNAL_DOCUMENTS_ENABLED !== 'true') throw new AdminError(503, 'disabled')
+export function serviceClient() {
     const v2 = process.env.NEXT_PUBLIC_USE_V2_DB === 'true'
     const url = v2 ? process.env.NEXT_PUBLIC_SUPABASE_URL_V2 : process.env.NEXT_PUBLIC_SUPABASE_URL
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-    if (!url || !key || !process.env.ADMIN_USER_IDS?.trim()) throw new AdminError(503, 'not_configured')
+    if (!url || !key) throw new AdminError(503, 'not_configured')
     return createClient(url, key, {
         auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
         global: { fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(20000) }) },
     })
 }
 
-export async function adminRateLimit(db: ReturnType<typeof adminClient>, scope: string, identity: string, limit: number, seconds: number) {
+export type AdminScope = 'documents' | 'board'
+export function adminClient(scope: AdminScope = 'documents') {
+    const enabled = scope === 'board' ? process.env.BOARD_ENABLED : process.env.INTERNAL_DOCUMENTS_ENABLED
+    if (enabled !== 'true') throw new AdminError(503, 'disabled')
+    if (!process.env.ADMIN_USER_IDS?.trim()) throw new AdminError(503, 'not_configured')
+    return serviceClient()
+}
+
+export async function adminRateLimit(db: ReturnType<typeof adminClient>, scope: string, identity: string, limit: number, seconds: number, rpc = 'internal_admin_rate_limit') {
     const key = createHmac('sha256', process.env.SUPABASE_SERVICE_ROLE_KEY || '').update(`${scope}:${identity}`).digest('hex')
-    const { data, error } = await db.rpc('internal_admin_rate_limit', { p_key: key, p_limit: limit, p_seconds: seconds })
+    const { data, error } = await db.rpc(rpc, { p_key: key, p_limit: limit, p_seconds: seconds })
     if (error) throw new AdminError(503, 'not_configured')
     if (!data) throw new AdminError(429, 'rate_limited')
 }
@@ -32,9 +39,9 @@ export function allowedAdmin(id: string) {
     return (process.env.ADMIN_USER_IDS || '').split(',').map(s => s.trim()).filter(Boolean).includes(id)
 }
 
-export async function verifyAdmin(token?: string) {
+export async function verifyAdmin(token?: string, scope: AdminScope = 'documents') {
     if (!token) throw new AdminError(401, 'unauthorized')
-    const db = adminClient()
+    const db = adminClient(scope)
     const { data, error } = await db.auth.getUser(token)
     if (error || !data.user) throw new AdminError(401, 'unauthorized')
     if (!allowedAdmin(data.user.id)) throw new AdminError(403, 'forbidden')

@@ -4,12 +4,13 @@ import { ADMIN_COOKIE, AdminError, adminClient, adminRateLimit, allowedAdmin, as
 export async function POST(request: Request) {
     try {
         assertOrigin(request)
-        const input = z.object({ email: z.string().email().max(254), password: z.string().min(1).max(256) }).strict().safeParse(await boundedJson(request, 4096))
+        const input = z.object({ email: z.string().email().max(254), password: z.string().min(1).max(256), scope: z.enum(['documents', 'board']).default('documents') }).strict().safeParse(await boundedJson(request, 4096))
         if (!input.success) throw new AdminError(400, 'invalid_credentials')
-        const db = adminClient()
-        await adminRateLimit(db, 'login', 'global', 30, 60)
-        await adminRateLimit(db, 'login-email', input.data.email.trim().toLowerCase(), 5, 600)
-        const { data, error } = await db.auth.signInWithPassword(input.data)
+        const db = adminClient(input.data.scope)
+        const limiter = input.data.scope === 'board' ? 'board_rate_limit' : 'internal_admin_rate_limit'
+        await adminRateLimit(db, 'login', 'global', 30, 60, limiter)
+        await adminRateLimit(db, 'login-email', input.data.email.trim().toLowerCase(), 5, 600, limiter)
+        const { data, error } = await db.auth.signInWithPassword({ email: input.data.email, password: input.data.password })
         if (error || !data.session || !data.user || !allowedAdmin(data.user.id)) throw new AdminError(401, 'invalid_credentials')
         const response = privateJson({ ok: true })
         response.cookies.set(ADMIN_COOKIE, data.session.access_token, {

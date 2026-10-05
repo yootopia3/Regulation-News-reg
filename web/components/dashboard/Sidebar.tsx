@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import AgencyIcon from './AgencyIcon'
 import {
     agencyOrder,
@@ -66,7 +67,6 @@ export default function Sidebar(props: SidebarProps): React.ReactElement {
         hasNewReg,
         hasNewSanction,
     } = props
-    const [isReportExpanded, setIsReportExpanded] = React.useState(false)
 
     return (
         <>
@@ -296,37 +296,15 @@ export default function Sidebar(props: SidebarProps): React.ReactElement {
                             </div>
                         )}
 
-                        {/* Report Section */}
+                        {/* Community board */}
                         <div className="my-2 border-t border-white/15"></div>
-                        <button
-                            onClick={() => setIsReportExpanded(!isReportExpanded)}
-                            aria-expanded={isReportExpanded}
-                            className="flex items-center justify-between w-full px-4 py-3 text-blue-50 hover:text-white hover:bg-white/10 rounded-xl transition-all"
-                        >
-                            <div className="flex items-center gap-2">
-                                <span className="font-medium">Report</span>
-                            </div>
-                            <svg
-                                className={`w-4 h-4 transition-transform duration-200 ${isReportExpanded ? 'rotate-180' : ''}`}
-                                fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        <Link href="/board" onClick={onCloseMenu}
+                            className="flex items-center gap-3 w-full px-4 py-3 text-blue-50 hover:text-white hover:bg-white/10 rounded-xl transition-all">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6M8 4h8l4 4v12a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2z" />
                             </svg>
-                        </button>
-
-                        {isReportExpanded && (
-                            <div className="mt-2 space-y-1 pl-2">
-                                <a
-                                    href="/api/daily-report"
-                                    className="flex items-center gap-3 w-full text-left px-4 py-2.5 rounded-xl transition-all text-blue-100/80 hover:text-white hover:bg-white/10"
-                                >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6M8 4h8l4 4v12a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2z" />
-                                    </svg>
-                                    <span className="text-sm">아침에 읽는 규제변화</span>
-                                </a>
-                            </div>
-                        )}
+                            <span className="font-medium">게시판</span>
+                        </Link>
                     </nav>
 
                     {/* Footer */}

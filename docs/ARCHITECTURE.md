@@ -266,3 +266,19 @@ Responses API로 처리하는 분석 라이브러리를 추가했다. 관리자 
 자료 부족 연결은 자동 게시를 보류한다. 원장 교체는 기존 lease·게시 무효화 경계를 공유한다.
 비활성 원장 등록이나 새 migration만으로는 기존 직제규정 결과를 변경하지 않는다.
 등록·활성화·복구 절차: `docs/duty-master-setup.md`.
+
+
+### 4.12 이용자 게시판 (2026-10-05, 운영 적용 별도)
+
+Sidebar의 Report를 `/board` 게시판 링크로 변경한다. 기존 `/api/daily-report`는 게시판 상단에서 연결한다.
+`web/components/board/`는 목록/상세/작성 화면, `web/lib/board/use-board.ts`는 클라이언트 상태·요청,
+`web/lib/board/server.ts`는 검증·권한·저장·첨부 처리, `password.ts`는 scrypt 비밀번호 처리를 맡는다.
+`/api/board` 및 하위 API는 일반 mp_session을 직접 검증하고 변경 요청에 Origin 검사를 적용한다.
+`BOARD_ENABLED`는 독립 기능 플래그다. 관리자 API 인증은 기존 Supabase Auth/ADMIN_USER_IDS를 재사용하고
+scope=board에서 내부 문서 기능 플래그 대신 BOARD_ENABLED를 검사한다. documents 기본 경로는 유지한다.
+
+읽기 → 인증된 서버 → published 게시글 DTO. 수정/삭제 → 글 비밀번호 또는 허용된 관리자 → revision CAS.
+업로드 → 비공개 Storage → 글의 첨부 metadata 원자 저장. 다운로드는 로그인+현재 게시 상태+첨부 연결을
+검증한 서버 응답으로 제공한다. Storage 공개 URL이나 장기 signed URL을 클라이언트에 배포하지 않는다.
+비밀번호 해시와 object path는 서버에서만 사용한다. 게시판 글은 기사 수집·AI 분석 파이프라인에 넣지 않는다.
+신규 migration 및 운영 절차는 `docs/board-setup.md`를 참고한다.
