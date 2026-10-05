@@ -7,12 +7,11 @@ import requests
 from bs4 import BeautifulSoup
 
 URLS = {
-    'FSC_RSS': 'https://www.fsc.go.kr/about/fsc_bbs_rss/?fid=0111',
-    'FSC_LIST': 'https://www.fsc.go.kr/no010101',
+    'FSC_BODY': 'https://www.fsc.go.kr/no010101/87869',
     'FSS_236976': 'https://www.fss.or.kr/fss/bbs/B0000188/view.do?nttId=236976&menuNo=200218&pageIndex=1',
     'FSS_237413': 'https://www.fss.or.kr/fss/bbs/B0000188/view.do?nttId=237413&menuNo=200218&pageIndex=1',
-    'FSS_REG_INFO': 'https://www.fss.or.kr/fss/job/lrgRegItnInfo/list.do?menuNo=200488&pageIndex=1',
-    'KFB_2012': 'https://m.kfb.or.kr/news/info_news_view.php?idx=2012&col=&sw=&pg=1&gubun=&orderby=&code=&data_year=&SearchOffice=&SearchOpinion=&cate_idx=&BankAll=',
+    'FSS_REG_BODY': 'https://www.fss.or.kr/fss/job/lrgRegItnInfo/view.do?lrgClsfcNo=USR000000000000000226&menuNo=200488&pageIndex=1',
+
 }
 
 
@@ -42,7 +41,9 @@ def probe(pair):
             for n in soup.select('div,section')
             if len(n.get_text(' ', strip=True)) > 80
         ][-35:]
-        result['tail_html'] = str(soup)[-20000:]
+        result['content_nodes'] = [str(n)[:30000] for n in soup.select(
+            '[class*=view],[class*=board],[class*=bbs],[class*=content],[id*=content]'
+        ) if 50 < len(n.get_text(' ', strip=True)) < 8000][:15]
         if len(response.content) < 3000:
             result['small_html'] = str(soup)
     except requests.RequestException as exc:
