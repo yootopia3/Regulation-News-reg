@@ -1,12 +1,13 @@
 import logging
 import json
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Set, Tuple
 
 from src.collectors.kfb_collector import collect_kfb_rss_first
 from src.collectors.rss_parser import collect_all_rss
 from src.collectors.result import CollectionResult, FailureKind, failure_kind
+from src.collectors.urls import canonical_article_url
 from src.collectors.sanction_scraper import extract_sanction_key
 from src.collectors.scraper import ContentScraper
 from src.collectors.date_parser import KST
@@ -22,6 +23,10 @@ PDF_URL_RE = re.compile(
     r"https?://[^\s)>\"]+(?:\.pdf|download|file=)[^\s)>\"]*",
     re.IGNORECASE,
 )
+BODY_RETRY_LIMIT = 5
+BODY_RETRY_DAYS = 7
+# Restrict automatic repair to the source templates verified in this recovery.
+BODY_RETRY_AGENCIES = ('FSC', 'FSS', 'KFB')
 
 
 class PipelineRunError(RuntimeError):
@@ -48,11 +53,14 @@ class Pipeline:
         self.scraper = scraper if scraper is not None else ContentScraper()
         self.source_results = {}
         self.setup_failures = []
+        self.automation_ready = False
+        self.body_attempted = set()
 
     def _source_result(self, code):
         return self.source_results.setdefault(str(code), {
             'status': 'empty', 'collection_status': 'empty', 'collected': 0, 'failures': [],
-            'saved': 0, 'save_failed': 0, 'body_failed': 0,
+            'saved': 0, 'save_failed': 0, 'body_failed': 0, 'duplicates': 0,
+            'body_repaired': 0,
         })
 
     def _record_collection(self, code, items):
@@ -138,6 +146,7 @@ class Pipeline:
                     link = row.get('link')
                     if link:
                         links.add(link)
+                        links.add(canonical_article_url(link))
                 if len(batch) < page_size:
                     break
                 start += page_size
@@ -295,6 +304,7 @@ class Pipeline:
     def _fetch_item_content(self, item: Dict, agency_config: Optional[Dict]) -> str:
         title = item['title']
         link = item['link']
+        self.body_attempted.add(link)
         if not agency_config:
             return title + "\n" + item.get('description', '')
         content = self.scraper.fetch_content(link, agency_config)
@@ -306,6 +316,42 @@ class Pipeline:
                     item['pdf_url'] = pdf_match.group(0)
             return content
         return title + "\n" + item.get('description', '')
+
+    def _repair_empty_bodies(self):
+        """Retry at most five recently created empty rows; never rewrite metadata.
+
+        The conditional update also protects a body filled concurrently. This
+        is a bounded retry of recent failures, not an archive backfill.
+        """
+        if not self.supabase or self.setup_failures:
+            return
+        codes = [code for code in BODY_RETRY_AGENCIES if code in self.agency_map]
+        try:
+            rows = (self.supabase.table('articles').select('agency,title,link')
+                    .in_('agency', codes).or_('content.is.null,content.eq.')
+                    .gte('created_at', (datetime.now(KST) - timedelta(days=BODY_RETRY_DAYS)).isoformat())
+                    .order('created_at', desc=True).limit(BODY_RETRY_LIMIT).execute().data or [])
+        except Exception:
+            self.setup_failures.append('body_retry_read')
+            return
+        for item in rows[:BODY_RETRY_LIMIT]:
+            link = item['link']
+            if link in self.body_attempted:
+                continue
+            result = self._source_result(item['agency'])
+            self._fetch_item_content(item, self.agency_map[item['agency']])
+            content = item.get('content')
+            if not content or not content.strip():
+                result['body_failed'] += 1
+                continue
+            try:
+                saved = (self.supabase.table('articles').update({'content': content})
+                         .eq('link', link).or_('content.is.null,content.eq.').execute())
+                if saved.data:
+                    result['body_repaired'] += 1
+                    logger.info('[%s] Empty body repaired: %s', item['agency'], link)
+            except Exception:
+                result['save_failed'] += 1
 
     def _analyze_item(self, item: Dict, agency_config: Optional[Dict]) -> Optional[Dict]:
         if not self.analyzer:
@@ -415,6 +461,8 @@ class Pipeline:
         logger.info("Starting MarketPulse-Reg Pipeline...")
         self.source_results = {}
         self.setup_failures = []
+        self.automation_ready = False
+        self.body_attempted = set()
         if not self.supabase:
             self.setup_failures.append('db_unavailable')
         if not self.agency_map:
@@ -468,10 +516,23 @@ class Pipeline:
         for item in all_items:
             self._process_single_item(item, existing_links, sanction_keys)
 
+        self._repair_empty_bodies()
+
         for result in self.source_results.values():
             if result['save_failed'] or result['body_failed']:
                 result['status'] = 'failed'
-        summary = {'sources': self.source_results, 'setup_failures': self.setup_failures}
+        # Only database-confirmed sanction candidates can unlock analysis.
+        # A source fetch/body failure alone does not invalidate other saved rows;
+        # any DB/config uncertainty keeps the gate closed.
+        self.automation_ready = (
+            not self.setup_failures
+            and not any(FailureKind.CONFIG in result['failures'] for result in self.source_results.values())
+            and not any(result['save_failed'] for result in self.source_results.values())
+            and any(is_sanction_agency(code) and (result['saved'] + result['duplicates'] > 0)
+                    for code, result in self.source_results.items())
+        )
+        summary = {'sources': self.source_results, 'setup_failures': self.setup_failures,
+                   'automation_ready': self.automation_ready}
         logger.info("Collection summary: %s", json.dumps(summary, ensure_ascii=False, sort_keys=True))
         failed = [code for code, result in self.source_results.items()
                   if result['failures'] or result['save_failed'] or result['body_failed']]
@@ -492,6 +553,7 @@ class Pipeline:
         title = item['title']
 
         if self._is_duplicate(item, existing_links, sanction_keys):
+            self._source_result(agency_id)['duplicates'] += 1
             logger.debug(f"Skipping duplicate: {title[:30]}...")
             return
 

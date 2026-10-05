@@ -3,8 +3,29 @@ name: v2.0 News Collector (Beta)
 on:
   workflow_dispatch:  # Triggered by cron-job.org and manual runs
 
+# A collector deployment gets one verification run; routine collection remains
+# on the existing external workflow_dispatch schedule.
+  push:
+    branches: [main]
+    paths:
+      - 'src/collectors/**'
+      - 'src/pipeline.py'
+      - 'src/main.py'
+      - 'config/agencies.json'
+      - '.github/workflows/news_collector_v2_active.yml'
+
+permissions:
+  contents: read
+concurrency:
+  group: regulation-collector-production
+  cancel-in-progress: false
+
 jobs:
   collect-and-analyze-v2:
+    if: github.ref == 'refs/heads/main'
+    outputs:
+      automation_ready: ${{ steps.collector.outputs.automation_ready }}
+      collector_outcome: ${{ steps.collector.outcome }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     
@@ -23,6 +44,8 @@ jobs:
         pip install -r requirements.txt
         
     - name: Run Collector (v2 Environment)
+      id: collector
+      continue-on-error: true
       env:
         SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL_V2 }}
         SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_V2 }}
@@ -34,3 +57,25 @@ jobs:
       run: |
         export PYTHONPATH=$PYTHONPATH:.
         python src/main.py
+
+  collection-health:
+    needs: collect-and-analyze-v2
+    if: >-
+      always() && !cancelled() && github.ref == 'refs/heads/main' &&
+      (needs.collect-and-analyze-v2.result != 'success' ||
+       needs.collect-and-analyze-v2.outputs.collector_outcome != 'success')
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo 'Collector incomplete; see per-source Collection summary.'
+          exit 1
+
+  sanction-analysis:
+    needs: collect-and-analyze-v2
+    if: >-
+      !cancelled() && needs.collect-and-analyze-v2.result == 'success' &&
+      needs.collect-and-analyze-v2.outputs.automation_ready == 'true'
+    uses: ./.github/workflows/sanction_automation.yml
+    with:
+      collector_ready: true
+    secrets: inherit

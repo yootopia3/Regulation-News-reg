@@ -29,6 +29,11 @@ def fetch_content(url: str, agency_config: Dict) -> Optional[str]:
         response = http.fetch(url, verify=get_ssl_verify(agency_config.get('code')))
 
         soup = BeautifulSoup(response.content, 'html.parser')
+        title_selector = scraper_config.get('content_title')
+        page_title = soup.select_one(title_selector) if title_selector else None
+        if title_selector and (not page_title or not page_title.get_text(strip=True)):
+            logger.warning(f"Article title container not found for {url}")
+            return None
 
         container_selector = scraper_config.get('container_selector') or scraper_config.get('content')
 
@@ -41,12 +46,15 @@ def fetch_content(url: str, agency_config: Dict) -> Optional[str]:
             return None
 
         # Remove unwanted elements
-        remove_selectors = scraper_config.get('remove_selectors', [])
+        remove_selectors = ['script', 'style', 'noscript', 'nav', 'form'] + scraper_config.get('remove_selectors', [])
         for sel in remove_selectors:
             for match in content_div.select(sel):
                 match.decompose()
 
         text_content = content_div.get_text(separator='\n', strip=True)
+        if page_title and text_content.strip() == page_title.get_text(strip=True):
+            logger.warning(f"Title-only content rejected for {url}")
+            return None
 
         attachment_selector = scraper_config.get('attachment_links')
         if attachment_selector:
@@ -64,6 +72,7 @@ def fetch_content(url: str, agency_config: Dict) -> Optional[str]:
         if not text_content.strip():
             logger.warning(f"Empty content container for {url}")
             return None
+        logger.info('[%s] Body extracted: %s chars (%s)', agency_config.get('code'), len(text_content), url)
         if len(text_content) < 50:
             logger.warning(f"⚠️ Short content detected ({len(text_content)} chars) for {url}")
             return f"[Short Content] {text_content}"

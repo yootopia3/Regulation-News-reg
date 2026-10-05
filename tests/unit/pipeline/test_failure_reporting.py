@@ -80,9 +80,13 @@ def make_pipe(monkeypatch):
     monkeypatch.delenv('GEMINI_ENABLED', raising=False)
 
     def make(db=None, scraper=None):
-        return Pipeline('config/agencies.json', analyzer=FakeAnalyzer(),
+        pipe = Pipeline('config/agencies.json', analyzer=FakeAnalyzer(),
                         notifier=FakeNotifier(), db=db or FakeSupabase(),
                         scraper=scraper or FakeScraper())
+        # These regressions explicitly model the old RSS source boundary. The
+        # deployed FSC HTML configuration has separate recorded-page tests.
+        pipe.agency_map['FSC']['collection_method'] = 'rss'
+        return pipe
     return make
 
 

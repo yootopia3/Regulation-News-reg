@@ -20,6 +20,7 @@ __pycache__/
 
 # Generated HTML / debug outputs
 *.html
+!tests/fixtures/collectors/*.html
 debug_*.html
 
 # Task outputs (generated at runtime)

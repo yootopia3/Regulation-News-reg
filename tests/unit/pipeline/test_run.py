@@ -123,6 +123,15 @@ class _Chain:
         self._eq[col] = str(val)
         return self
 
+    def in_(self, col, values):
+        return self
+
+    def or_(self, expression):
+        return self
+
+    def gte(self, col, value):
+        return self
+
     def range(self, start, end):
         self._range = (start, end)
         return self

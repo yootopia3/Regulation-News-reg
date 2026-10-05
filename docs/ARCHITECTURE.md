@@ -158,13 +158,29 @@ The configured agency count is the length of the `agencies` array in
   PATCH. That attempt is reported as a save failure and can be retried safely.
   Empty write responses are unconfirmed failures; notifications require
   confirmed persistence and the existing `ANALYZED` condition.
-- Historical empty-body repair, ordinary URL dedup/retry policy, selectors,
-  network settings, and schedules are unchanged. Offline tests do not verify
-  production DB state.
-- Deployment impact: the unchanged `sanction_automation.yml` requires collector
-  `success`. An incomplete cycle therefore skips automatic analysis/publication
-  even when some sanctions were saved. Adjusting that linkage is a separate
-  decision; these local changes trigger no production analysis.
+- FSC uses its official HTML list while its RSS reports maintenance (503).
+  FSC article IDs are canonicalized across legacy RSS query strings and HTML
+  links. Verified FSS/KFB body and FSS_REG_INFO list selectors have recorded
+  official-page regression fixtures. Scoped article titles guard against error
+  pages; navigation/scripts and title-only bodies are rejected.
+- After collection, retry at most five empty FSC/FSS/KFB bodies created within
+  seven days, excluding links already fetched in this cycle. Conditional PATCH
+  updates only content while it is still empty, preserving concurrent repairs,
+  analysis and dates. This is not a historical backfill. Persistent failures
+  among the newest five can delay older retries; offline tests cannot verify
+  production DB state. Network timeout/retry settings remain unchanged.
+- `automation_ready` is true only with DB-confirmed saved or existing sanction
+  candidates and no configuration, cache-read, or save failure. Source/body
+  failures alone do not block usable sanctions. `main.py` emits only this boolean
+  through GITHUB_OUTPUT even on an incomplete cycle.
+- The main-only collector calls the reusable sanction workflow when ready.
+  A separate health job keeps incomplete collection visibly failed without
+  blocking that analysis job. Cancelled/failed setup never unlocks analysis;
+  workflow_run is removed to avoid duplicate triggers. Both workflows serialize
+  their own runs, and analysis retains the existing lease/CAS dedup and batch
+  limit of three. Analysis checks out the trusted caller SHA.
+- Existing external workflow_dispatch collection remains; pushes to main that
+  change collector code/config/workflow also run deployment verification.
 
 ## 4. Key Components Detail
 
@@ -283,7 +299,7 @@ Responses API로 처리하는 분석 라이브러리를 추가했다. 관리자 
 운영 서비스 설정 및 검증은 `docs/internal-documents-setup.md`를 참고한다.
 
 ### 4.9 Automatic sanction publication (2026-09-17)
-수집 성공 → 독립 sanction_automation workflow → Python batch → 기존 분석 worker →
+수집의 DB 확인된 제재 후보 → readiness 게이트 → 재사용 sanction_automation workflow → Python batch → 기존 분석 worker →
 토큰 인증 `/api/admin/inspections/automation` → 기존 공개 DTO/내부 원문 검사 → CAS 자동 게시 RPC.
 새 schema를 먼저 적용하고 웹/Actions 환경변수를 활성화해야 동작한다.
 원문/초안은 private DB에만, 워크플로에는 건수만 출력하며 artifact를 생성하지 않는다.

@@ -1,10 +1,11 @@
 name: Sanction Analysis and Publication
 
 on:
-  workflow_run:
-    workflows: ["v2.0 News Collector (Beta)"]
-    types: [completed]
-    branches: [main]
+  workflow_call:
+    inputs:
+      collector_ready:
+        type: boolean
+        required: true
   workflow_dispatch:
 
 permissions:
@@ -17,16 +18,15 @@ jobs:
   analyze-and-publish:
     if: >-
       vars.SANCTION_AUTOMATION_ENABLED == 'true' &&
-      (github.event_name == 'workflow_dispatch' ||
-       (github.event.workflow_run.conclusion == 'success' &&
-        github.event.workflow_run.head_repository.full_name == github.repository))
+      github.ref == 'refs/heads/main' &&
+      (inputs.collector_ready == true || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      # Always use trusted default-branch code, never artifacts from the triggering run.
+      # Pin the trusted main caller commit; never execute downloaded artifacts.
       - uses: actions/checkout@v5
         with:
-          ref: main
+          ref: ${{ github.sha }}
           persist-credentials: false
       - uses: actions/setup-python@v6
         with:

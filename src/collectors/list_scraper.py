@@ -8,6 +8,7 @@ from typing import Dict, List, Optional
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
+from src.collectors.urls import canonical_article_url
 
 from src.collectors.result import CollectionResult, FailureKind, failure_kind, has_empty_marker
 
@@ -140,6 +141,7 @@ def fetch_list_items(
                             link = link_href
                     else:
                         link = base_url
+                    link = canonical_article_url(link)
 
                     if _is_bok_excluded_notice(agency_config, title, link):
                         logger.info(f"    > Skipping BOK excluded notice: {title[:60]}")
