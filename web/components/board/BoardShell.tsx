@@ -37,8 +37,7 @@ export default function BoardShell({ children }: { children: React.ReactNode }) 
         </Header>}
     >
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-            <div><h1 className="text-2xl font-bold tracking-tight text-slate-900">게시판</h1><p className="mt-2 text-sm text-slate-500">업무 안내와 규제 관련 자료를 함께 나누는 공간입니다.</p></div>
-            <a href="/api/daily-report" className="text-xs font-medium text-blue-800 underline underline-offset-4">아침에 읽는 규제변화 ↗</a>
+            <div><h1 className="text-2xl font-bold tracking-tight text-slate-900">게시판</h1><p className="mt-2 text-sm text-slate-500">업무에 대한 생각이나 규제 관련 자료를 함께 나누는 공간입니다.</p></div>
         </div>
         {children}
     </DashboardFrame>

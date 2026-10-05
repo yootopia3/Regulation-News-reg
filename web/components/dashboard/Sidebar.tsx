@@ -302,9 +302,6 @@ export default function Sidebar(props: SidebarProps): React.ReactElement {
                         <div className="my-2 border-t border-white/15"></div>
                         <Link href="/board" onClick={onCloseMenu} aria-current={isBoardActive ? 'page' : undefined}
                             className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all ${isBoardActive ? 'bg-white text-[#003B7A] shadow-sm' : 'text-blue-50 hover:text-white hover:bg-white/10'}`}>
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6M8 4h8l4 4v12a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2z" />
-                            </svg>
                             <span className="font-medium">게시판</span>
                         </Link>
                     </nav>

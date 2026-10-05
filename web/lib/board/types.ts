@@ -1,4 +1,4 @@
-export const BOARD_CATEGORIES = { general: '업무안내', notice: '공지사항', resources: '자료실' } as const
+export const BOARD_CATEGORIES = { general: '업무관련', notice: '공지사항', resources: '자료실' } as const
 export type BoardCategory = keyof typeof BOARD_CATEGORIES
 export type BoardStatus = 'draft' | 'published'
 export const MAX_ATTACHMENTS = 3
