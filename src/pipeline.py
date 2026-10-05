@@ -6,6 +6,7 @@ from typing import Dict, List, Optional, Set, Tuple
 
 from src.collectors.kfb_collector import collect_kfb_rss_first
 from src.collectors.rss_parser import collect_all_rss
+from src.collectors.result import CollectionResult, FailureKind, failure_kind
 from src.collectors.sanction_scraper import extract_sanction_key
 from src.collectors.scraper import ContentScraper
 from src.collectors.date_parser import KST
@@ -21,6 +22,10 @@ PDF_URL_RE = re.compile(
     r"https?://[^\s)>\"]+(?:\.pdf|download|file=)[^\s)>\"]*",
     re.IGNORECASE,
 )
+
+
+class PipelineRunError(RuntimeError):
+    """Raised after healthy sources have been processed when a cycle is incomplete."""
 
 
 class Pipeline:
@@ -41,6 +46,23 @@ class Pipeline:
         self.notifier = notifier if notifier is not None else self._init_notifier()
         self.supabase = db if db is not None else self._init_db()
         self.scraper = scraper if scraper is not None else ContentScraper()
+        self.source_results = {}
+        self.setup_failures = []
+
+    def _source_result(self, code):
+        return self.source_results.setdefault(str(code), {
+            'status': 'empty', 'collection_status': 'empty', 'collected': 0, 'failures': [],
+            'saved': 0, 'save_failed': 0, 'body_failed': 0,
+        })
+
+    def _record_collection(self, code, items):
+        result = self._source_result(code)
+        result['collected'] = len(items)
+        result['failures'] = list(getattr(items, 'failures', []))
+        result['status'] = ('failed' if result['failures'] else
+                            ('success' if items else 'empty'))
+        result['collection_status'] = result['status']
+        return items
 
     # ------------------------------------------------------------------
     # Initialization helpers
@@ -121,6 +143,7 @@ class Pipeline:
                 start += page_size
         except Exception as e:
             logger.error(f"Failed to load existing links: {e}")
+            self.setup_failures.append('existing_links')
         return links
 
     def _load_sanction_keys(self) -> Set[SanctionKey]:
@@ -146,6 +169,7 @@ class Pipeline:
                     )
                 except Exception as e:
                     logger.error(f"Failed to load sanction keys for {agency_code}: {e}")
+                    self.setup_failures.append('sanction_keys')
                     break
 
                 batch = res.data or []
@@ -185,6 +209,7 @@ class Pipeline:
                     cache[agency_id] = parser.parse(res.data[0]['published_at'])
             except Exception as e:
                 logger.warning(f"Failed to fetch last crawled date for {agency_id}: {e}")
+                self.setup_failures.append('last_crawled')
         return cache
 
     # ------------------------------------------------------------------
@@ -194,9 +219,18 @@ class Pipeline:
         try:
             rss_items = collect_all_rss()
             logger.info(f"Collected {len(rss_items)} items from RSS targets.")
+            sources = getattr(rss_items, 'sources', {})
+            for code, agency in self.agency_map.items():
+                if agency.get('collection_method', 'rss') == 'rss':
+                    self._record_collection(code, sources.get(code, [
+                        item for item in rss_items if item['agency'] == code
+                    ]))
             return rss_items
         except Exception as e:
             logger.error(f"RSS Collection failed: {e}")
+            for code, agency in self.agency_map.items():
+                if agency.get('collection_method', 'rss') == 'rss':
+                    self._record_collection(code, CollectionResult(failures=[failure_kind(e)]))
             return []
 
     def _collect_scraper(self, agency: Dict, last_crawled: Dict[str, datetime]) -> List[Dict]:
@@ -206,22 +240,22 @@ class Pipeline:
         try:
             scraped_items = self.scraper.fetch_list_items(agency, last_crawled_date=last_date)
             logger.info(f"  > Scraped {len(scraped_items)} new items from {agency_id}.")
-            return scraped_items
+            return self._record_collection(agency_id, scraped_items)
         except Exception as e:
             logger.error(f"Scraping failed for {agency_id}: {e}")
-            return []
+            return self._record_collection(agency_id, CollectionResult(failures=[failure_kind(e)]))
 
     def _collect_rss_first(self, agency: Dict, last_crawled: Dict[str, datetime]) -> List[Dict]:
         agency_id = agency.get('code') or agency.get('id')
         if agency_id != AgencyCode.KFB.value:
             logger.warning(f"Unsupported rss_first agency: {agency_id}")
-            return []
+            return self._record_collection(agency_id, CollectionResult(failures=[FailureKind.CONFIG]))
         last_date = last_crawled.get(agency_id)
         try:
-            return collect_kfb_rss_first(agency, last_crawled_date=last_date)
+            return self._record_collection(agency_id, collect_kfb_rss_first(agency, last_crawled_date=last_date))
         except Exception as e:
             logger.error(f"RSS-first collection failed for {agency_id}: {e}")
-            return []
+            return self._record_collection(agency_id, CollectionResult(failures=[failure_kind(e)]))
 
     def _collect_sanction(self, agency: Dict) -> List[Dict]:
         agency_id = agency.get('code')
@@ -229,10 +263,10 @@ class Pipeline:
         try:
             items = self.scraper.fetch_sanction_items(agency)
             logger.info(f"  > Collected {len(items)} sanction notices from {agency_id}.")
-            return items
+            return self._record_collection(agency_id, items)
         except Exception as e:
             logger.error(f"Sanction scraping failed for {agency_id}: {e}")
-            return []
+            return self._record_collection(agency_id, CollectionResult(failures=[failure_kind(e)]))
 
     # ------------------------------------------------------------------
     # Duplicate detection
@@ -291,9 +325,10 @@ class Pipeline:
             logger.error(f"Analysis failed: {e}")
             return None
 
-    def _save_item(self, item: Dict) -> None:
+    def _save_item(self, item: Dict) -> bool:
         if not self.supabase:
-            return
+            logger.error("  > Failed to save to DB: client unavailable.")
+            return False
         try:
             analysis_result = item.get('analysis_result')
             pdf_url = item.get('pdf_url')
@@ -331,12 +366,31 @@ class Pipeline:
                     data[optional_key] = item[optional_key]
 
             if data.get("dedup_key"):
-                self.supabase.table("articles").upsert(data, on_conflict="dedup_key").execute()
+                # Insert new metadata even when the body is unavailable. On a
+                # conflict this first request must NEVER replace existing data.
+                self.supabase.table("articles").upsert(
+                    data, on_conflict="dedup_key", ignore_duplicates=True,
+                ).execute()
+                # A column-selective update preserves unavailable fields without
+                # a read/merge/write race or a new DB function/migration.
+                updates = dict(data)
+                if not str(item.get('content') or '').strip():
+                    updates.pop('content')
+                analysis = item.get('analysis_result')
+                if not isinstance(analysis, dict) or not analysis or analysis.get('analysis_status') == 'ANALYSIS_FAILED':
+                    updates.pop('analysis_result')
+                saved = self.supabase.table("articles").update(updates).eq(
+                    "dedup_key", data['dedup_key'],
+                ).execute()
             else:
-                self.supabase.table("articles").insert(data).execute()
+                saved = self.supabase.table("articles").insert(data).execute()
+            if not saved.data:
+                raise RuntimeError("Save returned no rows; persistence was not confirmed")
             logger.info("  > Saved to DB.")
+            return True
         except Exception as e:
             logger.error(f"  > Failed to save to DB: {e}")
+            return False
 
     def _notify_item(
         self,
@@ -359,6 +413,15 @@ class Pipeline:
     # ------------------------------------------------------------------
     def run(self):
         logger.info("Starting MarketPulse-Reg Pipeline...")
+        self.source_results = {}
+        self.setup_failures = []
+        if not self.supabase:
+            self.setup_failures.append('db_unavailable')
+        if not self.agency_map:
+            self.setup_failures.append('agency_config')
+        for code, agency in self.agency_map.items():
+            if agency.get('collection_method', 'rss') not in {'rss', 'rss_first', 'scraper'}:
+                self._record_collection(code, CollectionResult(failures=[FailureKind.CONFIG]))
 
         # Build per-cycle dedup caches (1 query per cache).
         existing_links = self._load_existing_links()
@@ -398,7 +461,6 @@ class Pipeline:
 
         if not all_items:
             logger.warning("No new items found from any source.")
-            return
 
         logger.info(f"Total items to process: {len(all_items)}")
 
@@ -406,7 +468,19 @@ class Pipeline:
         for item in all_items:
             self._process_single_item(item, existing_links, sanction_keys)
 
+        for result in self.source_results.values():
+            if result['save_failed'] or result['body_failed']:
+                result['status'] = 'failed'
+        summary = {'sources': self.source_results, 'setup_failures': self.setup_failures}
+        logger.info("Collection summary: %s", json.dumps(summary, ensure_ascii=False, sort_keys=True))
+        failed = [code for code, result in self.source_results.items()
+                  if result['failures'] or result['save_failed'] or result['body_failed']]
+        if failed or self.setup_failures:
+            raise PipelineRunError("Incomplete collection cycle; failed sources: "
+                                   + ', '.join(failed) + "; setup failures: "
+                                   + ', '.join(self.setup_failures))
         logger.info("Pipeline cycle completed successfully.")
+        return summary
 
     def _process_single_item(
         self,
@@ -425,7 +499,23 @@ class Pipeline:
 
         agency_config = self.agency_map.get(agency_id)
         self._fetch_item_content(item, agency_config)
+        result = self._source_result(agency_id)
+        selectors = (agency_config or {}).get('scraper') or (agency_config or {}).get('selector', {})
+        # PDF-based sanction collection and intentionally unconfigured body
+        # scrapers retain their existing metadata-only behavior.
+        if (not is_sanction_agency(agency_id)
+                and (selectors.get('content') or selectors.get('container_selector'))
+                and not str(item.get('content') or '').strip()):
+            result['body_failed'] += 1
         analysis_result = self._analyze_item(item, agency_config)
         item['analysis_result'] = analysis_result
-        self._save_item(item)
-        self._notify_item(item, agency_config, analysis_result)
+        if self._save_item(item):
+            result['saved'] += 1
+            existing_links.add(item['link'])
+            if is_sanction_agency(agency_id):
+                exam_id, seq = extract_sanction_key(item['link'])
+                if exam_id and seq:
+                    sanction_keys.add((str(agency_id), exam_id, seq))
+            self._notify_item(item, agency_config, analysis_result)
+        else:
+            result['save_failed'] += 1

@@ -33,7 +33,7 @@ class _FakeSupabase:
     def _capture_insert(self, payload):
         self.inserted = payload
         chain = MagicMock()
-        chain.execute.return_value = MagicMock(data=[])
+        chain.execute.return_value = MagicMock(data=[payload])
         return chain
 
 

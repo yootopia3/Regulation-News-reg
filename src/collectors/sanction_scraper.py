@@ -9,6 +9,8 @@ from urllib.parse import urljoin, urlparse, parse_qs
 
 from bs4 import BeautifulSoup
 
+from src.collectors.result import CollectionResult, FailureKind, failure_kind, has_empty_marker
+
 from src.config import settings
 from src.config.agency_codes import PublishedAtSource
 from src.config.agency_loader import get_ssl_verify, is_sanction_agency
@@ -82,7 +84,7 @@ def fetch_sanction_items(agency_config: Dict) -> List[Dict]:
 
     logger.info(f"[{code}] Fetching sanction notices from {full_url}")
 
-    all_items: List[Dict] = []
+    all_items = CollectionResult()
     page = 1
 
     while page <= MAX_PAGES:
@@ -97,6 +99,8 @@ def fetch_sanction_items(agency_config: Dict) -> List[Dict]:
             items = soup.select('tbody tr')
 
             if not items:
+                if not has_empty_marker(soup, agency_config.get("selector", {})):
+                    all_items.fail(FailureKind.PARSE)
                 logger.info(f"  [{code}] No items found on page {page}. Stopping.")
                 break
 
@@ -107,6 +111,8 @@ def fetch_sanction_items(agency_config: Dict) -> List[Dict]:
                     # Extract institution name (제재대상기관) - 2nd column
                     inst_elem = item.select_one('td:nth-child(2)')
                     if not inst_elem:
+                        if not has_empty_marker(soup, agency_config.get("selector", {})):
+                            all_items.fail(FailureKind.PARSE)
                         continue
 
                     for span in inst_elem.select('span.only-m'):
@@ -114,6 +120,7 @@ def fetch_sanction_items(agency_config: Dict) -> List[Dict]:
                     institution = inst_elem.get_text(strip=True)
 
                     if not institution:
+                        all_items.fail(FailureKind.PARSE)
                         continue
 
                     if filter_keywords:
@@ -146,6 +153,7 @@ def fetch_sanction_items(agency_config: Dict) -> List[Dict]:
                         else:
                             link = href
                     else:
+                        all_items.fail(FailureKind.PARSE)
                         continue
 
                     pub_date = parse_date(date_str)
@@ -173,6 +181,7 @@ def fetch_sanction_items(agency_config: Dict) -> List[Dict]:
                     })
 
                 except Exception as e:
+                    all_items.fail(FailureKind.PARSE)
                     logger.error(f"Error parsing sanction item: {e}")
                     continue
 
@@ -186,6 +195,7 @@ def fetch_sanction_items(agency_config: Dict) -> List[Dict]:
             page += 1
 
         except Exception as e:
+            all_items.fail(failure_kind(e))
             logger.error(f"[{code}] Error fetching page {page}: {e}")
             break
 

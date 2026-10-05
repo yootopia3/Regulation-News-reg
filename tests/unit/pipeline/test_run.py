@@ -179,14 +179,16 @@ class _InsertChain:
 
 
 class _UpsertChain:
-    def __init__(self, db: "FakeSupabase", payload: Dict, on_conflict: str):
+    def __init__(self, db: "FakeSupabase", payload: Dict, on_conflict: str, ignore_duplicates=False):
         self._db = db
         self._payload = payload
         self._on_conflict = on_conflict
+        self._ignore_duplicates = ignore_duplicates
 
     def execute(self):
         self._db.upserted.append(
-            {"payload": self._payload, "on_conflict": self._on_conflict}
+            {"payload": self._payload, "on_conflict": self._on_conflict,
+             "ignore_duplicates": self._ignore_duplicates}
         )
         return SimpleNamespace(data=[self._payload])
 
@@ -202,8 +204,20 @@ class _Table:
     def insert(self, payload):
         return _InsertChain(self._db, payload)
 
-    def upsert(self, payload, on_conflict):
-        return _UpsertChain(self._db, payload, on_conflict)
+    def upsert(self, payload, on_conflict, ignore_duplicates=False):
+        return _UpsertChain(self._db, payload, on_conflict, ignore_duplicates)
+
+    def update(self, payload):
+        db = self._db
+        class Update:
+            def eq(self, col, value):
+                self.key = (col, value)
+                return self
+
+            def execute(self):
+                db.updated.append({"payload": payload, "key": self.key})
+                return SimpleNamespace(data=[payload])
+        return Update()
 
 
 class FakeSupabase:
@@ -222,6 +236,7 @@ class FakeSupabase:
         self.last_crawled_by_agency: Dict[str, str] = {}
         self.inserted: List[Dict] = []
         self.upserted: List[Dict] = []
+        self.updated: List[Dict] = []
 
     def table(self, name):
         return _Table(self, name)
@@ -493,6 +508,8 @@ def test_kfb_rss_first_item_is_upserted_by_dedup_key(monkeypatch):
     assert db.inserted == []
     assert len(db.upserted) == 1
     assert db.upserted[0]["on_conflict"] == "dedup_key"
+    assert db.upserted[0]["ignore_duplicates"] is True
+    assert len(db.updated) == 1
     payload = db.upserted[0]["payload"]
     assert payload["agency"] == "KFB"
     assert payload["source_org"] == "KFB"

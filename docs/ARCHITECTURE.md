@@ -130,6 +130,42 @@ The configured agency count is the length of the `agencies` array in
     `pdf_url`이 있는 항목(주로 sanction)은 insert 직전에 `analysis_result` JSON 안으로 merge되어 단일 컬럼에 저장된다.
 5.  **Alerting**: `notifier.format_and_send()` sends Telegram msg ONLY if `analysis_result` exists.
 
+### Collector persistence and cycle outcome (2026-10-05)
+
+- `CollectionResult` retains the list API and carries connection, HTTP, parsing,
+  or configuration failures, including partial results. Recovered retries and
+  successful KFB fallback do not make the cycle fail.
+- All configured sources are required; no required/optional flag exists today.
+  Valid empty RSS/Atom, rows excluded by date/keyword filters, and a verified
+  `selector.empty` marker are normal empty results. Unexplained zero selector
+  matches (including later pages) are parsing failures. No unverified empty
+  selectors are added to the live configuration.
+- `Pipeline.run()` logs a JSON `Collection summary`: per-source collection
+  status/count, failure categories, confirmed saves, save failures, and body
+  failures. Healthy/partial items are processed before `PipelineRunError` is
+  raised on any collection/body/save or DB/config setup failure. The existing
+  `main.py` handler exits 1; a verified empty cycle exits 0.
+- New metadata can be stored with an empty body; title fallback is not saved as
+  original content. Missing/empty configured HTML bodies count as failures.
+  Intentionally unconfigured bodies and PDF-oriented sanction collection retain
+  metadata-only behavior. Nonempty short bodies retain the soft warning.
+- Dedup-key persistence inserts with conflict-ignore, then PATCHes available
+  body/analysis fields and metadata. Missing/blank content and absent, empty, or
+  `ANALYSIS_FAILED` analysis cannot replace stored values. PDF-only metadata
+  initializes new rows but does not replace existing analysis on refresh.
+  This needs no DB reads of old content, schema changes, or new permissions.
+  These two requests are not a transaction: an insert may survive a failed
+  PATCH. That attempt is reported as a save failure and can be retried safely.
+  Empty write responses are unconfirmed failures; notifications require
+  confirmed persistence and the existing `ANALYZED` condition.
+- Historical empty-body repair, ordinary URL dedup/retry policy, selectors,
+  network settings, and schedules are unchanged. Offline tests do not verify
+  production DB state.
+- Deployment impact: the unchanged `sanction_automation.yml` requires collector
+  `success`. An incomplete cycle therefore skips automatic analysis/publication
+  even when some sanctions were saved. Adjusting that linkage is a separate
+  decision; these local changes trigger no production analysis.
+
 ## 4. Key Components Detail
 
 ### 4.1 Hybrid Analyzer (`src/services/analyzer/`)

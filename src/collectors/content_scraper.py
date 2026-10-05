@@ -61,6 +61,9 @@ def fetch_content(url: str, agency_config: Dict) -> Optional[str]:
                 text_content = text_content + "\n\nAttachments:\n" + "\n".join(attachments)
 
         # Data Integrity Check: Short Content Warning
+        if not text_content.strip():
+            logger.warning(f"Empty content container for {url}")
+            return None
         if len(text_content) < 50:
             logger.warning(f"⚠️ Short content detected ({len(text_content)} chars) for {url}")
             return f"[Short Content] {text_content}"

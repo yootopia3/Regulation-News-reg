@@ -1,0 +1,23 @@
+name: Collector source probe
+on:
+  workflow_dispatch:
+  push:
+    branches: [fix/collector-recovery]
+    paths:
+      - scripts/diagnostics/collector_probe.py
+      - .github/workflows/collector_probe.yml
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.10'
+      - run: pip install requests beautifulsoup4
+      - run: python scripts/diagnostics/collector_probe.py
