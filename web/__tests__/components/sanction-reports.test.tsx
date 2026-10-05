@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import SanctionReportsPage from '@/app/reports/sanctions/page'
 import Sidebar, { type SidebarProps } from '@/components/dashboard/Sidebar'
 import BoardShell from '@/components/board/BoardShell'
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }), usePathname: () => '/board' }))
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 const rows = [
