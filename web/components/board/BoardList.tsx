@@ -20,16 +20,19 @@ export default function BoardList() {
         </form>
         {board.isAdmin && <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-sm text-blue-900"><label className="flex items-center gap-2"><input type="checkbox" checked={board.manage} onChange={event => board.setManage(event.target.checked)} />관리자: 임시저장·게시 취소 글도 보기</label><button onClick={() => void board.logout()} className="underline">관리자 로그아웃</button></div>}
         {board.error && <p role="alert" className="mb-4 rounded-lg bg-red-50 p-4 text-red-800">{board.error} <Link href="/login" className="underline">로그인 화면</Link></p>}
-        <div aria-busy={board.loading} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div aria-busy={board.loading} className="lg:overflow-hidden lg:rounded-xl lg:border lg:border-slate-200 lg:bg-white">
+            <div aria-hidden="true" className="hidden lg:grid lg:grid-cols-[minmax(0,1fr)_6rem_7rem_4rem] gap-4 border-b border-slate-200 bg-slate-50 px-6 py-3 text-xs font-semibold text-slate-500"><span>게시글</span><span>작성자</span><span>게시일</span><span>첨부</span></div>
             {board.loading ? <p role="status" className="p-10 text-center text-slate-500">게시글을 불러오는 중입니다.</p> : !board.posts.length ? <p className="p-12 text-center text-slate-500">{board.error ? '게시글을 불러오지 못했습니다.' : '등록된 게시글이 없습니다.'}</p> :
-                <ul className="divide-y divide-slate-100">{board.posts.map(post => <li key={post.id}>
-                    <Link href={`/board/${post.id}`} className="block px-5 py-5 transition hover:bg-blue-50/60 sm:px-6">
+                <ul className="space-y-3 lg:space-y-0 lg:divide-y lg:divide-slate-100">{board.posts.map(post => <li key={post.id} className="rounded-xl border border-slate-200 bg-white lg:rounded-none lg:border-0">
+                    <Link href={`/board/${post.id}`} className="block px-5 py-5 transition hover:bg-blue-50/60 lg:grid lg:grid-cols-[minmax(0,1fr)_6rem_7rem_4rem] lg:items-center lg:gap-4 lg:px-6">
+                        <div className="min-w-0">
                         <div className="mb-2 flex gap-2 text-xs font-medium text-blue-800">
                             {post.is_pinned && <span className="rounded bg-blue-100 px-2 py-0.5">고정</span>}<span className="py-0.5">{BOARD_CATEGORIES[post.category]}</span>
                             {post.status === 'draft' && <span className="rounded bg-amber-100 px-2 py-0.5 text-amber-800">비공개</span>}
                         </div>
                         <h2 className="break-words font-semibold">{post.title}</h2>
-                        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500"><span>{post.author_name}</span><time>{boardDate(post.published_at || post.created_at)}</time>{post.attachments.length > 0 && <span>첨부 {post.attachments.length}</span>}</div>
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 lg:contents"><span className="break-words">{post.author_name}</span><time dateTime={post.published_at || post.created_at}>{boardDate(post.published_at || post.created_at)}</time><span className={post.attachments.length ? '' : 'hidden lg:block'}>{post.attachments.length ? <><span className="lg:sr-only">첨부 </span>{post.attachments.length}</> : '—'}</span></div>
                     </Link>
                 </li>)}</ul>}
         </div>

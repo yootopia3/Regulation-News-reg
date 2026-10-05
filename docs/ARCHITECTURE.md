@@ -334,3 +334,13 @@ scope=board에서 내부 문서 기능 플래그 대신 BOARD_ENABLED를 검사�
 검증한 서버 응답으로 제공한다. Storage 공개 URL이나 장기 signed URL을 클라이언트에 배포하지 않는다.
 비밀번호 해시와 object path는 서버에서만 사용한다. 게시판 글은 기사 수집·AI 분석 파이프라인에 넣지 않는다.
 신규 migration 및 운영 절차는 `docs/board-setup.md`를 참고한다.
+
+
+### 4.13 게시판 공통 화면 틀 (2026-10-05)
+
+`DashboardFrame`은 대시보드와 게시판의 Sidebar/Header 배치·모바일 drawer·콘텐츠 스크롤 영역을 공유한다.
+게시판 layout의 `BoardShell`은 모든 /board 하위 경로에 공통 메뉴와 현재 위치를 표시한다.
+게시판에서 기사 메뉴로 이동할 때 /?category=...&agency=...를 사용하며 루트 page가 허용된 분류/기관만
+`dashboardSelection`으로 검증해 DashboardV2의 초기 선택에 전달한다. 경로 기반 선택은 모바일 drawer를
+자동 재개방하지 않는다. 게시판 하위 경로 이동 시 콘텐츠 스크롤은 상단으로 돌아간다.
+기존 게시판 URL/API/DB 및 대시보드 내부 분류·검색은 유지한다. PC는 글 목록 행, 모바일/태블릿은 카드를 표시한다.
