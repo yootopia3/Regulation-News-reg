@@ -4,9 +4,17 @@
       "code": "FSC",
       "name": "금융위 (FSC)",
       "category": "press_release",
-      "collection_method": "rss",
-      "url": "https://www.fsc.go.kr/about/fsc_bbs_rss/?fid=0111",
-      "base_url": "https://www.fsc.go.kr"
+      "collection_method": "scraper",
+      "url": "https://www.fsc.go.kr/no010101",
+      "base_url": "https://www.fsc.go.kr/no010101",
+      "selector": {
+        "list": ".board-list-wrap > ul > li",
+        "title": ".subject a",
+        "date": ".day",
+        "link": ".subject a",
+        "content": ".board-view-wrap > .body > .cont",
+        "content_title": ".board-view-wrap > .header > .subject"
+      }
     },
     {
       "code": "MOEF",
@@ -28,7 +36,8 @@
         "title": "td.title a",
         "date": "td:nth-of-type(4)",
         "link": "td.title a",
-        "content": ".dbdata"
+        "content": ".krds-bd-view > .n-dbdata",
+        "content_title": ".krds-bd-view > .sub-info > .subject"
       }
     },
     {
@@ -84,11 +93,12 @@
       "url": "https://www.fss.or.kr/fss/job/lrgRegItnInfo/list.do?menuNo=200488",
       "base_url": "https://www.fss.or.kr/fss/job/lrgRegItnInfo/list.do?menuNo=200488",
       "selector": {
-        "list": ".bd-list tbody tr",
-        "title": "td:nth-child(2) a",
+        "list": "table.list-data tbody tr",
+        "title": "td.title a",
         "date": "td:nth-child(3)",
-        "link": "td:nth-child(2) a",
-        "content": ".bd-view"
+        "link": "td.title a",
+        "content": ".krds-bd-view > .n-dbdata",
+        "content_title": ".krds-bd-view > .sub-info > .subject"
       }
     },
     {
@@ -161,8 +171,9 @@
         "list": "table tbody tr, .board_list li, .bbs-list li, .list li",
         "title": "a",
         "date": ".date, td.date, span.date, td:nth-of-type(3), td:nth-of-type(4)",
-        "content": ".view_cont, .board_view, .bbs_view, .content, #contents",
-        "attachment_links": "a[href*='download'], a[href$='.pdf'], a[href$='.hwp'], a[href$='.hwpx'], a[href$='.doc'], a[href$='.docx'], a[href$='.xls'], a[href$='.xlsx']"
+        "content": ".panViewArea .viewInfo > .txt",
+        "attachment_links": "a[href*='download'], a[href$='.pdf'], a[href$='.hwp'], a[href$='.hwpx'], a[href$='.doc'], a[href$='.docx'], a[href$='.xls'], a[href$='.xlsx']",
+        "content_title": ".panViewArea .viewInfo > li.title"
       }
     },
     {

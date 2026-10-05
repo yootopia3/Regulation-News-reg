@@ -8,6 +8,7 @@ from email.utils import parsedate_to_datetime
 from typing import List, Dict, Optional
 
 from src.config.agency_codes import PublishedAtSource
+from src.collectors.result import CollectionResult, FailureKind, failure_kind
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +69,7 @@ def fetch_rss_feed(agency: Dict) -> List[Dict]:
     # 2. Get URL (support new 'url' or old 'rss_url')
     target_url = agency.get('url') or agency.get('rss_url')
     if not target_url:
-        return []
+        return CollectionResult(failures=[FailureKind.CONFIG])
 
     logger.info(f"Fetching RSS for {agency.get('name', 'Unknown')}...")
     
@@ -103,25 +104,30 @@ def fetch_rss_feed(agency: Dict) -> List[Dict]:
                 time.sleep(sleep_s)
                 continue
             logger.warning(f"  > Error processing URL {target_url} after {attempt} attempts: {e}")
-            return []
+            return CollectionResult(failures=[failure_kind(e)])
         except Exception as e:
             # HTTP errors / parser errors / other — do NOT retry. If the server
             # actually answered with 4xx/5xx that is its final word and hammering
             # the endpoint risks getting blocklisted.
             logger.error(f"  > Error processing URL {target_url}: {e}")
-            return []
+            return CollectionResult(failures=[failure_kind(e)])
 
     if response is None:
         logger.error(f"  > Error processing URL {target_url}: {last_err}")
-        return []
+        return CollectionResult(failures=[FailureKind.CONNECTION])
 
     # Parse XML content
-    feed = feedparser.parse(response.content)
+    try:
+        feed = feedparser.parse(response.content)
+    except Exception:
+        return CollectionResult(failures=[FailureKind.PARSE])
+    parsed_items = CollectionResult()
+    if not feed.get("version") or feed.get("bozo"):
+        parsed_items.fail(FailureKind.PARSE)
 
     if hasattr(feed, 'bozo') and feed.bozo:
         logger.warning(f"  > Warning: Feed parsing issue for {agency.get('name')}: {feed.bozo_exception}")
 
-    parsed_items = []
     real_dates: List[datetime] = []
     if not feed.entries:
         logger.warning(f"  > No entries found in feed.")
@@ -130,6 +136,9 @@ def fetch_rss_feed(agency: Dict) -> List[Dict]:
         # Extract fields
         title = entry.get('title', '').strip()
         link = entry.get('link', '').strip()
+        if not title or not link:
+            parsed_items.fail(FailureKind.PARSE)
+            continue
         if link.startswith('http://'):
             link = 'https://' + link[7:]
         
@@ -184,16 +193,22 @@ def fetch_rss_feed(agency: Dict) -> List[Dict]:
 
 def collect_all_rss() -> List[Dict]:
     agencies = load_agencies()
-    all_items = []
-    
+    all_items = CollectionResult()
+
     for agency in agencies:
+        if agency.get('collection_method', 'rss') != 'rss':
+            continue
+        code = agency.get('code') or agency.get('id')
         try:
             items = fetch_rss_feed(agency)
-            all_items.extend(items)
-            logger.info(f"  > Found {len(items)} items.")
         except Exception as e:
             logger.error(f"  > Error fetching {agency['name']}: {e}")
-            
+            items = CollectionResult(failures=[failure_kind(e)])
+        all_items.extend(items)
+        all_items.sources[code] = items
+        logger.info("[%s] RSS candidates: %s; status: %s", code, len(items),
+                    getattr(items, 'status', 'success' if items else 'empty'))
+
     return all_items
 
 if __name__ == "__main__":

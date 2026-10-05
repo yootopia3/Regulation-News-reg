@@ -17,6 +17,7 @@ import feedparser
 from bs4 import BeautifulSoup
 
 from src.collectors import http
+from src.collectors.result import CollectionResult, FailureKind, failure_kind, has_empty_marker
 from src.collectors.date_parser import KST, has_specific_time, parse_date
 from src.collectors.rss_parser import parse_date as parse_rss_date
 from src.config.agency_codes import ArticleCategory, PublishedAtSource
@@ -108,11 +109,14 @@ def discover_rss_feed(page_url: str, html: bytes, agency_config: Dict) -> Tuple[
 
 def _parse_feed_items(feed_content: bytes) -> List[Dict]:
     feed = feedparser.parse(feed_content)
-    items: List[Dict] = []
+    items = CollectionResult()
+    if feed.get('bozo') or not feed.get('version'):
+        items.fail(FailureKind.PARSE)
     for entry in feed.entries:
         title = str(entry.get("title") or "").strip()
         link = str(entry.get("link") or "").strip()
         if not title or not link:
+            items.fail(FailureKind.PARSE)
             continue
         if link.startswith("http://"):
             link = "https://" + link[7:]
@@ -244,6 +248,7 @@ def _parse_html_items(page_url: str, html: bytes, agency_config: Dict, last_craw
 
     soup = BeautifulSoup(html, "html.parser")
     rows = soup.select(list_selector)
+    structured_rows = bool(rows)
     if not rows:
         rows = soup.select("a[href]")
     now_kst = datetime.now(KST)
@@ -252,7 +257,7 @@ def _parse_html_items(page_url: str, html: bytes, agency_config: Dict, last_craw
         cutoff_date = max(last_crawled_date - timedelta(days=1), cutoff_date)
     logger.info("KFB HTML fallback rows: %s, cutoff: %s", len(rows), cutoff_date.date().isoformat())
 
-    items: List[Dict] = []
+    items = CollectionResult()
     seen_links = set()
     skipped_no_anchor = 0
     skipped_no_link = 0
@@ -263,10 +268,14 @@ def _parse_html_items(page_url: str, html: bytes, agency_config: Dict, last_craw
         anchor = row if getattr(row, "name", None) == "a" else row.select_one(title_selector)
         if not anchor:
             skipped_no_anchor += 1
+            if structured_rows and not has_empty_marker(soup, selectors):
+                items.fail(FailureKind.PARSE)
             continue
         link = _extract_link(page_url, row, anchor)
         if not link:
             skipped_no_link += 1
+            if structured_rows:
+                items.fail(FailureKind.PARSE)
             continue
 
         if link in seen_links:
@@ -291,6 +300,8 @@ def _parse_html_items(page_url: str, html: bytes, agency_config: Dict, last_craw
             title = _clean_title(row_text, date_text)
         if not title:
             skipped_no_title += 1
+            if structured_rows:
+                items.fail(FailureKind.PARSE)
             continue
 
         published_at = _parse_kfb_date(date_text)
@@ -329,6 +340,8 @@ def _parse_html_items(page_url: str, html: bytes, agency_config: Dict, last_craw
         skipped_old,
         skipped_no_title,
     )
+    if not items and not skipped_old and not has_empty_marker(soup, selectors):
+        items.fail(FailureKind.PARSE)
     logger.info("KFB HTML fallback pdf links: %s", sum(1 for item in items if item.get("pdf_url")))
     return items
 
@@ -359,14 +372,17 @@ def _fetch_press_page(agency_config: Dict) -> Tuple[Optional[str], Optional[byte
             logger.warning("[KFB] Failed to fetch press-release candidate %s: %s", candidate_url, exc)
 
     logger.error("[KFB] Failed to fetch press-release page: %s", last_error)
-    return None, None
+    raise last_error
 
 
 def collect_kfb_rss_first(agency_config: Dict, last_crawled_date=None) -> List[Dict]:
     """Collect KFB press releases using RSS/Atom first and HTML as fallback."""
-    page_url, page_content = _fetch_press_page(agency_config)
+    try:
+        page_url, page_content = _fetch_press_page(agency_config)
+    except Exception as exc:
+        return CollectionResult(failures=[failure_kind(exc)])
     if not page_url or not page_content:
-        return []
+        return CollectionResult(failures=[FailureKind.CONFIG])
 
     rss_url, rss_content = discover_rss_feed(page_url, page_content, agency_config)
     if rss_url and rss_content:

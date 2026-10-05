@@ -8,6 +8,9 @@ from typing import Dict, List, Optional
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
+from src.collectors.urls import canonical_article_url
+
+from src.collectors.result import CollectionResult, FailureKind, failure_kind, has_empty_marker
 
 from src.config import settings
 from src.config.agency_codes import AgencyCode, PublishedAtSource
@@ -71,7 +74,7 @@ def fetch_list_items(
 
     if not base_url or not list_selector:
         logger.error(f"[{agency_config.get('code')}] Missing URL or list selector.")
-        return []
+        return CollectionResult(failures=[FailureKind.CONFIG])
 
     now_kst = datetime.now(KST)
 
@@ -88,7 +91,7 @@ def fetch_list_items(
         cutoff_date = max_cutoff
         logger.info(f"[{agency_config.get('code')}] Full Scan (7d): > {cutoff_date.strftime('%Y-%m-%d')}")
 
-    all_items: List[Dict] = []
+    all_items = CollectionResult()
     page = 1
 
     while page <= MAX_PAGES:
@@ -104,6 +107,8 @@ def fetch_list_items(
             rows = soup.select(list_selector)
 
             if not rows:
+                if not has_empty_marker(soup, selectors):
+                    all_items.fail(FailureKind.PARSE)
                 if page == 1:
                     logger.warning(f"[{agency_config.get('code')}] No items found on Page 1 (Selector: {list_selector})")
                 else:
@@ -119,10 +124,15 @@ def fetch_list_items(
                     title_elem = row.select_one(title_sel) if title_sel else row.select_one('a')
 
                     if not title_elem:
+                        if not has_empty_marker(soup, selectors):
+                            all_items.fail(FailureKind.PARSE)
                         continue
 
                     title = title_elem.get_text(strip=True)
                     link_href = title_elem.get('href')
+                    if not title or not link_href:
+                        all_items.fail(FailureKind.PARSE)
+                        continue
 
                     if link_href:
                         if not link_href.startswith('http'):
@@ -131,6 +141,7 @@ def fetch_list_items(
                             link = link_href
                     else:
                         link = base_url
+                    link = canonical_article_url(link)
 
                     if _is_bok_excluded_notice(agency_config, title, link):
                         logger.info(f"    > Skipping BOK excluded notice: {title[:60]}")
@@ -173,6 +184,7 @@ def fetch_list_items(
                         })
 
                 except Exception as e:
+                    all_items.fail(FailureKind.PARSE)
                     logger.error(f"Error parsing row: {e}")
                     continue
 
@@ -190,6 +202,7 @@ def fetch_list_items(
             page += 1
 
         except Exception as e:
+            all_items.fail(failure_kind(e))
             logger.error(f"[{agency_config.get('code')}] Error fetching page {page}: {e}")
             break
 

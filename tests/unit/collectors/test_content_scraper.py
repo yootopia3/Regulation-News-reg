@@ -32,3 +32,12 @@ def test_fetch_content_appends_attachment_links(monkeypatch):
     assert "본문 내용입니다." in content
     assert "Attachments:" in content
     assert "첨부 PDF: https://m.kfb.or.kr/files/report.pdf" in content
+
+
+def test_empty_container_is_failure_not_short_content_placeholder(monkeypatch):
+    monkeypatch.setattr(content_scraper.time, 'sleep', lambda _: None)
+    monkeypatch.setattr(content_scraper.http, 'fetch', lambda *a, **k: SimpleNamespace(
+        content=b'<html><div class="view">   </div></html>'))
+    assert content_scraper.fetch_content('https://example.test/1', {
+        'code': 'FSS', 'selector': {'content': '.view'},
+    }) is None

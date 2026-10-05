@@ -47,6 +47,17 @@
 
 ---
 
+Collector integrity clarification (2026-10-05): verified empty feeds, filtered
+lists, and source-configured empty-state markers are successful zero results;
+unexplained zero selector matches are parsing failures. All configured sources
+participate in final health status. Process available items before exiting
+nonzero on collection, configured HTML body, persistence, or DB/config setup
+failures. PDF sanction and unconfigured-body paths are exempt from HTML body
+failure checks. Preserve stored body/analysis when a dedup-key refresh cannot
+provide replacements. New metadata may still be saved with an empty body, with
+the failure exposed in the cycle summary. See `ARCHITECTURE.md` for persistence
+semantics and downstream workflow implications.
+
 ## 4. Analysis & Scoring (분석 요건)
 
 ### 4.0 Runtime Enablement
