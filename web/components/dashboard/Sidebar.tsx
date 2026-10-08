@@ -88,7 +88,7 @@ export default function Sidebar(props: SidebarProps): React.ReactElement {
                 <div className="p-6 h-full flex flex-col">
                     {/* Brand Logo */}
                     <div className="mb-10 flex items-center gap-1">
-                        <img src="/logo_perfect.png" alt="RegBrief" className="w-14 h-14 object-contain" />
+                        <img src="/icons/regbrief-09-512.png" alt="RegBrief" className="w-14 h-14 rounded-xl object-contain" />
                         <h2 className="text-3xl font-bold tracking-wide leading-none pb-1">
                             <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Reg</span>
                             <span className="bg-gradient-to-br from-white to-gray-400 bg-clip-text text-transparent ml-0.5">Brief</span>

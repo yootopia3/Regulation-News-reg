@@ -16,8 +16,8 @@ export const metadata: Metadata = {
   title: "RegBrief (Beta)",
   description: "AI 기반 금융 규제 뉴스 브리핑",
   icons: {
-    icon: '/logo_perfect.png',
-    apple: '/app_icon.png',
+    icon: '/icons/regbrief-09-32.png',
+    apple: '/icons/regbrief-09-180.png',
   },
   manifest: '/manifest.json',
   appleWebApp: {
