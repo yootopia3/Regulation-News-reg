@@ -121,10 +121,6 @@ export default function Sidebar(props: SidebarProps): React.ReactElement {
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
                             <span className="font-medium">홈</span>
                         </button>
-                        <button className="flex items-center gap-3 w-full text-left px-4 py-3 text-blue-100/80 hover:text-white hover:bg-white/10 rounded-xl transition-all">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
-                            <span className="font-medium">스크랩 보관함</span>
-                        </button>
 
                         <div className="my-6 border-t border-white/15"></div>
 
@@ -309,7 +305,7 @@ export default function Sidebar(props: SidebarProps): React.ReactElement {
                     {/* Footer */}
                     <div className="text-xs text-blue-100/70 mt-auto flex items-center gap-2">
                         <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2z" /></svg>
-                        v2.0.0 (Beta)
+                        v3.0.0 (Beta)
                     </div>
                 </div>
             </aside>

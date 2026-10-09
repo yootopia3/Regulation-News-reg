@@ -15,6 +15,8 @@ describe('shared board navigation', () => {
         expect(within(menu).getByRole('button', { name: '보도자료' })).toBeInTheDocument()
         expect(within(menu).getByRole('button', { name: '규제개정' })).toBeInTheDocument()
         expect(within(menu).getByRole('link', { name: '게시판' })).toHaveAttribute('aria-current', 'page')
+        expect(within(menu).queryByText('스크랩 보관함')).not.toBeInTheDocument()
+        expect(screen.getByText('v3.0.0 (Beta)')).toBeInTheDocument()
         expect(within(screen.getByRole('main')).getByText('해당 페이지 내용')).toBeInTheDocument()
         expect(screen.queryByRole('link', { name: /아침에 읽는 규제변화/ })).not.toBeInTheDocument()
     })

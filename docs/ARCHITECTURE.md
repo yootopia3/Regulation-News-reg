@@ -344,3 +344,19 @@ scope=board에서 내부 문서 기능 플래그 대신 BOARD_ENABLED를 검사�
 `dashboardSelection`으로 검증해 DashboardV2의 초기 선택에 전달한다. 경로 기반 선택은 모바일 drawer를
 자동 재개방하지 않는다. 게시판 하위 경로 이동 시 콘텐츠 스크롤은 상단으로 돌아간다.
 기존 게시판 URL/API/DB 및 대시보드 내부 분류·검색은 유지한다. PC는 글 목록 행, 모바일/태블릿은 카드를 표시한다.
+
+### 4.14 플랫폼 v3 표기와 게시판 댓글 (2026-10-09, 운영 적용 별도)
+
+공통 Sidebar의 하단 표시를 v3.0.0 (Beta)로 변경하고 연결되지 않은 스크랩 보관함 버튼을 제거한다.
+`BoardDetail`은 published 글 하단에 `BoardComments`를 표시한다.
+`web/lib/board/use-comments.ts`는 최신순 20개 pagination과 작성/수정/삭제·재시도 상태를 관리한다.
+`comments-server.ts`는 입력/부모 상태/댓글 비밀번호·관리자 권한/동시 수정 검증을 담당한다.
+`/api/board/[id]/comments`(GET/POST), `/api/board/[id]/comments/[commentId]`(PATCH/DELETE)는
+기존 boardContext의 세션·BOARD_ENABLED·Origin·쓰기 제한과 boundedJson/privateJson을 재사용한다.
+
+인증된 이용자 → 작성자 이름/내용/댓글 비밀번호 → scrypt hash → private board_comments 저장.
+조회는 공개 상태 부모와 댓글 DTO를 연결하며 해시·비밀번호를 반환하지 않는다.
+댓글은 HTML/Markdown 실행 없는 일반 텍스트로 표시한다. 수정/삭제는 해당 댓글의 비밀번호 또는
+검증된 기존 관리자 세션이 필요하며 댓글별 비밀번호 제한(10회/15분)을 적용한다.
+SQL published-parent trigger와 revision CAS를 함께 적용하며 글 삭제 시 댓글은 cascade 삭제한다.
+기사·AI·첨부·기존 게시글 API 계약은 유지한다. 신규 migration 적용은 별도 운영 단계다.

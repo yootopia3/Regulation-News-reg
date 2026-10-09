@@ -184,3 +184,19 @@ Storage의 `board-attachments`는 private이며 기존 광범위 정책이 있�
 접근을 차단하는 restrictive policy를 추가한다. 기존 내부 문서 테이블에는 의존하지 않는다.
 첨부 수/요청 바이트/형식은 API에서 검사한다. bucket 파일 크기 상한은 3 MiB이다.
 설치·롤백·미참조 파일 복구는 `docs/board-setup.md`를 따른다.
+
+## 14. 게시판 댓글 (202610090001, 운영 적용 별도)
+
+`board_comments`는 id(UUID), post_id(FK → board_posts.id, ON DELETE CASCADE),
+author_name(1~40자), body(1~2,000자), password_hash(scrypt+salt), revision,
+created_at/updated_at을 저장한다. post_id/created_at DESC/id DESC 인덱스로 최신순 pagination한다.
+RLS를 활성화하고 PUBLIC/anon/authenticated 직접 접근을 차단한다. service_role만 읽기/쓰기를 허용한다.
+응답 DTO는 비밀번호/해시를 포함하지 않는다. 작성자 이름은 입력값이며 검증된 개인 신원이 아니다.
+
+`board_comment_published_post()` INSERT/UPDATE/DELETE trigger는 부모 행을 FOR SHARE로 잠그고
+published 상태를 확인한다. 동시 게시 취소/삭제와 댓글 쓰기를 직렬화한다.
+DELETE 시 부모가 이미 없는 FK cascade는 허용해 비공개 글도 댓글과 함께 삭제할 수 있다.
+조회 API도 published 부모만 허용하고 조회 query의 inner join에서 상태를 다시 제한한다.
+수정·삭제는 부모/댓글 UUID와 revision을 모두 조건으로 사용한다.
+비공개 전환은 댓글 데이터를 삭제하지 않지만 일반/관리자 댓글 API에서 숨긴다.
+글을 다시 게시하면 기존 댓글도 보인다. 글을 물리 삭제하면 댓글도 함께 삭제된다.
