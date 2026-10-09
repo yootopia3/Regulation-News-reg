@@ -108,10 +108,7 @@ export default function Sidebar(props: SidebarProps): React.ReactElement {
                             />
                         </div>
                         <h2 className="leading-none pb-1">
-                            <span className="mt-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/80">
-                                <Image src="/icons/regbrief-09-32.png" alt="" width={24} height={24} className="rounded-md" />
-                                Regulatory News
-                            </span>
+                            <span className="mt-2 block text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/80">Regulatory News</span>
                         </h2>
                     </button>
 

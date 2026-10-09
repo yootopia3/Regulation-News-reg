@@ -16,8 +16,8 @@ export const metadata: Metadata = {
   title: "규제정보 플랫폼",
   description: "AI 기반 금융 규제 뉴스 브리핑",
   icons: {
-    icon: '/icons/regbrief-09-32.png',
-    apple: '/icons/regbrief-09-180.png',
+    icon: '/ibk-icon.svg',
+    apple: '/app_icon.png',
   },
   manifest: '/manifest.json',
   appleWebApp: {

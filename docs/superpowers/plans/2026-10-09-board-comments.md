@@ -53,19 +53,13 @@ INSERT/UPDATE/DELETE trigger로 게시 취소와 댓글 쓰기 경쟁을 직렬�
 - 실제 Supabase/PostgREST, 운영 브라우저 및 다중 연결 동시성 실행은 검증하지 않았다.
   운영 DB 적용/배포/앱 외부 API 호출/commit/push는 실행하지 않았다.
 
-## PR #10 충돌 해결 (2026-10-09)
+## 대상 저장소 정정 (2026-10-09)
 
-- 사용자 제공 PR: https://github.com/orbzodiac84/Regulation-News-reg/pull/10.
-  실제 base는 orbzodiac84/Regulation-News-reg의 main(8b99957), head는
-  yootopia3/Regulation-News-reg의 feat/platform-v3-board-comments(c7486a8)이다.
-  최초 확인한 fork의 main(559a9a6)과 실제 PR base는 다르다.
-- 실제 base의 최신 compass favicon/PNG/manifest/icon metadata를 보존하고,
-  기존 IBK 홈 버튼·게시판 메뉴·v3 표기·스크랩 메뉴 제거와 함께 병합했다.
-  Sidebar의 Regulatory News 옆에도 compass 이미지를 표시한다.
-- 해결 후 Node 20 웹 전체 30개 파일 / 202개 테스트, TypeScript, ESLint PASS.
-  별도 context 재검토에서 중대한 문제 없음. 댓글/인증/DB 구현 변경은 없다.
-- GitHub PR HTML에서 Vercel 봇은 외부 기여자 yootopia3의 배포에 대해 팀 멤버 승인을
-  요구한다. GitHub API는 Cloud 프록시 Forbidden으로 조회 불가하다.
-  권한 승인은 우회하지 않으며 운영 DB 적용·실제 base main 병합·배포는 수행하지 않는다.
-- 기존 PR은 실제 base에 아직 없는 과거 개발 커밋도 포함한다. 본 충돌 해결은 그 이력을
-  재작성하거나 제거하지 않는다. main 운영 반영 범위는 이번 댓글 변경보다 넓다.
+사용자가 orbzodiac84/Regulation-News-reg는 과거 샘플 저장소이며 현재 프로젝트가 아니라고 확인했다.
+현재 작업/PR 대상은 최초 지정한 yootopia3/Regulation-News-reg이다.
+샘플 저장소를 대상으로 확인하던 PR #10 및 Vercel 승인 흐름은 이 작업의 운영 반영 절차가 아니다.
+잘못 추가한 샘플 main 병합 8f7712b의 파일 변경을 되돌렸다.
+애플리케이션 소스는 원래 요청한 기능 커밋 c7486a8과 동일하며, 이 정정 기록만 별도로 추가한다.
+원격 origin을 보존하고 잘못 추가한 upstream remote를 제거했다.
+PR 생성 시 저장소 이름만 아니라 base repository owner가 yootopia3인지 반드시 확인한다.
+샘플 저장소 main 병합·운영 DB 변경·배포를 직접 실행한 사실은 없다.
