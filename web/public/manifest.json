@@ -8,22 +8,16 @@
     "theme_color": "#5B4BFF",
     "icons": [
         {
-            "src": "/app_icon.png",
+            "src": "/icons/regbrief-09-192.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "any"
         },
         {
-            "src": "/app_icon.png",
+            "src": "/icons/regbrief-09-512.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any"
-        },
-        {
-            "src": "/app_icon.png",
-            "sizes": "180x180",
-            "type": "image/png",
-            "purpose": "maskable"
         }
     ]
 }
