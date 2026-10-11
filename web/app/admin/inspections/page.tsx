@@ -38,7 +38,7 @@ export default function InspectionsPage() {
         </form>
         <section className="mt-8"><div className="flex justify-between"><h2 className="text-xl font-bold">최근 작업 · 최대 50건</h2><button onClick={load} className="text-blue-900">새로고침</button></div>
             <ul className="mt-4 space-y-3">{jobs.map(job => <li key={job.id} className="p-5 bg-white border rounded-xl"><h3 className="font-semibold">{articles.find(a => a.id === job.article_id)?.title || job.article_id}</h3><p className="mt-2 text-sm">{job.automation_status === 'published' ? 'AI 자동 게시 완료' : job.automation_status === 'needs_attention' ? '자동 처리 보류 · 관리자 확인 필요' : INSPECTION_STATUS[job.status] || '확인 필요'}</p>
-                {job.error_code && <p className="text-sm text-red-800 mt-2">{INSPECTION_ERRORS[job.error_code] || '분석을 완료하지 못했습니다. 설정과 원문을 확인해 주세요.'}</p>}
+                {job.error_code && <p className="text-sm text-red-800 mt-2">{INSPECTION_ERRORS[job.error_code] || '분석을 완료하지 못했습니다. 설정과 원문을 확인해 주세요.'}<span className="block mt-1 text-xs">오류 코드: <code>{job.error_code}</code></span></p>}
                 {job.status === 'needs_review' && <button className="mt-3 text-blue-900 underline" onClick={async () => { setDetail(null); try { setDetail((await documentRequest(`/api/admin/inspections?id=${job.id}`)).job) } catch (e) { setError((e as Error).message) } }}>초안 확인</button>}
                 {['failed', 'stale', 'needs_review'].includes(job.status) && <button disabled={busy || !enabled} className="mt-3 ml-4 text-blue-900 underline disabled:opacity-40" onClick={() => execute(job.article_id)}>다시 분석</button>}
             </li>)}</ul>
