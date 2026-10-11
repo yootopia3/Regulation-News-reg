@@ -104,6 +104,35 @@ def test_no_relevant_duties_can_be_left_unmatched():
     assert len(client.calls) == 2
 
 
+@pytest.mark.parametrize('invalid', [
+    [match(), match()],
+    [{**match(), 'duty_ids': ['HQ-001', 'HQ-002']}],
+])
+def test_department_format_can_be_corrected_once_without_reextracting_findings(invalid):
+    client = Client([{'findings': [finding()]},
+                     {'matches': invalid, 'unmatched_finding_ids': []},
+                     {'matches': [match()], 'unmatched_finding_ids': []}])
+    result = run(client)
+    assert result['matches'][0]['department'] == '합성통제부'
+    assert len(client.calls) == 3
+    assert client.calls[2][1]['findings'] == client.calls[1][1]['findings']
+    assert client.calls[2][1]['candidates'] == client.calls[1][1]['candidates']
+    assert 'sources' not in client.calls[2][1]['candidates'][0]
+
+
+@pytest.mark.parametrize('corrected,code', [
+    ({'matches': [match(), match()], 'unmatched_finding_ids': []}, 'invalid_department'),
+    ({'matches': [{**match(), 'duty_ids': ['HQ-999']}], 'unmatched_finding_ids': []}, 'invalid_duty_reference'),
+    ({'matches': [], 'unmatched_finding_ids': []}, 'finding_coverage_failed'),
+])
+def test_correction_still_requires_all_validation_and_does_not_loop(corrected, code):
+    client = Client([{'findings': [finding()]},
+                     {'matches': [match(), match()], 'unmatched_finding_ids': []}, corrected])
+    with pytest.raises(InspectionError, match=code):
+        run(client)
+    assert len(client.calls) == 3
+
+
 def test_workbook_conversion_excludes_full_text_and_filesystem_paths():
     data = {'version': 'fixture-v1', 'profiles': [{'name': '합성통제부'}],
         'documents': [{'id': 'D1', 'name': '합성규정', 'path': 'PRIVATE_PATH'}],

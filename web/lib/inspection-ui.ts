@@ -16,6 +16,7 @@ export const INSPECTION_ERRORS: Record<string, string> = {
     usage_limit_exceeded: 'AI API 결제 또는 사용 한도에 도달했습니다. 결제·사용량 설정을 확인해 주세요.',
     invalid_duty_master: '업무원장의 형식 또는 버전을 확인해야 합니다.',
     invalid_duty_reference: 'AI가 선택한 업무 ID를 확인해야 합니다.',
+    invalid_department: 'AI 결과의 부서 연결이 업무원장 또는 조직 목록과 일치하지 않습니다. 다시 분석하거나 관리자 검토가 필요합니다.',
     finding_coverage_failed: '일부 지적사항의 부서 연결이 누락되어 검토가 필요합니다.',
 }
 export type InspectionJob = { automation_status?: string; id: string; article_id: string; status: string; error_code: string | null; result?: InspectionDraft | null; review_revision?: number; review_draft?: import('./publication').PublicationReport | null }

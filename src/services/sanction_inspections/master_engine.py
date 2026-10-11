@@ -6,7 +6,7 @@ from pydantic import Field
 from .engine import PUBLIC_PROMPT, normalized
 from .models import StrictModel, Findings, Check, InspectionError
 
-PROMPT_VERSION = 'duty-master-v1'
+PROMPT_VERSION = 'duty-master-v2'
 DUTY_PROMPT = '''공개 제재 지적사항을 당행의 본부 업무원장과 연결하여 예방 점검안을 작성하세요.
 candidates에 있는 duty_ids만 선택하세요. 한 항목에는 같은 부서의 업무만 연결하고
 동일 지적사항·부서 조합은 하나로 묶으세요. 영업점·지역본부·국외점포를 담당조직으로 만들지 마세요.
@@ -62,6 +62,36 @@ def analyze_master(pages, master, client, *, versions):
     if len(json.dumps(context, ensure_ascii=False)) > 120000:
         raise InspectionError('context_review_required')
     result = client.generate(DUTY_PROMPT, context, DutyMatches)
+    try:
+        drafts, unmatched = validate_matches(result, findings, master)
+    except InspectionError as exc:
+        if str(exc) != 'invalid_department':
+            raise
+        # One semantic correction, never a retry of a failed provider request.
+        correction = {
+            **context,
+            'previous_result': result.model_dump(),
+        }
+        if len(json.dumps(correction, ensure_ascii=False)) > 120000:
+            raise InspectionError('context_review_required') from None
+        correction_prompt = DUTY_PROMPT + '\n이전 결과의 부서 연결 검증에 실패했습니다. '
+        correction_prompt += ('같은 finding_id와 부서 조합은 한 항목으로 통합하고, '
+                              '각 항목의 duty_ids는 반드시 같은 부서 소속으로 최대 2개만 선택하세요. '
+                              '각 지적사항은 관련성이 가장 높은 최대 5개 부서로 제한하세요. '
+                              '전체 지적사항의 처리 여부를 유지하고 candidates 밖의 업무를 만들지 마세요.')
+        result = client.generate(correction_prompt, correction, DutyMatches)
+        drafts, unmatched = validate_matches(result, findings, master)
+    fingerprint = hashlib.sha256(json.dumps({'pages': [p.model_dump() for p in pages],
+        'master': master.fingerprint, 'versions': versions, 'model': client.settings.model,
+        'prompt': PROMPT_VERSION}, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
+    return {'status': 'needs_review', 'analysis_basis': 'duty_master',
+        'master_version': master.version, 'master_fingerprint': master.fingerprint,
+        'fingerprint': fingerprint, 'prompt_version': PROMPT_VERSION, 'document_versions': versions,
+        'findings': findings.model_dump()['findings'], 'matches': drafts,
+        'unmatched_finding_ids': sorted(unmatched)}
+
+
+def validate_matches(result, findings, master):
     expected = {f.id for f in findings.findings}
     matched = {m.finding_id for m in result.matches}
     unmatched = set(result.unmatched_finding_ids)
@@ -88,11 +118,4 @@ def analyze_master(pages, master, client, *, versions):
         drafts.append({**match.model_dump(), 'department': department, 'duty_basis': basis,
             'evidence': [{'ref': d.id, 'quote': d.detail[:300]} for d in selected],
             'duty_sources': [s.model_dump() for d in selected for s in d.sources]})
-    fingerprint = hashlib.sha256(json.dumps({'pages': [p.model_dump() for p in pages],
-        'master': master.fingerprint, 'versions': versions, 'model': client.settings.model,
-        'prompt': PROMPT_VERSION}, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
-    return {'status': 'needs_review', 'analysis_basis': 'duty_master',
-        'master_version': master.version, 'master_fingerprint': master.fingerprint,
-        'fingerprint': fingerprint, 'prompt_version': PROMPT_VERSION, 'document_versions': versions,
-        'findings': findings.model_dump()['findings'], 'matches': drafts,
-        'unmatched_finding_ids': sorted(unmatched)}
+    return drafts, unmatched
