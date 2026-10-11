@@ -26,7 +26,7 @@ def test_roster_used_without_keyword_overlap_and_allocation_excluded():
     assert result['document_versions']=={'org':1}
     assert result['matches'][0]['department']=='여신심사부'
     assert 'ALLOCATION_PRIVATE_CANARY' not in json.dumps(calls)
-    assert result['prompt_version']=='organization-v1'
+    assert result['prompt_version']=='organization-v2'
 
 def test_unknown_department_blocked():
     api,_=client(responses('가상부서'))
