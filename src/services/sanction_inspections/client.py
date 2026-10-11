@@ -10,6 +10,33 @@ from .models import InspectionError
 
 ENDPOINT = 'https://api.openai.com/v1/responses'
 MAX_RESPONSE_BYTES = 1024 * 1024
+MAX_ERROR_BYTES = 16 * 1024
+QUOTA_ERRORS = frozenset({
+    'insufficient_quota', 'credit_balance_exhausted',
+    'organization_spend_limit_exceeded', 'project_spend_limit_exceeded',
+    'organization_usage_limit_exceeded', 'usage_limit_exceeded',
+})
+
+
+def rate_limit_error(response):
+    """Keep only allowlisted codes; never persist provider messages or bodies."""
+    try:
+        body = bytearray()
+        for chunk in response.iter_content(4096):
+            if len(body) + len(chunk) > MAX_ERROR_BYTES:
+                return 'rate_limited'
+            body.extend(chunk)
+        raw = json.loads(body)
+        error = raw.get('error') if isinstance(raw, dict) else None
+        if isinstance(error, dict):
+            code, kind = error.get('code'), error.get('type')
+            if isinstance(code, str) and code in QUOTA_ERRORS:
+                return code
+            if kind == 'insufficient_quota':
+                return 'insufficient_quota'
+    except Exception:
+        pass
+    return 'rate_limited'
 
 
 @dataclass(frozen=True)
@@ -40,7 +67,7 @@ def post_response(payload, key):
             with session.post(ENDPOINT, json=payload, headers={'Authorization': f'Bearer {key}'},
                               timeout=(10, 60), stream=True, allow_redirects=False) as response:
                 if response.status_code == 429:
-                    raise InspectionError('rate_limited')
+                    raise InspectionError(rate_limit_error(response))
                 if response.status_code != 200:
                     raise InspectionError('provider_failed')
                 chunks, size = [], 0

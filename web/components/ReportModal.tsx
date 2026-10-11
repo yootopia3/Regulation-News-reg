@@ -112,7 +112,7 @@ function StandardReportModal({ isOpen, onClose, article }: ReportModalProps) {
                             <span className="text-lg">✨</span>
                         </div>
                         <div>
-                            <h2 className="text-sm font-bold text-slate-900 tracking-tight">AI 심층 분석 리포트</h2>
+                            <h2 className="text-sm font-bold text-slate-900 tracking-tight">AI 분석 리포트</h2>
                             <p className="text-xs text-slate-500 font-medium">{article.agency} • {new Date().toLocaleDateString()}</p>
                         </div>
                     </div>

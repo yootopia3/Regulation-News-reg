@@ -172,7 +172,7 @@ export default function NewsCard({ article, onGenerateReport }: NewsCardProps) {
                                 className="flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 text-sm font-bold transition-all hover:bg-blue-100 hover:text-blue-800 hover:border-blue-200 hover:shadow-sm active:scale-95 group"
                             >
                                 <Sparkles size={16} className="text-blue-500 group-hover:text-blue-600 animate-pulse" />
-                                AI 심층 보고서
+                                AI 분석 리포트
                             </button>
                         </div>
                     </div>
