@@ -32,9 +32,9 @@ export default function SanctionReportModal({ article, onClose }: { article: Art
                     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
                 }
             }}>
-            <header className="flex items-center justify-between gap-4 border-t-4 border-cyan-400 bg-slate-900 px-5 py-5 text-white sm:px-8">
-                <div className="flex items-center gap-3"><span className="bg-blue-50 text-blue-600 p-2 rounded-xl"><Sparkles className="w-5 h-5" /></span><div><p className="text-sm font-bold">AI 분석 리포트</p><p className="text-xs text-slate-300 mt-1">제재공시 브리핑 · 당행 사고예방 점검</p></div></div>
-                <button ref={close} onClick={onClose} aria-label="보고서 닫기" className="rounded-full p-2 text-slate-200 hover:bg-slate-700"><X className="w-5 h-5" /></button>
+            <header className="flex items-center justify-between gap-4 border-t-4 border-cyan-400 bg-blue-700 px-5 py-5 text-white sm:px-8">
+                <div className="flex items-center gap-3"><span className="bg-blue-50 text-blue-600 p-2 rounded-xl"><Sparkles className="w-5 h-5" /></span><div><p className="text-sm font-bold">AI 분석 리포트</p><p className="text-xs text-blue-100 mt-1">제재공시 브리핑 · 당행 사고예방 점검</p></div></div>
+                <button ref={close} onClick={onClose} aria-label="보고서 닫기" className="rounded-full p-2 text-blue-100 hover:bg-blue-600"><X className="w-5 h-5" /></button>
             </header>
             <div className="overflow-y-auto px-5 py-6 sm:px-8 sm:py-8">
                 <div className="flex flex-wrap gap-2 text-xs font-semibold"><span className="bg-red-50 text-red-700 px-3 py-1 rounded-lg">{sanctionAgencyNames[article.agency]}</span>{state === 'ready' && <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-lg">{report?.publication_source === 'automatic' ? 'AI 자동 분석' : '관리자 검토 완료'}</span>}</div>
