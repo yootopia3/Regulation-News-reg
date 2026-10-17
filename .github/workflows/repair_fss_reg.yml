@@ -1,0 +1,44 @@
+name: Repair FSS regulation notices 4405 and 4425
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: 'Fill only missing bodies of existing FSS_REG 4405 and 4425'
+        type: boolean
+        required: true
+        default: false
+  push:
+    branches: [fix/fss-reg-body-4405-4425]
+    paths: ['.github/workflows/repair_fss_reg.yml']
+permissions:
+  contents: read
+concurrency:
+  group: fss-reg-targeted-body-repair
+  cancel-in-progress: false
+jobs:
+  repair:
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/fix/fss-reg-body-4405-4425')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.10'
+      - run: python -m pip install -r requirements.txt
+      - name: Read or repair exact existing records
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL_V2 }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_V2 }}
+          GEMINI_ENABLED: 'false'
+          APPLY_REPAIR: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.apply == true }}
+        run: |
+          if [ "$APPLY_REPAIR" = "true" ]; then
+            python -m scripts.admin.repair_fss_reg_4405_4425 --apply
+          else
+            python -m scripts.admin.repair_fss_reg_4405_4425
+          fi
