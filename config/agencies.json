@@ -67,7 +67,9 @@
         "title": "td.title a",
         "date": "td:nth-of-type(3)",
         "link": "td.title a",
-        "content": ".bd-view"
+        "content": ".krds-reg.reg2",
+        "content_title": ".krds-reg.reg2 > dl.form-group:first-child > dd.form-conts",
+        "attachment_links": ".attach-file-box a.btn-attach-download"
       }
     },
     {
