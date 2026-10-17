@@ -7,9 +7,6 @@ on:
         type: boolean
         required: true
         default: false
-  push:
-    branches: [fix/fss-reg-body-4405-4425]
-    paths: ['.github/workflows/repair_fss_reg.yml']
 permissions:
   contents: read
 concurrency:
@@ -17,9 +14,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   repair:
-    if: >-
-      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
-      (github.event_name == 'push' && github.ref == 'refs/heads/fix/fss-reg-body-4405-4425')
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
