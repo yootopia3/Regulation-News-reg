@@ -147,6 +147,7 @@ export default function DashboardV2({ initialCategory = 'press_release', initial
 
     return (
         <DashboardFrame
+            contentKey={currentCategory}
             sidebar={{
                 isMenuOpen, onCloseMenu: handleCloseMenu, currentCategory, selectedAgency,
                 onSelectHome: handleSelectHome, onSelectPress: handleSelectPress,

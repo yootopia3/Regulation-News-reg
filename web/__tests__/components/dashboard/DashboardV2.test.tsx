@@ -31,6 +31,39 @@ afterEach(() => {
 })
 
 describe('DashboardV2', () => {
+    it.each(['날짜별', '리스트'])('starts each category at the top in %s view', async (view) => {
+        const DashboardV2 = (await import('@/components/dashboard/DashboardV2')).default
+        render(<DashboardV2 />)
+        await screen.findByText('검색 결과가 없습니다.')
+        fireEvent.click(screen.getByRole('button', { name: view }))
+
+        const content = screen.getByRole('main').parentElement!
+        const sidebar = screen.getByRole('complementary').firstElementChild!
+        sidebar.scrollTop = 180
+
+        for (const category of ['규제개정', '제재 공시', '보도자료']) {
+            content.scrollTop = 900
+            fireEvent.click(screen.getByRole('button', { name: category }))
+            expect(content.scrollTop).toBe(0)
+            expect(sidebar.scrollTop).toBe(180)
+        }
+    })
+
+    it('keeps the reading position when searching or toggling the menu in the same category', async () => {
+        const DashboardV2 = (await import('@/components/dashboard/DashboardV2')).default
+        render(<DashboardV2 />)
+        await screen.findByText('검색 결과가 없습니다.')
+        const content = screen.getByRole('main').parentElement!
+        content.scrollTop = 450
+
+        fireEvent.change(screen.getByRole('textbox'), { target: { value: '금리' } })
+        expect(content.scrollTop).toBe(450)
+        fireEvent.click(screen.getByRole('button', { name: '전체 메뉴' }))
+        expect(content.scrollTop).toBe(450)
+        fireEvent.click(screen.getByRole('button', { name: '보도자료' }))
+        expect(content.scrollTop).toBe(450)
+    })
+
     it('keeps the mobile drawer closed on explicit category navigation from the board', async () => {
         vi.useFakeTimers()
         vi.stubGlobal('innerWidth', 375)
