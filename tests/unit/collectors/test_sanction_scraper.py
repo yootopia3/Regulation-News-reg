@@ -13,9 +13,10 @@ from src.collectors.sanction_scraper import extract_sanction_key
 from src.config.agency_loader import load_agencies
 
 
-# Reconstructed from the observed FSS terminal page, not archived CI HTML.
+# Reconstructed from the diagnosed raw HTTP response, not archived CI HTML.
+# n_common.js adds class="no" in browsers; requests receives no such class.
 EMPTY_ROW = (
-    '<tr><td colspan="6" class="no">'
+    '<tr><td colspan="6">'
     '자료가 없습니다. 다른 검색조건을 선택해주세요.</td></tr>'
 )
 
@@ -108,7 +109,8 @@ def test_notice_filters_and_fields(sanction_config, mock_pages, institution, mat
     '<html>Access denied</html>',
     list_page(''),
     list_page('<tr><td>broken row</td></tr>'),
-    list_page(EMPTY_ROW.replace('class="no"', 'class="unexpected"')),
+    list_page(EMPTY_ROW.replace('colspan="6"', '')),
+    list_page(EMPTY_ROW.replace('</td>', '</td><th>unexpected cell</th>')),
     list_page(EMPTY_ROW.replace('colspan="6"', 'colspan="5"')),
     list_page(EMPTY_ROW).replace('tbl col list-data', 'unrelated'),
     list_page(EMPTY_ROW + '<tr><td>broken row</td></tr>'),
@@ -294,3 +296,23 @@ def test_fetch_failure_keeps_category_without_payload(sanction_config, mock_page
     assert result.failures == [FailureKind.CONNECTION]
     assert 'page=1 row=0 reason=connection_failed' in caplog.text
     assert 'private payload sentinel' not in caplog.text
+
+
+def test_raw_terminal_fourth_page_preserves_eligible_notice(sanction_config, mock_pages, caplog):
+    pages = [list_page(notice_row('농협은행주식회사') + notice_row('보험회사') * 9),
+             list_page(notice_row('보험회사') * 10),
+             list_page(notice_row('보험회사') * 9), list_page(EMPTY_ROW)]
+    fetch, _ = mock_pages(*pages)
+    result = sanction_scraper.fetch_sanction_items(sanction_config)
+    assert len(result) == 1
+    assert result.status == 'success'
+    assert result.failures == []
+    assert fetch.call_count == 4
+    assert not caplog.records
+
+
+def test_browser_added_class_remains_compatible(sanction_config, mock_pages):
+    mock_pages(list_page(EMPTY_ROW.replace('colspan="6"', 'colspan="6" class="no"')))
+    result = sanction_scraper.fetch_sanction_items(sanction_config)
+    assert result.status == 'empty'
+    assert result.failures == []
