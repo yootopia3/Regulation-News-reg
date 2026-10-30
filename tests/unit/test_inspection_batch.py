@@ -31,3 +31,26 @@ def test_endpoint_must_be_https_origin(monkeypatch,site):
     monkeypatch.setenv('SANCTION_WEB_URL',site)
     monkeypatch.setenv('SANCTION_AUTOMATION_TOKEN','x'*32)
     with pytest.raises(ValueError,match='invalid_endpoint'): config()
+
+
+def configure(monkeypatch, token):
+    monkeypatch.setenv('SANCTION_AUTOMATION_ENABLED','true')
+    monkeypatch.setenv('SANCTION_AUTOMATION_SINCE','2026-09-17T00:00:00Z')
+    monkeypatch.setenv('SANCTION_WEB_URL','https://example.test')
+    monkeypatch.setenv('SANCTION_AUTOMATION_TOKEN',token)
+
+
+def test_token_boundary_whitespace_is_trimmed_before_header_construction(monkeypatch):
+    from requests.utils import check_header_validity
+    token='fixture-token-'.replace('-','_')*4
+    configure(monkeypatch,' \r\n'+token+'\r\n\t')
+    result=config()
+    assert result[3]==token
+    check_header_validity(('Authorization','Bearer '+result[3]))
+
+
+@pytest.mark.parametrize('token', ['x'*16+'\n'+'y'*16, 'x'*16+' '+'y'*16, '한'*32, 'x'*31, ' '*40])
+def test_invalid_token_is_rejected_without_disclosing_it(monkeypatch,token):
+    configure(monkeypatch,token)
+    with pytest.raises(ValueError,match='^invalid_automation_token$'):
+        config()

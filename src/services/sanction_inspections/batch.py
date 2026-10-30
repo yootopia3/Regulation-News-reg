@@ -1,5 +1,6 @@
 """Bounded private automation. Logs counts only; no artifacts or raw provider errors."""
 import os
+import re
 from datetime import datetime
 from urllib.parse import urlsplit
 
@@ -21,8 +22,10 @@ def config():
         raise ValueError('invalid_batch')
     site = os.environ['SANCTION_WEB_URL'].rstrip('/')
     parsed = urlsplit(site)
-    token = os.environ['SANCTION_AUTOMATION_TOKEN']
-    if parsed.scheme != 'https' or not parsed.hostname or parsed.username or parsed.password or parsed.path or parsed.query or parsed.fragment or len(token) < 32:
+    token = os.environ['SANCTION_AUTOMATION_TOKEN'].strip()
+    if not re.fullmatch(r'[!-~]{32,}', token):
+        raise ValueError('invalid_automation_token')
+    if parsed.scheme != 'https' or not parsed.hostname or parsed.username or parsed.password or parsed.path or parsed.query or parsed.fragment:
         raise ValueError('invalid_endpoint')
     return limit, since, site + '/api/admin/inspections/automation', token
 

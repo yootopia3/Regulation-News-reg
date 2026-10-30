@@ -6,9 +6,9 @@ import { autoPublish } from '@/lib/inspection-automation'
 export const maxDuration = 60
 export async function POST(request: Request) {
     try {
-        const secret = process.env.SANCTION_AUTOMATION_TOKEN
+        const secret = process.env.SANCTION_AUTOMATION_TOKEN?.trim()
         const supplied = request.headers.get('authorization') || ''
-        if (!secret || secret.length < 32 || !timingSafeEqual(createHash('sha256').update(supplied).digest(), createHash('sha256').update(`Bearer ${secret}`).digest())) {
+        if (!secret || !/^[!-~]{32,}$/.test(secret) || !timingSafeEqual(createHash('sha256').update(supplied).digest(), createHash('sha256').update(`Bearer ${secret}`).digest())) {
             throw new AdminError(401, 'unauthorized')
         }
         if (process.env.SANCTION_AUTOMATION_ENABLED !== 'true' || process.env.SANCTION_PUBLICATIONS_ENABLED !== 'true') throw new AdminError(503, 'disabled')

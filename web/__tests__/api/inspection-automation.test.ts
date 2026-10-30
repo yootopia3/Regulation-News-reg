@@ -78,3 +78,14 @@ it('sanitizes database conflicts and never retries publishing', async () => {
     expect(response.status).toBe(409); expect(await response.text()).not.toContain('PRIVATE_CANARY')
     expect(db.rpc).toHaveBeenCalledTimes(1)
 })
+
+
+it('normalizes only configured token boundary whitespace', async () => {
+    vi.stubEnv('SANCTION_AUTOMATION_TOKEN', ' \r\n' + token + '\n\t')
+    expect(await (await POST(request())).json()).toEqual({ status: 'published' })
+})
+it.each(['\n', '\r', ' ', '\t', '한'])('rejects malformed configured tokens containing %j', async separator => {
+    vi.stubEnv('SANCTION_AUTOMATION_TOKEN', token.slice(0,20) + separator + token.slice(20))
+    expect((await POST(request())).status).toBe(401)
+    expect(db.from).not.toHaveBeenCalled()
+})
