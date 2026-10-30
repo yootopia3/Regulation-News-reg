@@ -51,7 +51,10 @@ def main():
         try:
             review_one(db,client,target['article_id'],MASTER['fingerprint'])
         except InspectionError:
-            job = db.table('sanction_inspections').select('status,error_code,automation_status').eq('id',target['id']).single().execute().data
+            job = db.table('sanction_inspections').select('status,error_code,automation_status,review_revision').eq('id',target['id']).single().execute().data
+            if job['status'] == 'needs_review' and job['automation_status'] == 'pending':
+                db.rpc('inspection_auto_attention',{'p_id':target['id'],'p_revision':job['review_revision']}).execute()
+                job['automation_status'] = 'needs_attention'
             # Fixed safe status only. Do not print provider errors or model output.
             print('REPROCESS_RESULT',json.dumps({'agency':target['agency'],'status':job['status'],'error_code':job['error_code'],'automation_status':job['automation_status']}))
             failures += 1
@@ -59,7 +62,11 @@ def main():
                 raise RuntimeError('target_not_finished')
             continue
         job = db.table('sanction_inspections').select('status,error_code,automation_status,result,review_revision').eq('id',target['id']).single().execute().data
-        print('REPROCESS_RESULT',json.dumps({'agency':target['agency'],'status':job['status'],'error_code':job['error_code'],'automation_status':job['automation_status'],'review_revision':job['review_revision']}))
+        db.rpc('inspection_auto_attention',{'p_id':target['id'],'p_revision':job['review_revision']}).execute()
+        held = db.table('sanction_inspections').select('status,automation_status,review_revision').eq('id',target['id']).single().execute().data
+        if held != {'status':'needs_review','automation_status':'needs_attention','review_revision':job['review_revision']}:
+            raise RuntimeError('review_hold_failed')
+        print('REPROCESS_RESULT',json.dumps({'agency':target['agency'],'error_code':job['error_code'],**held}))
         # Public PDF-derived findings only, for source relevance review before publication.
         print('PUBLIC_FINDINGS_REVIEW',json.dumps({'agency':target['agency'],'findings':job['result']['findings']},ensure_ascii=False))
     if failures:
