@@ -124,7 +124,7 @@ def test_invalid_model_references_rejected(field, value, code):
 
 def test_wrong_public_page_prevents_private_transmission():
     row = finding(); row['evidence'][0]['page'] = 2
-    api, calls = client([{'findings': [row]}, {'findings': [row]}])
+    api, calls = client([{'findings': [row]}, {'corrections': [{'finding_id': 'F1', 'refs': []}]}])
     with pytest.raises(InspectionError, match='invalid_public_evidence'):
         run(api)
     assert len(calls) == 2
@@ -213,7 +213,7 @@ def test_transport_locks_endpoint_and_rejects_redirect_without_logging(monkeypat
 
 def test_public_citation_correction_precedes_private_context():
     row = finding(); row['evidence'][0]['page'] = 2
-    api, calls = client([{'findings': [row]}, {'findings': [finding()]},
+    api, calls = client([{'findings': [row]}, {'corrections': [{'finding_id': 'F1', 'refs': ['p1s1']}]},
                          {'matches': [match()], 'unmatched_finding_ids': []}])
     result = run(api)
     assert result['findings'][0]['evidence'][0]['page'] == 1
