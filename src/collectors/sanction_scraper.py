@@ -111,7 +111,10 @@ def fetch_sanction_items(agency_config: Dict) -> List[Dict]:
                     # Extract institution name (제재대상기관) - 2nd column
                     inst_elem = item.select_one('td:nth-child(2)')
                     if not inst_elem:
-                        if not has_empty_marker(soup, agency_config.get("selector", {})):
+                        # A terminal empty row must not mask other malformed rows.
+                        if len(items) != 1 or not has_empty_marker(
+                            soup, agency_config.get("selector", {})
+                        ):
                             all_items.fail(FailureKind.PARSE)
                         continue
 
