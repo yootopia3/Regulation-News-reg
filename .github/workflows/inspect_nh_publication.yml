@@ -1,0 +1,52 @@
+name: Inspect NH publication outcome
+on:
+  push:
+    branches: [ops/nh-excerpt-review]
+    paths: [.github/workflows/inspect_nh_publication.yml]
+permissions:
+  contents: read
+concurrency:
+  group: sanction-private-automation
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: vars.SANCTION_AUTOMATION_ENABLED == 'true' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: aea8b1aaf795331e9e2c265d3ce183a4a0b8cc37
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.10'
+      - run: python -m pip install -r requirements-inspections.txt
+      - name: Read only current target job and publication metadata
+        env:
+          PYTHONPATH: .
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL_V2 }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_V2 }}
+          SANCTION_AUTOMATION_TOKEN: ${{ secrets.SANCTION_AUTOMATION_TOKEN }}
+          SANCTION_WEB_URL: ${{ vars.SANCTION_WEB_URL }}
+          SANCTION_AUTOMATION_SINCE: ${{ vars.SANCTION_AUTOMATION_SINCE }}
+          SANCTION_BATCH_LIMIT: '2'
+          SANCTION_AUTOMATION_ENABLED: ${{ vars.SANCTION_AUTOMATION_ENABLED }}
+        run: |
+          python -u - <<'PY'
+          import json
+          from src.db.client import get_supabase_client
+          from src.services.sanction_inspections.batch import config
+          TARGETS=[{"id":"2d183cc0-68fb-43f7-87a9-73a25ced4dde","agency":"FSS_MGMT_NOTICE"},{"id":"45929c96-126b-4058-8940-cbd1df8ba1d5","agency":"FSS_SANCTION"}]
+          try:
+              _,_,endpoint,_=config()
+              print('CONFIG_CHECK',endpoint=='https://regulation-news-reg-fiu7.vercel.app/api/admin/inspections/automation')
+              db=get_supabase_client()
+              for target in TARGETS:
+                  job=db.table('sanction_inspections').select('status,error_code,automation_status,review_revision,versions,prompt_version:result->>prompt_version,master_fingerprint:result->>master_fingerprint').eq('id',target['id']).single().execute().data
+                  pubs=db.table('sanction_publications').select('status,revision,published_at').eq('inspection_id',target['id']).limit(1).execute().data
+                  print('CURRENT_STATE',json.dumps({'agency':target['agency'],'job':job,'publication':pubs}),flush=True)
+          except Exception:
+              raise SystemExit('state_read_failed') from None
+          
+          PY
