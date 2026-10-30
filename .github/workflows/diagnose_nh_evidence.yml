@@ -1,0 +1,48 @@
+name: Diagnose NH public evidence
+on:
+  push:
+    branches: [fix/sanction-public-evidence]
+    paths: [.github/workflows/diagnose_nh_evidence.yml]
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.10'
+      - run: python -m pip install -r requirements-inspections.txt
+      - name: Read two failed jobs and inspect public PDFs only
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL_V2 }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_V2 }}
+        run: |
+          python - <<'PY'
+          import json
+          from src.db.client import get_supabase_client
+          from src.services.sanction_inspections.download import download_pdf
+          from src.services.internal_documents.worker import parse_isolated
+          try:
+              db = get_supabase_client()
+              articles = db.table('articles').select('id,title,agency,category,created_at,analysis_result').eq('title','농협은행주식회사').in_('agency',['FSS_SANCTION','FSS_MGMT_NOTICE']).gte('created_at','2026-10-29T15:00:00Z').lt('created_at','2026-10-30T15:00:00Z').limit(3).execute().data
+              assert len(articles)==2 and {a['agency'] for a in articles}=={'FSS_SANCTION','FSS_MGMT_NOTICE'}
+              masters=db.table('inspection_duty_masters').select('id,revision,fingerprint').eq('active',True).limit(2).execute().data
+              assert len(masters)==1
+              print('ACTIVE_MASTER',json.dumps(masters[0]))
+              for article in articles:
+                  jobs=db.table('sanction_inspections').select('id,article_id,status,error_code,automation_status,versions,review_revision').eq('article_id',article['id']).limit(2).execute().data
+                  assert len(jobs)==1
+                  print('TARGET',json.dumps({'article_id':article['id'],'agency':article['agency'],'job':jobs[0]}))
+                  url=(article['analysis_result'] or {}).get('pdf_url')
+                  data=download_pdf(url)
+                  parsed=parse_isolated(data,module='src.services.sanction_inspections.pdf_parser',suffix='.pdf')
+                  assert not parsed.get('error')
+                  print('PDF',json.dumps({'agency':article['agency'],'url':url,'pages':[{'number':p['number'],'characters':len(p['text']),'replacement_characters':p['text'].count(chr(65533))} for p in parsed['pages']]}))
+          except Exception:
+              raise SystemExit('bounded_diagnostic_failed') from None
+          PY
