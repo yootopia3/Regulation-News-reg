@@ -1,0 +1,36 @@
+name: Publish reviewed NH drafts with response diagnostics
+on:
+  push:
+    branches: [ops/nh-excerpt-review]
+    paths: [.github/workflows/publish_nh_checked.yml]
+permissions:
+  contents: read
+concurrency:
+  group: sanction-private-automation
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: vars.SANCTION_AUTOMATION_ENABLED == 'true' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: 429de206b4701f3d5804f2926b4110dfa1cfc8a9
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.10'
+      - run: python -m pip install -r requirements-inspections.txt
+      - run: python -m py_compile scripts/admin/publish_nh_reviewed_once.py
+      - name: Publish only reviewed revision-eight drafts through existing checks
+        env:
+          PYTHONPATH: .
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL_V2 }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_V2 }}
+          SANCTION_AUTOMATION_TOKEN: ${{ secrets.SANCTION_AUTOMATION_TOKEN }}
+          SANCTION_WEB_URL: ${{ vars.SANCTION_WEB_URL }}
+          SANCTION_AUTOMATION_SINCE: ${{ vars.SANCTION_AUTOMATION_SINCE }}
+          SANCTION_BATCH_LIMIT: '2'
+          SANCTION_AUTOMATION_ENABLED: ${{ vars.SANCTION_AUTOMATION_ENABLED }}
+        run: python -u scripts/admin/publish_nh_reviewed_once.py
