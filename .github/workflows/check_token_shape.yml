@@ -1,0 +1,22 @@
+name: Check automation token header shape
+on:
+  push:
+    branches: [fix/sanction-token-whitespace]
+    paths: [.github/workflows/check_token_shape.yml]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Report only shape checks without revealing the secret
+        env:
+          AUTOMATION_SECRET: ${{ secrets.SANCTION_AUTOMATION_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          import os,re,json
+          raw=os.environ['AUTOMATION_SECRET']
+          clean=raw.strip()
+          print('TOKEN_SHAPE',json.dumps({'outer_whitespace':raw!=clean,'raw_has_crlf':'\r' in raw or '\n' in raw,'trimmed_header_safe':bool(re.fullmatch(r'[!-~]{32,}',clean))}))
+          PY
