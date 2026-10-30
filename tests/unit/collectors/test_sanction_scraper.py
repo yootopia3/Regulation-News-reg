@@ -162,3 +162,135 @@ class TestExtractSanctionKey:
     def test_url_with_no_query_returns_none_pair(self):
         link = "https://www.fss.or.kr/fss/bbs/B0000188/view.do"
         assert extract_sanction_key(link) == (None, None)
+
+
+# Observed management-notice DOM supplied with the incident diagnosis.
+MGMT_EMPTY = (
+    '<div class="krds-table-wrap"><table class="tbl col list-data">'
+    '<tbody>\n  </tbody></table><div class="nodata">'
+    '자료가 없습니다. 다른 검색조건을 선택해주세요.</div></div>'
+)
+
+
+@pytest.fixture
+def mgmt_config():
+    return deepcopy(next(a for a in load_agencies() if a['code'] == 'FSS_MGMT_NOTICE'))
+
+
+def test_mgmt_empty_first_page(mgmt_config, mock_pages):
+    fetch, detail = mock_pages(MGMT_EMPTY)
+    result = sanction_scraper.fetch_sanction_items(mgmt_config)
+    assert result == []
+    assert result.status == 'empty'
+    assert result.failures == []
+    assert fetch.call_count == 1
+    detail.assert_not_called()
+
+
+@pytest.mark.parametrize('row_count', [6, 10])
+def test_mgmt_terminal_empty_preserves_notice(mgmt_config, mock_pages, row_count):
+    eligible = notice_row('농협은행주식회사').replace(
+        '/fss/job/openInfo/view.do?examMgmtNo=1&amp;emOpenSeq=1', '/hpdownload/notice.pdf')
+    rows = eligible + notice_row('보험회사') * (row_count - 1)
+    fetch, detail = mock_pages(list_page(rows), MGMT_EMPTY)
+    result = sanction_scraper.fetch_sanction_items(mgmt_config)
+    assert result.status == 'success'
+    assert result.failures == []
+    assert len(result) == 1
+    assert result[0]['title'] == '농협은행주식회사'
+    assert result[0]['pdf_url'] == 'https://www.fss.or.kr/hpdownload/notice.pdf'
+    assert result[0]['agency'] == 'FSS_MGMT_NOTICE'
+    assert fetch.call_count == 2
+    detail.assert_not_called()
+
+
+@pytest.mark.parametrize('html', [
+    '<div class="nodata">자료가 없습니다.</div>',
+    MGMT_EMPTY.replace('krds-table-wrap', 'unrelated'),
+    MGMT_EMPTY.replace('tbl col list-data', 'unrelated'),
+    MGMT_EMPTY.replace('class="nodata"', 'class="unrelated"'),
+    MGMT_EMPTY.replace('<tbody>\n  </tbody>', '<tbody><tr><td>broken</td></tr></tbody>'),
+    MGMT_EMPTY.replace('<tbody>\n  </tbody>', '<tbody></tbody>') + list_page('<tr><td>broken</td></tr>'),
+])
+def test_mgmt_unproven_empty_or_malformed_still_fails(mgmt_config, mock_pages, html):
+    mock_pages(html)
+    result = sanction_scraper.fetch_sanction_items(mgmt_config)
+    assert result.status == 'failed'
+    assert result.failures == [FailureKind.PARSE]
+
+
+def test_mgmt_marker_not_accepted_for_sanction(sanction_config, mock_pages):
+    mock_pages(MGMT_EMPTY)
+    result = sanction_scraper.fetch_sanction_items(sanction_config)
+    assert result.failures == [FailureKind.PARSE]
+
+
+@pytest.mark.parametrize('html,row,reason', [
+    ('<html>unavailable</html>', 0, 'missing_rows_without_empty_marker'),
+    (list_page('<tr><td>broken</td></tr>'), 1, 'missing_institution_cell'),
+    (list_page('<tr><td>1</td><td></td></tr>'), 1, 'empty_institution'),
+    (list_page('<tr><td>1</td><td>테스트은행</td></tr>'), 1, 'missing_notice_link'),
+])
+def test_parse_diagnostics_identify_later_page(sanction_config, mock_pages, caplog,
+                                             html, row, reason):
+    mock_pages(list_page(notice_row('보험회사') * 10), html)
+    result = sanction_scraper.fetch_sanction_items(sanction_config)
+    assert result.failures == [FailureKind.PARSE]
+    assert f'[FSS_SANCTION] Parse failure page=2 row={row} reason={reason}' in caplog.text
+    assert html not in caplog.text
+
+
+def test_row_exception_diagnostic_omits_payload(sanction_config, mock_pages, monkeypatch, caplog):
+    mock_pages(list_page(notice_row('테스트은행')))
+    monkeypatch.setattr(sanction_scraper, 'parse_date',
+                        Mock(side_effect=ValueError('private payload sentinel')))
+    result = sanction_scraper.fetch_sanction_items(sanction_config)
+    assert result.failures == [FailureKind.PARSE]
+    assert 'page=1 row=1 reason=row_exception' in caplog.text
+    assert 'private payload sentinel' not in caplog.text
+
+
+def test_page_exception_diagnostic_omits_payload(sanction_config, mock_pages, monkeypatch, caplog):
+    fetch, _ = mock_pages()
+    fetch.side_effect = ValueError('private payload sentinel')
+    result = sanction_scraper.fetch_sanction_items(sanction_config)
+    assert result.failures == [FailureKind.PARSE]
+    assert 'page=1 row=0 reason=page_exception' in caplog.text
+    assert 'private payload sentinel' not in caplog.text
+
+
+def test_diagnostics_are_bounded_without_suppressing_failures(sanction_config, mock_pages, caplog):
+    mock_pages(list_page('<tr><td>broken</td></tr>' * 10),
+               list_page('<tr><td>broken</td></tr>'))
+    result = sanction_scraper.fetch_sanction_items(sanction_config)
+    assert result.failures == [FailureKind.PARSE]
+    diagnostics = [r.message for r in caplog.records if 'Parse failure page=' in r.message]
+    assert len(diagnostics) == sanction_scraper.MAX_PARSE_DIAGNOSTICS
+    assert 'row=5 reason=missing_institution_cell' in diagnostics[-1]
+    assert caplog.text.count('Further parse diagnostics suppressed') == 1
+
+
+def test_valid_sanction_terminal_empty_has_no_warning(sanction_config, mock_pages, caplog):
+    mock_pages(list_page(EMPTY_ROW))
+    result = sanction_scraper.fetch_sanction_items(sanction_config)
+    assert result.failures == []
+    assert not caplog.records
+
+
+def test_malformed_second_row_keeps_valid_notice(sanction_config, mock_pages, caplog):
+    mock_pages(list_page(notice_row('농협은행주식회사') + '<tr><td>broken</td></tr>'))
+    result = sanction_scraper.fetch_sanction_items(sanction_config)
+    assert len(result) == 1
+    assert result.failures == [FailureKind.PARSE]
+    assert 'page=1 row=2 reason=missing_institution_cell' in caplog.text
+
+
+def test_fetch_failure_keeps_category_without_payload(sanction_config, mock_pages, caplog):
+    import requests
+
+    fetch, _ = mock_pages()
+    fetch.side_effect = requests.Timeout('private payload sentinel')
+    result = sanction_scraper.fetch_sanction_items(sanction_config)
+    assert result.failures == [FailureKind.CONNECTION]
+    assert 'page=1 row=0 reason=connection_failed' in caplog.text
+    assert 'private payload sentinel' not in caplog.text
