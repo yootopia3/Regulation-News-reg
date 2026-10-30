@@ -146,6 +146,7 @@
         "저축은행"
       ],
       "selector": {
+        "empty": ".krds-table-wrap > table.tbl.col.list-data + div.nodata",
         "list": ".bd-list dl",
         "title": "dt:contains('제재대상기관') + dd",
         "date": "dt:contains('제재조치요구일') + dd",

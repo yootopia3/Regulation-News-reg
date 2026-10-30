@@ -9,10 +9,10 @@ from urllib.parse import urljoin, urlparse, parse_qs
 
 from bs4 import BeautifulSoup
 
-from src.collectors.result import CollectionResult, FailureKind, failure_kind, has_empty_marker
+from src.collectors.result import CollectionResult, FailureKind, failure_kind
 
 from src.config import settings
-from src.config.agency_codes import PublishedAtSource
+from src.config.agency_codes import AgencyCode, PublishedAtSource
 from src.config.agency_loader import get_ssl_verify, is_sanction_agency
 from src.collectors import http
 from src.collectors.date_parser import KST, has_specific_time, parse_date
@@ -26,6 +26,9 @@ logger = logging.getLogger(__name__)
 # 보통 5~10 페이지를 넘지 않는다. 10 으로 캡 두어 사이트 레이아웃 변경이나
 # 필터 누락으로 인한 무한 루프를 차단한다 (방어적 ceiling).
 MAX_PAGES = 10
+
+# Bound diagnostics even if an upstream layout change breaks every row.
+MAX_PARSE_DIAGNOSTICS = 5
 
 # Lookback window for the sanction search query (sdate=today-CUTOFF_DAYS).
 # 제재 공시는 저빈도 + 백필이 잦아서 일반 보도자료(7 일) 보다 길게 본다.
@@ -86,6 +89,19 @@ def fetch_sanction_items(agency_config: Dict) -> List[Dict]:
 
     all_items = CollectionResult()
     page = 1
+    parse_diagnostics = 0
+
+    def parse_failure(row, reason):
+        nonlocal parse_diagnostics
+        all_items.fail(FailureKind.PARSE)
+        if code != AgencyCode.FSS_SANCTION:
+            return
+        if parse_diagnostics < MAX_PARSE_DIAGNOSTICS:
+            logger.warning("[%s] Parse failure page=%d row=%d reason=%s",
+                           code, page, row, reason)
+        elif parse_diagnostics == MAX_PARSE_DIAGNOSTICS:
+            logger.warning("[%s] Further parse diagnostics suppressed", code)
+        parse_diagnostics += 1
 
     while page <= MAX_PAGES:
         page_url = f"{full_url}&pageIndex={page}"
@@ -97,25 +113,28 @@ def fetch_sanction_items(agency_config: Dict) -> List[Dict]:
             soup = BeautifulSoup(response.content, 'html.parser')
 
             items = soup.select('tbody tr')
+            empty_selector = agency_config.get("selector", {}).get("empty")
+            empty_marker = soup.select_one(empty_selector) if empty_selector else None
 
             if not items:
-                if not has_empty_marker(soup, agency_config.get("selector", {})):
-                    all_items.fail(FailureKind.PARSE)
+                if empty_marker is None:
+                    parse_failure(0, "missing_rows_without_empty_marker")
                 logger.info(f"  [{code}] No items found on page {page}. Stopping.")
                 break
 
             page_items: List[Dict] = []
 
-            for item in items:
+            for row_number, item in enumerate(items, start=1):
                 try:
                     # Extract institution name (제재대상기관) - 2nd column
                     inst_elem = item.select_one('td:nth-child(2)')
                     if not inst_elem:
                         # A terminal empty row must not mask other malformed rows.
-                        if len(items) != 1 or not has_empty_marker(
-                            soup, agency_config.get("selector", {})
+                        if (
+                            len(items) != 1 or empty_marker is None
+                            or empty_marker.find_parent('tr') is not item
                         ):
-                            all_items.fail(FailureKind.PARSE)
+                            parse_failure(row_number, "missing_institution_cell")
                         continue
 
                     for span in inst_elem.select('span.only-m'):
@@ -123,7 +142,7 @@ def fetch_sanction_items(agency_config: Dict) -> List[Dict]:
                     institution = inst_elem.get_text(strip=True)
 
                     if not institution:
-                        all_items.fail(FailureKind.PARSE)
+                        parse_failure(row_number, "empty_institution")
                         continue
 
                     if filter_keywords:
@@ -156,7 +175,7 @@ def fetch_sanction_items(agency_config: Dict) -> List[Dict]:
                         else:
                             link = href
                     else:
-                        all_items.fail(FailureKind.PARSE)
+                        parse_failure(row_number, "missing_notice_link")
                         continue
 
                     pub_date = parse_date(date_str)
@@ -183,9 +202,8 @@ def fetch_sanction_items(agency_config: Dict) -> List[Dict]:
                         'pdf_url': pdf_url,
                     })
 
-                except Exception as e:
-                    all_items.fail(FailureKind.PARSE)
-                    logger.error(f"Error parsing sanction item: {e}")
+                except Exception:
+                    parse_failure(row_number, "row_exception")
                     continue
 
             if page_items:
@@ -198,8 +216,13 @@ def fetch_sanction_items(agency_config: Dict) -> List[Dict]:
             page += 1
 
         except Exception as e:
-            all_items.fail(failure_kind(e))
-            logger.error(f"[{code}] Error fetching page {page}: {e}")
+            kind = failure_kind(e)
+            if kind == FailureKind.PARSE:
+                parse_failure(0, "page_exception")
+            else:
+                all_items.fail(kind)
+                logger.error("[%s] Collection failure page=%d row=0 reason=%s",
+                             code, page, kind.value)
             break
 
     logger.info(f"[{code}] Total collected: {len(all_items)} sanction notices.")
