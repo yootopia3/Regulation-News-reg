@@ -60,6 +60,13 @@ function normalizeKfbArticle(article: SafeArticle): SafeArticle {
     }
 }
 
+// The FSC list's new-post accessibility label can be included in stored titles.
+function normalizeFscTitle(title: string, agency: string): string {
+    if (agency !== 'FSC' && agency !== 'FSC_REG') return title
+    const cleaned = title.replace(/\s*금일 등록된 게시글\s*$/, '').trimEnd()
+    return cleaned || title
+}
+
 function normalizeSupabaseUrl(value: string | undefined): string | undefined {
     const trimmed = value?.trim()
     if (!trimmed) return undefined
@@ -126,7 +133,7 @@ function sanitizeArticle(row: RawArticleRow): SafeArticle | null {
 
     const article: SafeArticle = {
         id,
-        title,
+        title: normalizeFscTitle(title, agency),
         agency,
         published_at: publishedAt,
         link,

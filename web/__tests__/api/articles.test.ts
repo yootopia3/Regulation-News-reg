@@ -68,6 +68,25 @@ async function callGet() {
 }
 
 describe('/api/articles', () => {
+  it.each([
+    ['FSC', '금융정책 안내금일 등록된 게시글', '금융정책 안내'],
+    ['FSC_REG', '규정 변경 예고 금일 등록된 게시글  ', '규정 변경 예고'],
+    ['FSC', '금융정책 안내', '금융정책 안내'],
+    ['FSC', '금일 등록된 게시글 관련 안내', '금일 등록된 게시글 관련 안내'],
+    ['FSS', '금융정책 안내 금일 등록된 게시글', '금융정책 안내 금일 등록된 게시글'],
+    ['FSC', '금일 등록된 게시글', '금일 등록된 게시글'],
+  ])('normalizes only the FSC suffix: %s / %s', async (agency, title, expectedTitle) => {
+    const row = makeRow({ agency, title })
+    queryResults[0].data = [row]
+
+    const { json } = await callGet()
+
+    expect(json.articles[0].title).toBe(expectedTitle)
+    expect(json.articles[0].link).toBe(row.link)
+    expect(json.articles[0].analysis_result).toEqual(row.analysis_result)
+    expect(row.title).toBe(title)
+  })
+
   it('returns only safe top-level and analysis fields', async () => {
     queryResults[0].data = [makeRow({ content: 'body', category: 1, view_count: 'bad', analysis_result: {
       summary: ['safe'], importance_score: 3, risk_level: 'Low', keywords: ['safe-keyword'],
