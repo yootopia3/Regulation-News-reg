@@ -1,0 +1,37 @@
+name: Review two NH inspections with exact excerpts once
+on:
+  push:
+    branches: [ops/nh-excerpt-review]
+    paths: [.github/workflows/review_nh_excerpts_once.yml]
+permissions:
+  contents: read
+concurrency:
+  group: sanction-private-automation
+  cancel-in-progress: false
+jobs:
+  reprocess:
+    if: vars.SANCTION_AUTOMATION_ENABLED == 'true' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: 5ac3cdc2a1a3f8cbe12ae90547ab144389f791b8
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.10'
+      - run: python -m pip install -r requirements-inspections.txt
+      - name: Validate operational script syntax
+        run: python -m py_compile scripts/admin/reprocess_nh_evidence_once.py
+      - name: Analyze two approved failures and review public evidence before publication
+        env:
+          PYTHONPATH: .
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL_V2 }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_V2 }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_INSPECTION_MODEL: ${{ vars.OPENAI_INSPECTION_MODEL }}
+          OPENAI_INSPECTION_POLICY_CONFIRMED: ${{ vars.OPENAI_INSPECTION_POLICY_CONFIRMED }}
+          SANCTION_INSPECTIONS_ENABLED: 'true'
+          SANCTION_AUTOMATION_ENABLED: ${{ vars.SANCTION_AUTOMATION_ENABLED }}
+        run: python -u scripts/admin/reprocess_nh_evidence_once.py
