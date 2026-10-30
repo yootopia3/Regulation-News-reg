@@ -1,0 +1,41 @@
+name: Reprocess two NH evidence failures once
+on:
+  push:
+    branches: [ops/nh-evidence-reprocess]
+    paths: [.github/workflows/reprocess_nh_evidence_once.yml]
+permissions:
+  contents: read
+concurrency:
+  group: sanction-private-automation
+  cancel-in-progress: false
+jobs:
+  reprocess:
+    if: vars.SANCTION_AUTOMATION_ENABLED == 'true' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: a01643b379cbc93fc9f57c5309af88c3f56c459a
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.10'
+      - run: python -m pip install -r requirements-inspections.txt
+      - name: Validate operational script syntax
+        run: python -m py_compile scripts/admin/reprocess_nh_evidence_once.py
+      - name: Retry and verify only the two approved failed inspections
+        env:
+          PYTHONPATH: .
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL_V2 }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_V2 }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_INSPECTION_MODEL: ${{ vars.OPENAI_INSPECTION_MODEL }}
+          OPENAI_INSPECTION_POLICY_CONFIRMED: ${{ vars.OPENAI_INSPECTION_POLICY_CONFIRMED }}
+          SANCTION_AUTOMATION_TOKEN: ${{ secrets.SANCTION_AUTOMATION_TOKEN }}
+          SANCTION_WEB_URL: ${{ vars.SANCTION_WEB_URL }}
+          SANCTION_AUTOMATION_SINCE: ${{ vars.SANCTION_AUTOMATION_SINCE }}
+          SANCTION_BATCH_LIMIT: '2'
+          SANCTION_INSPECTIONS_ENABLED: 'true'
+          SANCTION_AUTOMATION_ENABLED: ${{ vars.SANCTION_AUTOMATION_ENABLED }}
+        run: python -u scripts/admin/reprocess_nh_evidence_once.py
