@@ -3,10 +3,10 @@ import hashlib
 import json
 from pydantic import Field
 
-from .engine import PUBLIC_PROMPT, normalized
-from .models import StrictModel, Findings, Check, InspectionError
+from .engine import normalized, public_findings
+from .models import StrictModel, Check, InspectionError
 
-PROMPT_VERSION = 'duty-master-v3'
+PROMPT_VERSION = 'duty-master-v4'
 DUTY_PROMPT = '''공개 제재 지적사항을 당행의 본부 업무원장과 연결하여 예방 점검안을 작성하세요.
 candidates에 있는 duty_ids만 선택하세요. 한 항목에는 같은 부서의 업무만 연결하고
 동일 지적사항·부서 조합은 하나로 묶으세요. 영업점·지역본부·국외점포를 담당조직으로 만들지 마세요.
@@ -45,15 +45,7 @@ def analyze_master(pages, master, client, *, versions):
         raise InspectionError('source_text_required')
     if len({p.number for p in pages}) != len(pages):
         raise InspectionError('invalid_pages')
-    findings = client.generate(PUBLIC_PROMPT, {'pages': [p.model_dump() for p in pages]}, Findings)
-    known = {p.number: normalized(p.text) for p in pages}
-    if len({f.id for f in findings.findings}) != len(findings.findings):
-        raise InspectionError('duplicate_finding')
-    for finding in findings.findings:
-        for evidence in finding.evidence:
-            quote = normalized(evidence.quote)
-            if len(quote) < 8 or quote not in known.get(evidence.page, ''):
-                raise InspectionError('invalid_public_evidence')
+    findings = public_findings(pages, client)
     # Send the compact master once, not a keyword shortlist per finding. Short
     # inferred duties often use different terms from the notice; lexical pruning
     # can silently remove the actual owner before the model sees the evidence.
