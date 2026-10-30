@@ -48,6 +48,14 @@ def main():
           .eq('versions',json.dumps(VERSIONS)).is_('result','null').is_('review_draft','null').execute().data)
         if len(changed) != 1:
             raise RuntimeError('target_changed')
+        # Hold before any AI work, so even worker/output failures cannot leave
+        # a successful draft eligible for the next automatic publication batch.
+        held = (db.table('sanction_inspections').update({'automation_status':'needs_attention'})
+                .eq('id',target['id']).eq('status','queued').eq('automation_status','pending')
+                .eq('request_id',changed[0]['request_id'])
+                .eq('review_revision',changed[0]['review_revision']).execute().data)
+        if len(held) != 1:
+            raise RuntimeError('review_hold_failed')
         try:
             review_one(db,client,target['article_id'],MASTER['fingerprint'])
         except InspectionError:
