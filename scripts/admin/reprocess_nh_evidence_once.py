@@ -1,6 +1,5 @@
 import json
 from datetime import datetime, timezone
-from uuid import uuid4
 from src.db.client import get_supabase_client
 from src.services.sanction_inspections.client import InspectionClient, Settings
 from src.services.sanction_inspections.single_review import review_one
@@ -40,7 +39,7 @@ def main():
             raise RuntimeError('queue_not_empty')
         # CAS preserves any intervening administrator edit or completed result.
         changed = (db.table('sanction_inspections').update({
-            'status':'queued','request_id':str(uuid4()),'error_code':None,
+            'status':'queued','automation_status':'needs_attention','error_code':None,
             'lease_token':None,'lease_until':None,'updated_at':datetime.now(timezone.utc).isoformat()
         }).eq('id',target['id']).eq('article_id',target['article_id'])
           .eq('status','failed').eq('error_code','invalid_public_evidence')
@@ -48,13 +47,10 @@ def main():
           .eq('versions',json.dumps(VERSIONS)).is_('result','null').is_('review_draft','null').execute().data)
         if len(changed) != 1:
             raise RuntimeError('target_changed')
-        # Hold before any AI work, so even worker/output failures cannot leave
-        # a successful draft eligible for the next automatic publication batch.
-        held = (db.table('sanction_inspections').update({'automation_status':'needs_attention'})
-                .eq('id',target['id']).eq('status','queued').eq('automation_status','pending')
-                .eq('request_id',changed[0]['request_id'])
-                .eq('review_revision',changed[0]['review_revision']).execute().data)
-        if len(held) != 1:
+        # Preserve request_id: the existing trigger keeps needs_attention.
+        # The failed -> queued transition still increments review_revision.
+        # Queuing and the publication hold are therefore one atomic update.
+        if changed[0]['automation_status'] != 'needs_attention':
             raise RuntimeError('review_hold_failed')
         try:
             review_one(db,client,target['article_id'],MASTER['fingerprint'])
