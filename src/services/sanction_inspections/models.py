@@ -32,6 +32,15 @@ class Findings(StrictModel):
     findings: list[Finding] = Field(min_length=1, max_length=30)
 
 
+class EvidenceSelection(StrictModel):
+    finding_id: str = Field(pattern=r'^F[1-9][0-9]?$')
+    refs: list[str] = Field(max_length=5)
+
+
+class EvidenceSelections(StrictModel):
+    corrections: list[EvidenceSelection] = Field(min_length=1, max_length=30)
+
+
 class Unit(StrictModel):
     document_kind: Literal['allocation', 'analysis', 'organization'] = 'allocation'
     organization_names: list[str] = Field(default_factory=list, max_length=200)

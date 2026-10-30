@@ -6,7 +6,7 @@ from pydantic import Field
 from .engine import normalized, public_findings
 from .models import StrictModel, Check, InspectionError
 
-PROMPT_VERSION = 'duty-master-v4'
+PROMPT_VERSION = 'duty-master-v5'
 DUTY_PROMPT = '''공개 제재 지적사항을 당행의 본부 업무원장과 연결하여 예방 점검안을 작성하세요.
 candidates에 있는 duty_ids만 선택하세요. 한 항목에는 같은 부서의 업무만 연결하고
 동일 지적사항·부서 조합은 하나로 묶으세요. 영업점·지역본부·국외점포를 담당조직으로 만들지 마세요.
