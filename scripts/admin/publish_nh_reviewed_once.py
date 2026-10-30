@@ -49,11 +49,13 @@ def main():
             .eq('status','needs_review').eq('automation_status','needs_attention')
             .eq('review_revision',8).eq('versions',json.dumps(VERSIONS))
             .is_('review_draft','null').execute().data)
+        print('PUBLICATION_CAS_ROWS',len(changed),flush=True)
         if len(changed)!=1:
             raise RuntimeError('reviewed_draft_changed')
         try:
             state=publish(endpoint,token,target['id'])
-        except Exception:
+        except Exception as exc:
+            print('PUBLICATION_TRANSPORT_ERROR',type(exc).__name__,flush=True)
             db.rpc('inspection_auto_attention',{'p_id':target['id'],'p_revision':8}).execute()
             raise RuntimeError('publication_failed') from None
         job=db.table('sanction_inspections').select('status,error_code,automation_status,review_revision').eq('id',target['id']).single().execute().data
@@ -65,5 +67,6 @@ def main():
         raise RuntimeError('publication_review_required')
 try:
     main()
-except Exception:
+except Exception as exc:
+    print('PUBLICATION_FAILURE_TYPE',type(exc).__name__,str(getattr(exc,'code',''))[:10],flush=True)
     raise SystemExit('reviewed_publication_incomplete') from None
