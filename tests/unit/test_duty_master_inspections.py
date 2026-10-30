@@ -92,9 +92,10 @@ def test_finding_coverage_and_public_evidence():
     with pytest.raises(InspectionError, match='finding_coverage_failed'):
         run(Client([{'findings': [finding()]}, {'matches': [], 'unmatched_finding_ids': []}]))
     f = finding(); f['evidence'][0]['page'] = 2
-    client = Client([{'findings': [f]}])
+    client = Client([{'findings': [f]}, {'findings': [f]}])
     with pytest.raises(InspectionError, match='invalid_public_evidence'): run(client)
-    assert len(client.calls) == 1
+    assert len(client.calls) == 2
+    assert all('candidates' not in data for _, data in client.calls)
 
 
 def test_no_relevant_duties_can_be_left_unmatched():
@@ -171,3 +172,14 @@ def test_worker_routes_master_and_preserves_job_versions(monkeypatch):
     assert saved['p_error'] is None
     assert saved['p_result']['document_versions'] == job['versions']
     assert saved['p_result']['analysis_basis'] == 'duty_master'
+
+
+def test_master_public_correction_does_not_expose_master():
+    f = finding(); f['evidence'][0]['page'] = 2
+    client = Client([{'findings': [f]}, {'findings': [finding()]},
+                     {'matches': [match()], 'unmatched_finding_ids': []}])
+    result = run(client)
+    assert result['findings'][0]['evidence'][0]['page'] == 1
+    assert len(client.calls) == 3
+    assert all('candidates' not in data for _, data in client.calls[:2])
+    assert 'candidates' in client.calls[2][1]

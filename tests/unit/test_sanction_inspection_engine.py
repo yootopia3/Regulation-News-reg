@@ -124,10 +124,11 @@ def test_invalid_model_references_rejected(field, value, code):
 
 def test_wrong_public_page_prevents_private_transmission():
     row = finding(); row['evidence'][0]['page'] = 2
-    api, calls = client([{'findings': [row]}])
+    api, calls = client([{'findings': [row]}, {'findings': [row]}])
     with pytest.raises(InspectionError, match='invalid_public_evidence'):
         run(api)
-    assert len(calls) == 1
+    assert len(calls) == 2
+    assert all(PRIVATE not in json.dumps(c, ensure_ascii=False) for c in calls)
 
 
 def test_internal_long_quote_outside_evidence_blocked():
@@ -208,3 +209,14 @@ def test_transport_locks_endpoint_and_rejects_redirect_without_logging(monkeypat
     assert calls[0][0] == ENDPOINT
     assert calls[0][1]['allow_redirects'] is False
     assert calls[0][2] is False
+
+
+def test_public_citation_correction_precedes_private_context():
+    row = finding(); row['evidence'][0]['page'] = 2
+    api, calls = client([{'findings': [row]}, {'findings': [finding()]},
+                         {'matches': [match()], 'unmatched_finding_ids': []}])
+    result = run(api)
+    assert result['findings'][0]['evidence'][0]['page'] == 1
+    assert len(calls) == 3
+    assert all(PRIVATE not in json.dumps(c, ensure_ascii=False) for c in calls[:2])
+    assert PRIVATE in json.dumps(calls[2], ensure_ascii=False)
