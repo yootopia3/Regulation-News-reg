@@ -3,6 +3,7 @@
 import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { Settings } from 'lucide-react'
 import AgencyIcon from './AgencyIcon'
 import {
     agencyOrder,
@@ -303,9 +304,20 @@ export default function Sidebar(props: SidebarProps): React.ReactElement {
                     </nav>
 
                     {/* Footer */}
-                    <div className="text-xs text-blue-100/70 mt-auto flex items-center gap-2">
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2z" /></svg>
-                        v3.0.0 (Beta)
+                    <div className="mt-auto space-y-4 pt-6">
+                        <Link
+                            href="/admin/ai-connection"
+                            prefetch={false}
+                            onClick={onCloseMenu}
+                            className="flex w-full items-center gap-3 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-medium text-blue-50 transition-colors hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                        >
+                            <Settings className="h-5 w-5 shrink-0" aria-hidden="true" />
+                            <span>관리자 설정</span>
+                        </Link>
+                        <div className="flex items-center gap-2 px-4 text-xs text-blue-100/70">
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2z" /></svg>
+                            v3.0.0 (Beta)
+                        </div>
                     </div>
                 </div>
             </aside>
