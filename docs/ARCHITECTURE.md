@@ -360,3 +360,12 @@ scope=board에서 내부 문서 기능 플래그 대신 BOARD_ENABLED를 검사�
 검증된 기존 관리자 세션이 필요하며 댓글별 비밀번호 제한(10회/15분)을 적용한다.
 SQL published-parent trigger와 revision CAS를 함께 적용하며 글 삭제 시 댓글은 cascade 삭제한다.
 기사·AI·첨부·기존 게시글 API 계약은 유지한다. 신규 migration 적용은 별도 운영 단계다.
+
+### 4.15 관리자 AI 연결 설정 (2026-11-02, 운영 적용 별도)
+
+관리자 AI 연결 설정(`/admin/ai-connection`)은 제재공시 분석 전용이다.
+기존 관리자 인증 → 합성 연결 시험 → 서명된 시험 결과 확인 → 암호화 DB 저장 순서로 동작한다.
+Python worker는 각 작업을 claim하기 전 설정을 다시 읽고 해당 작업 안에서는 동일 설정을 사용한다.
+기존 Responses 클라이언트를 확장해 Chat Completions JSON mode도 지원하며 결과 검증/게시 절차는 유지한다.
+최초 feature gate/공유 암호화 키 설정이 필요하다. 네트워크 주소 검증과 IP 고정을 적용하며
+사내 주소는 명시적 base URL 허용 및 사내 실행 환경이 필요하다. 운영 절차: `docs/ai-connection-setup.md`.

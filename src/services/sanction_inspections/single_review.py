@@ -5,7 +5,7 @@ from uuid import UUID
 
 from src.config.settings import get_supabase_service_role_key, load_env
 from src.db.client import get_supabase_client
-from .client import InspectionClient, Settings
+from .connection import client_for_db
 from .models import InspectionError
 from .worker import run_once
 
@@ -48,7 +48,8 @@ def main():
     try:
         if not get_supabase_service_role_key():
             raise InspectionError('not_configured')
-        result = review_one(get_supabase_client(), InspectionClient(Settings.from_env()),
+        db = get_supabase_client()
+        result = review_one(db, client_for_db(db),
                             os.environ['TARGET_ARTICLE_ID'], os.environ['EXPECTED_MASTER_FINGERPRINT'])
         print(result)
     except Exception:
