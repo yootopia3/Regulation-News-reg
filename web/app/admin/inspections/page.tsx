@@ -28,7 +28,7 @@ export default function InspectionsPage() {
         finally { setBusy(false) }
     }
     return <main className="min-h-screen bg-slate-50 text-slate-900 p-6 md:p-10"><div className="max-w-5xl mx-auto">
-        <nav className="flex gap-5 text-sm text-blue-900"><Link href="/">대시보드</Link><Link href="/admin/documents">내부 문서 관리</Link></nav>
+        <nav className="flex flex-wrap gap-5 text-sm text-blue-900"><Link href="/">대시보드</Link><Link href="/admin/documents">내부 문서 관리</Link><Link href="/admin/ai-connection">AI 연결 설정</Link></nav>
         <h1 className="text-3xl font-bold mt-6">제재공시 분석 관리</h1><p className="mt-3 text-slate-600">활성 업무원장 또는 업무규정으로 부서와 점검 항목을 제안합니다. 자동화가 활성화되면 검증을 통과한 결과는 자동 게시됩니다. 아래 내부 근거는 관리자만 볼 수 있습니다.</p>
         {error && <p role="alert" className="mt-5 text-red-800">{error}</p>}{notice && <p role="status" className="mt-5 text-blue-900">{notice}</p>}
         {!enabled && <p className="mt-5 text-amber-900">분석 실행이 비활성 상태입니다. 운영 설정을 확인해 주세요.</p>}

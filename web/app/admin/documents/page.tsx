@@ -27,7 +27,7 @@ export default function DocumentsPage() {
         finally { setBusy(false) }
     }
     return <main className="min-h-screen bg-slate-50 text-slate-900 p-6 md:p-10"><div className="max-w-5xl mx-auto">
-        <header className="flex justify-between gap-4"><div><Link href="/" className="text-sm text-blue-800">대시보드</Link><h1 className="text-3xl font-bold mt-3">내부 문서 관리</h1><p className="text-slate-600 mt-2">문서 등록 후 부서와 업무를 검토하고 활성화하세요. 원문과 추출 내용은 관리자에게만 표시됩니다.</p></div>
+        <header className="flex justify-between gap-4"><div><nav className="flex flex-wrap gap-5 text-sm text-blue-800"><Link href="/">대시보드</Link><Link href="/admin/inspections">제재공시 분석 관리</Link><Link href="/admin/ai-connection">AI 연결 설정</Link></nav><h1 className="text-3xl font-bold mt-3">내부 문서 관리</h1><p className="text-slate-600 mt-2">문서 등록 후 부서와 업무를 검토하고 활성화하세요. 원문과 추출 내용은 관리자에게만 표시됩니다.</p></div>
             <button className="text-sm shrink-0 self-start" onClick={async () => { try { await documentRequest('/api/admin/logout', { method: 'POST' }); window.location.assign('/admin/login') } catch (e) { setError((e as Error).message) } }}>로그아웃</button></header>
         {error && <p role="alert" className="mt-5 p-4 bg-red-50 text-red-800 rounded-lg">{error}</p>}
         {notice && <p role="status" className="mt-5 p-4 bg-blue-50 text-blue-900 rounded-lg">{notice}</p>}

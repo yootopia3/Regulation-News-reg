@@ -200,3 +200,13 @@ DELETE 시 부모가 이미 없는 FK cascade는 허용해 비공개 글도 댓�
 수정·삭제는 부모/댓글 UUID와 revision을 모두 조건으로 사용한다.
 비공개 전환은 댓글 데이터를 삭제하지 않지만 일반/관리자 댓글 API에서 숨긴다.
 글을 다시 게시하면 기존 댓글도 보인다. 글을 물리 삭제하면 댓글도 함께 삭제된다.
+
+## 15. 관리자 AI 연결 설정 (202611020001, 운영 적용 별도)
+
+`sanction_ai_connection`은 service_role 전용 RLS 단일 행 테이블이다.
+base_url, protocol(responses/chat_completions), model, api_key_ciphertext(AES-256-GCM),
+key_last4, revision, updated_by, updated_at을 저장한다. 평문 키는 저장하지 않는다.
+`sanction_ai_connection_save`는 advisory lock + expected revision으로 저장 충돌을 거부한다.
+이 migration은 기존 기사/분석/게시 상태를 변경하지 않는다. 분석 작업의 private result에
+사용한 connection_revision을 추가하며 공개 DTO에는 포함하지 않는다.
+설치/암호화 키/사내망 이전 절차: `docs/ai-connection-setup.md`.

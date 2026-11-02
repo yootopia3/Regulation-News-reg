@@ -42,4 +42,5 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run test:documents-db
+      - run: npm run test:ai-connection-db
       - run: npm run build

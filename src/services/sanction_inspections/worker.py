@@ -7,7 +7,7 @@ import time
 from src.config.settings import load_env, get_supabase_service_role_key
 from src.db.client import get_supabase_client
 from src.services.internal_documents.worker import parse_isolated
-from .client import InspectionClient, Settings
+from .connection import client_for_db
 from .download import download_pdf
 from .engine import analyze
 from .models import InspectionError, Page, Unit
@@ -52,6 +52,7 @@ def load_units(db, versions):
 
 
 def run_once(db, client, downloader=download_pdf, parser=parse_isolated):
+    client.refresh()
     client.settings.check()
     job = db.rpc('inspection_claim', {}).execute().data
     if not job:
@@ -77,6 +78,8 @@ def run_once(db, client, downloader=download_pdf, parser=parse_isolated):
             units = load_units(db, job['versions'])
             result = analyze(pages, units, client, organization=True)
         result['pdf_sha256'] = hashlib.sha256(data).hexdigest()
+        if isinstance(client.settings.connection_revision, int) and client.settings.connection_revision:
+            result['connection_revision'] = client.settings.connection_revision
     except InspectionError as exc:
         error = str(exc)
     except Exception:
@@ -90,14 +93,14 @@ def main():
     argument_parser.add_argument('--once', action='store_true')
     args = argument_parser.parse_args()
     load_env()
-    settings = Settings.from_env()
     try:
-        settings.check()
         if not get_supabase_service_role_key():
             raise InspectionError('not_configured')
+        db = get_supabase_client()
+        client = client_for_db(db)
+        client.settings.check()
     except InspectionError:
         raise SystemExit('inspection_worker_not_configured') from None
-    db, client = get_supabase_client(), InspectionClient(settings)
     while True:
         try:
             worked = run_once(db, client)

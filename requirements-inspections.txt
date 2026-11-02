@@ -1,3 +1,4 @@
 -r requirements.txt
 pydantic>=2.7,<3
 pypdf>=5,<7
+cryptography>=43,<47

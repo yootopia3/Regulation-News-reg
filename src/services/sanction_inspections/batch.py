@@ -8,7 +8,7 @@ import requests
 
 from src.config.settings import load_env, get_supabase_service_role_key
 from src.db.client import get_supabase_client
-from .client import InspectionClient, Settings
+from .connection import client_for_db
 from .worker import run_once
 
 
@@ -68,7 +68,8 @@ def main():
         limit, since, endpoint, token = config()
         if not get_supabase_service_role_key():
             raise ValueError('not_configured')
-        totals = run_batch(get_supabase_client(), InspectionClient(Settings.from_env()), limit, since, endpoint, token)
+        db = get_supabase_client()
+        totals = run_batch(db, client_for_db(db), limit, since, endpoint, token)
         print(totals)
         if totals['publication_errors']:
             raise SystemExit(1)

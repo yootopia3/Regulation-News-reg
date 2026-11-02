@@ -35,7 +35,11 @@ def match():
 
 
 class Client:
-    settings = SimpleNamespace(check=lambda: None, model='fixture-model')
+    settings = SimpleNamespace(check=lambda: None, model='fixture-model', connection_revision=0)
+
+    def refresh(self):
+        # This engine fixture has immutable settings; the production client reloads per job.
+        pass
 
     def __init__(self, answers=None):
         self.calls = []

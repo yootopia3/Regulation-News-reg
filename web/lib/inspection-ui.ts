@@ -2,6 +2,9 @@ export const INSPECTION_STATUS: Record<string, string> = {
     queued: '분석 대기', processing: '분석 중', needs_review: '초안 검토 필요', failed: '분석 실패', stale: '규정 변경 · 재분석 필요',
 }
 export const INSPECTION_ERRORS: Record<string, string> = {
+    connection_not_configured: 'AI 연결 설정을 읽지 못했습니다. 설정 저장소와 서버 암호화 키를 확인해 주세요.',
+    unsafe_ai_url: 'AI 서버 주소가 허용되지 않습니다. 관리자 AI 연결 설정을 확인해 주세요.',
+    provider_auth_failed: 'AI API 키 또는 모델 사용 권한을 확인해 주세요.',
     invalid_public_evidence: 'AI가 제시한 인용문 또는 페이지가 PDF 원문과 일치하지 않아 분석을 보류했습니다. 다시 분석 후에도 반복되면 원문 확인이 필요합니다.',
     pdf_missing: '등록된 PDF 주소가 없습니다.', unsafe_pdf_url: '허용된 금감원 HTTPS 주소가 아닙니다.',
     ocr_required: '이미지가 포함되거나 텍스트가 부족한 페이지가 있어 OCR 또는 원문 확인이 필요합니다.',
