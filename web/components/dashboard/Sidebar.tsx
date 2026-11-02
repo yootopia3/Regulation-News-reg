@@ -309,7 +309,7 @@ export default function Sidebar(props: SidebarProps): React.ReactElement {
                             href="/admin/ai-connection"
                             prefetch={false}
                             onClick={onCloseMenu}
-                            className="flex w-full items-center gap-3 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-medium text-blue-50 transition-colors hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-blue-50 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                         >
                             <Settings className="h-5 w-5 shrink-0" aria-hidden="true" />
                             <span>관리자 설정</span>
