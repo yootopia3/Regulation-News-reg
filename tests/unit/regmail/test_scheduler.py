@@ -1,6 +1,7 @@
 import copy,json
 import pytest
 from ops.regmail.scheduler import SOURCE,TARGET,SCHEDULE,BODY,specification,configure
+from ops.regmail.scheduler import verify_dispatch as real_verify_dispatch,REPOSITORY
 
 @pytest.fixture(autouse=True)
 def disable_real_dispatch(monkeypatch):
@@ -55,3 +56,17 @@ def test_invalid_scheduler_token_leaves_new_job_disabled(source,monkeypatch):
     monkeypatch.setattr('ops.regmail.scheduler.verify_dispatch',rejected)
     with pytest.raises(RuntimeError):configure(cron)
     assert cron.jobs[8]['enabled'] is False and cron.jobs[7]==source
+
+@pytest.mark.parametrize('status',[200,204])
+def test_dispatch_accepts_documented_current_and_legacy_responses(source,monkeypatch,status):
+    class Response:
+        def __init__(self):self.status=status
+        def __enter__(self):return self
+        def __exit__(self,*args):pass
+        def read(self,limit):return json.dumps(dict(workflow_run_id=123,run_url='https://api.github.com/repos/'+REPOSITORY+'/actions/runs/123',html_url='https://github.com/'+REPOSITORY+'/actions/runs/123')).encode()
+    class Opener:
+        def open(self,request,timeout):
+            assert request.full_url==TARGET and json.loads(request.data)['inputs']==dict(mode='auth')
+            return Response()
+    monkeypatch.setattr('ops.regmail.scheduler.urllib.request.build_opener',lambda handler:Opener())
+    assert real_verify_dispatch(specification(source))==(123 if status==200 else None)

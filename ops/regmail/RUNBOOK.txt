@@ -1,15 +1,16 @@
 Hosted regulatory delta email
 
-Schedule: 09:00 Asia/Seoul Monday-Friday. A live KASI getRestDeInfo check runs
-before every delivery, excluding public/substitute/temporary holidays. API
-failures are failures, never interpreted as an empty holiday list. Source
+Schedule: 09:00 Asia/Seoul Monday-Friday. The user chose the maintained official
+holiday list in holidays-kr.json, with no additional data.go.kr account/key.
+It covers 2026-2027 public/substitute holidays. Newly designated temporary
+holidays and future years require updating the file after official verification.
+Missing/invalid data or dates after validity ends stop delivery. Source
 comparison is against the last verified delivery, so closure days accumulate.
 GitHub runner queuing and file preparation can delay actual email arrival.
 
 Setup secrets (repository Actions secrets):
 REGMAIL_SENDER, REGMAIL_RECIPIENT: fixed authorized addresses.
 REGMAIL_GMAIL_APP_PASSWORD: dedicated Gmail app password, user-entered only.
-REGMAIL_DATA_GO_KR_SERVICE_KEY: data.go.kr KASI holiday service key.
 REGMAIL_CRONJOB_API_KEY: existing cron-job.org account API key.
 Existing NEXT_PUBLIC_SUPABASE_URL_V2 and SUPABASE_SERVICE_ROLE_KEY_V2 are reused.
 Never print, commit, or attach these values. Gmail password changes/revocation

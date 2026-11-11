@@ -5,7 +5,6 @@ import pytest
 from ops.regmail.delivery import c,guard,write,Manager,SENDER,RECIPIENT
 from ops.regmail.runner import Hosted
 from ops.regmail.gmail import build,verify
-from ops.regmail.calendar import business_day
 from ops.regmail.source import DeliveredCache
 
 def envelope(title='public record'):
@@ -94,25 +93,6 @@ def test_corrupt_restored_packet_never_sends(case):
     key=next(iter(store.objects));store.objects[key]+=b'!';store.fail_at=None
     with pytest.raises(Exception):Hosted(store,mail,root/'second',source)
     assert mail.calls==0
-
-def xml(items='',total=0,page=1,size=100):
-    return f'<response><header><resultCode>00</resultCode></header><body><items>{items}</items><numOfRows>{size}</numOfRows><pageNo>{page}</pageNo><totalCount>{total}</totalCount></body></response>'.encode()
-
-def test_calendar_weekend_never_calls_api(monkeypatch):
-    monkeypatch.delenv('REGMAIL_DATA_GO_KR_SERVICE_KEY',raising=False)
-    assert business_day(datetime(2026,11,14,0,tzinfo=timezone.utc),lambda _:pytest.fail('API used'))['reason']=='weekend'
-
-def test_calendar_uses_korean_date_and_holiday_flag(monkeypatch):
-    monkeypatch.setenv('REGMAIL_DATA_GO_KR_SERVICE_KEY','test-value')
-    item='<item><locdate>20261225</locdate><seq>1</seq><isHoliday>Y</isHoliday><dateName>Christmas</dateName></item>'
-    result=business_day(datetime(2026,12,24,23,59,tzinfo=timezone.utc),lambda _:xml(item,1))
-    assert result['date']=='2026-12-25' and result['business'] is False
-    assert business_day(datetime(2026,11,11,0,tzinfo=timezone.utc),lambda _:xml())['business'] is True
-
-@pytest.mark.parametrize('raw',[b'<broken>',b'<response/>',xml(total=1),xml(page=2),b'<!DOCTYPE x><response/>'])
-def test_calendar_invalid_or_incomplete_fails_closed(monkeypatch,raw):
-    monkeypatch.setenv('REGMAIL_DATA_GO_KR_SERVICE_KEY','test-value')
-    with pytest.raises(Exception):business_day(datetime(2026,11,11,0,tzinfo=timezone.utc),lambda _:raw)
 
 def test_cold_cache_keeps_only_files_proven_delivered(tmp_path,monkeypatch):
     from transfer_fetch import OriginalCache

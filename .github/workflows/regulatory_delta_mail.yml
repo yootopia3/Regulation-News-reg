@@ -10,7 +10,7 @@ on:
         default: check
         required: true
   schedule:
-    # 00:00 UTC is 09:00 Asia/Seoul; the live holiday gate runs before any send.
+    # 00:00 UTC is 09:00 Asia/Seoul; the maintained holiday list gates sends.
     - cron: '0 0 * * 1-5'
 
 permissions:
@@ -45,7 +45,6 @@ jobs:
           REGMAIL_SENDER: ${{ secrets.REGMAIL_SENDER }}
           REGMAIL_RECIPIENT: ${{ secrets.REGMAIL_RECIPIENT }}
           REGMAIL_GMAIL_APP_PASSWORD: ${{ secrets.REGMAIL_GMAIL_APP_PASSWORD }}
-          REGMAIL_DATA_GO_KR_SERVICE_KEY: ${{ secrets.REGMAIL_DATA_GO_KR_SERVICE_KEY }}
           REGMAIL_CRONJOB_API_KEY: ${{ secrets.REGMAIL_CRONJOB_API_KEY }}
           SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL_V2 }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_V2 }}

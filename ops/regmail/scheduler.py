@@ -52,7 +52,15 @@ def verify_dispatch(job):
         data=c.encoded(dict(ref='main',inputs=dict(mode='auth'))))
     try:
         with urllib.request.build_opener(NoRedirect()).open(request,timeout=40) as response:
-            c.require(response.status==204,'scheduler_dispatch_unverified',502)
+            # GitHub's 2026 API returns a run identity; older API versions
+            # acknowledge accepted dispatches with 204 and an empty body.
+            c.require(response.status in (200,204),'scheduler_dispatch_unverified',502)
+            if response.status==204:return None
+            result=json.loads(response.read(65537));ident=result.get('workflow_run_id')
+            c.require(type(ident) is int and ident>0
+                and result.get('run_url')=='https://api.github.com/repos/'+REPOSITORY+'/actions/runs/'+str(ident)
+                and result.get('html_url')=='https://github.com/'+REPOSITORY+'/actions/runs/'+str(ident),'scheduler_dispatch_unverified',502)
+            return ident
     except urllib.error.HTTPError as error:
         status=error.code;error.close();raise c.Problem('scheduler_dispatch_http_'+str(status),502) from None
 
@@ -71,7 +79,7 @@ def configure(cron,enable=False,cloud=None):
     else:ident=targets[0]['jobId']
     c.require(type(ident) is int and ident>0,'scheduler_job_invalid')
     job=cron.call('/jobs/'+str(ident))['jobDetails'];check_job(job)
-    if not enable:verify_dispatch(job)
+    auth_run_id=verify_dispatch(job) if not enable else None
     if enable:
         result=(cloud or {}).get('migration_test') or (cloud or {}).get('last_result',{})
         c.require(os.environ.get('REGMAIL_ENABLED')=='true' and result.get('test') is True
@@ -80,7 +88,8 @@ def configure(cron,enable=False,cloud=None):
         cron.call('/jobs/'+str(ident),'PATCH',dict(job=dict(enabled=True)))
         job=cron.call('/jobs/'+str(ident))['jobDetails'];check_job(job)
         c.require(job.get('enabled') is True,'scheduler_enable_unverified')
-    return dict(status='scheduler_ready',job_id=ident,enabled=job.get('enabled'),schedule='09:00 Asia/Seoul Monday-Friday')
+    return dict(status='scheduler_ready',job_id=ident,enabled=job.get('enabled'),auth_run_id=auth_run_id,
+        next_execution=job.get('nextExecution'),schedule='09:00 Asia/Seoul Monday-Friday')
 
 def main(enable=False):
     c.require(os.environ.get('GITHUB_REPOSITORY')==REPOSITORY,'scheduler_repository_mismatch')
