@@ -1,0 +1,52 @@
+name: Regulatory delta mail
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Check configuration or send an authorized migration test
+        type: choice
+        options: [auth, check, test, scheduled, scheduler-prepare, scheduler-enable]
+        default: check
+        required: true
+  schedule:
+    # 00:00 UTC is 09:00 Asia/Seoul; the live holiday gate runs before any send.
+    - cron: '0 0 * * 1-5'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: regulatory-delta-mail-single-writer
+  cancel-in-progress: false
+
+jobs:
+  deliver:
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || vars.REGMAIL_ENABLED == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: ops/regmail/requirements.txt
+      - name: Install pinned exporter dependencies
+        run: python -m pip install -r ops/regmail/requirements.txt
+      - name: Verify delivery failure handling
+        run: python -m pytest tests/unit/regmail -q
+      - name: Check business day and deliver
+        env:
+          PYTHONUTF8: '1'
+          REGMAIL_RUNTIME: ${{ runner.temp }}/regmail-runtime
+          REGMAIL_MODE: ${{ github.event.inputs.mode || 'scheduled' }}
+          REGMAIL_ENABLED: ${{ vars.REGMAIL_ENABLED }}
+          REGMAIL_SENDER: ${{ secrets.REGMAIL_SENDER }}
+          REGMAIL_RECIPIENT: ${{ secrets.REGMAIL_RECIPIENT }}
+          REGMAIL_GMAIL_APP_PASSWORD: ${{ secrets.REGMAIL_GMAIL_APP_PASSWORD }}
+          REGMAIL_DATA_GO_KR_SERVICE_KEY: ${{ secrets.REGMAIL_DATA_GO_KR_SERVICE_KEY }}
+          REGMAIL_CRONJOB_API_KEY: ${{ secrets.REGMAIL_CRONJOB_API_KEY }}
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL_V2 }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_V2 }}
+        run: python -m ops.regmail.runner --mode "$REGMAIL_MODE"

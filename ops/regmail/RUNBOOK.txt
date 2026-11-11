@@ -1,0 +1,73 @@
+Hosted regulatory delta email
+
+Schedule: 09:00 Asia/Seoul Monday-Friday. A live KASI getRestDeInfo check runs
+before every delivery, excluding public/substitute/temporary holidays. API
+failures are failures, never interpreted as an empty holiday list. Source
+comparison is against the last verified delivery, so closure days accumulate.
+GitHub runner queuing and file preparation can delay actual email arrival.
+
+Setup secrets (repository Actions secrets):
+REGMAIL_SENDER, REGMAIL_RECIPIENT: fixed authorized addresses.
+REGMAIL_GMAIL_APP_PASSWORD: dedicated Gmail app password, user-entered only.
+REGMAIL_DATA_GO_KR_SERVICE_KEY: data.go.kr KASI holiday service key.
+REGMAIL_CRONJOB_API_KEY: existing cron-job.org account API key.
+Existing NEXT_PUBLIC_SUPABASE_URL_V2 and SUPABASE_SERVICE_ROLE_KEY_V2 are reused.
+Never print, commit, or attach these values. Gmail password changes/revocation
+can invalidate its app password; reconnect when authentication fails.
+
+Runtime store: Supabase private bucket regulatory-delta-mail. No public access
+or anonymous policy is added. Blobs are immutable by SHA256. Compressed state
+versions are immutable and the head points only to a verified uploaded version.
+The hosted workflow is the only runtime writer and uses the fixed concurrency
+group regulatory-delta-mail-single-writer. Head checks detect stale operators
+but are not a substitute for the single-writer rule. Do not run this worker in
+another workflow, local process or branch in parallel. Bootstrap is performed
+once while REGMAIL_ENABLED is false. Never overwrite an advanced cloud head.
+
+Delivery order: persist packet blobs and pending state; verify Sent for its
+unique Message-ID; build validated MIME; persist send_attempt remotely; send
+once using TLS SMTP; read Gmail Sent using read-only IMAP and verify sender,
+recipient, subject, all attachment names/sizes/SHA256; then confirm and persist
+the delivered cursor. Timeout after SMTP DATA is unknown. A later run searches
+Sent and confirms only exact evidence; zero matches never authorizes retry of
+an existing attempt. An operator must resolve uncertain sends. Do not delete
+pending or edit delivered hashes to force progress.
+
+Bank-confirmed receipt is separate from delivery. Emails instruct the recipient
+to apply earlier packages before later packages through the existing bank admin
+import screen. No source database or bank database is modified by the exporter.
+No application image is built. Only the public transfer contract is exported.
+
+Cold runner: restore full envelope metadata whose hashes match delivered.
+An old attachment may be retained without re-downloading bytes only if its
+digest/size/type match the delivered receipt. Every new blob requires actual
+validated bytes. This avoids copying historical multi-GB files every morning.
+Original lookup failures remain in the attached notice; do not claim complete
+source capture when warnings exist. A single article larger than the mail
+package limit stops the run; never discard its attachments to make it fit.
+
+Migration: test auth mode, then check mode, then actual test mode. Confirm a
+successful hosted run, remote sent_proofs and real Sent message. Only then set
+REGMAIL_ENABLED=true and pause the notebook automation. Protect the notebook's
+delivery chain during the hosted test. Keep bootstrap provenance and local
+baseline until a later bank application receipt is confirmed.
+
+Scheduling: scheduler-prepare clones only the existing collector job's GitHub
+request headers into a NEW, disabled mail job, at 09:00 Asia/Seoul weekdays.
+The collector job is never changed. After a verified real test, enable the
+repository variable and run scheduler-enable. Verify its enabled state and
+next execution, then pause the notebook automation. GitHub's native schedule
+is a backup; the external trigger avoids its public-repository inactivity
+disablement. Both paths share the same concurrency group and business-date
+completion check. Do not enable a second job with a different sender cursor.
+
+Before test dispatch, the operator compares the current notebook receipt to
+the cloud receipt while holding the notebook state.lock and writes a durable
+server-cutover.json marker. Notebook prepare/begin-send refuse while it exists.
+Keep the marker after successful migration. Never remove it to resume notebook
+delivery without reconciling all later cloud deliveries first.
+
+Operations: Actions run/step status exposes failures without secret values.
+No mailbox modifications or automatic resend on ambiguous outcomes. No private
+bucket blobs or state are published as GitHub artifacts. A completed workflow
+with holiday_skipped or no changes does not prove an email was sent.
