@@ -9,9 +9,8 @@ on:
         options: [auth, check, test, scheduled, scheduler-prepare, scheduler-enable]
         default: check
         required: true
-  schedule:
-    # 00:00 UTC is 09:00 Asia/Seoul; the maintained holiday list gates sends.
-    - cron: '0 0 * * 1-5'
+  # cron-job.org dispatches scheduled mode at 09:00 Asia/Seoul weekdays.
+  # No native schedule: public-repository inactivity must not disable this job.
 
 permissions:
   contents: read
@@ -39,6 +38,7 @@ jobs:
       - name: Check business day and deliver
         env:
           PYTHONUTF8: '1'
+          TZ: Asia/Seoul
           REGMAIL_RUNTIME: ${{ runner.temp }}/regmail-runtime
           REGMAIL_MODE: ${{ github.event.inputs.mode || 'scheduled' }}
           REGMAIL_ENABLED: ${{ vars.REGMAIL_ENABLED }}

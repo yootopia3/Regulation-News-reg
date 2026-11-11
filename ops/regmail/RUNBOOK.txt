@@ -57,10 +57,10 @@ Scheduling: scheduler-prepare clones only the existing collector job's GitHub
 request headers into a NEW, disabled mail job, at 09:00 Asia/Seoul weekdays.
 The collector job is never changed. After a verified real test, enable the
 repository variable and run scheduler-enable. Verify its enabled state and
-next execution, then pause the notebook automation. GitHub's native schedule
-is a backup; the external trigger avoids its public-repository inactivity
-disablement. Both paths share the same concurrency group and business-date
-completion check. Do not enable a second job with a different sender cursor.
+next execution, then pause the notebook automation. The workflow deliberately
+has no native schedule, avoiding its public-repository inactivity disablement.
+External and manual dispatches share the same concurrency group and business-
+date completion check. Do not enable a second job with a different sender cursor.
 
 Before test dispatch, the operator compares the current notebook receipt to
 the cloud receipt while holding the notebook state.lock and writes a durable
