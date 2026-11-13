@@ -9,11 +9,12 @@ sys.path[:0]=[str(REPO/'vibelabs/tools'),str(REPO/'vibelabs'),str(REPO)]
 from application import transfer_contract as c
 from application.original_contract import file_type
 from transfer_export import receipt, internet_source, export
+from .archives import package_stream, compressed_export, MAX_ATTACHMENTS, GUIDE_RESERVE
 
 SENDER=os.environ.get('REGMAIL_SENDER','')
 RECIPIENT=os.environ.get('REGMAIL_RECIPIENT','')
 KST=timezone(timedelta(hours=9))
-LIMIT=16_000_000
+LIMIT=MAX_ATTACHMENTS
 DEFAULT_OUTPUT=Path(os.environ.get('REGMAIL_RUNTIME',str(REPO/'.regmail-runtime')))/'out'
 DEFAULT_STATE=DEFAULT_OUTPUT.parent/'delivery'
 CONNECTION=REPO/'.env'
@@ -51,7 +52,7 @@ def package(path,base):
     """Verify every byte with the deployed import contract, without DB writes."""
     path=Path(path);c.require(path.stat().st_size<=c.MAX_PACKAGE)
     values=[];needed={}
-    with path.open('rb') as f:
+    with package_stream(path) as f:
         c.require(f.read(8)==c.MAGIC)
         size=f.read(4);c.require(len(size)==4)
         size=struct.unpack('>I',size)[0];c.require(0<size<=c.MAX_MANIFEST)
@@ -179,9 +180,11 @@ class Manager:
                 return dict(status='no_changes',source_records=len(values),warnings=len(warnings))
             run_id=datetime.now(KST).strftime('%Y%m%d_%H%M%S')+'_'+uuid.uuid4().hex[:8]
             folder=self.output/(run_id+'_자동증분');c.require(not folder.exists())
-            result=export(project,values,paths,base,folder,max_bytes=max_bytes,max_records=max_records)
+            folder.mkdir(parents=True)
             warning_file=folder/'원문확인_안내.txt'
             warning_file.write_text('\n'.join(warnings) if warnings else '이번 원문 확인에서 실패한 항목이 없습니다.',encoding='utf-8-sig')
+            budget=min(max_bytes,MAX_ATTACHMENTS-warning_file.stat().st_size-GUIDE_RESERVE)
+            result=compressed_export(project,values,paths,base,folder,max_bytes=budget,max_records=max_records)
             predecessor=s['deliveries'][-1]['filename'] if s['deliveries'] else '행내에서 적용을 확인한 기준자료'
             run=dict(id=run_id,created_at=now(),predecessor=predecessor,counts=counts,absent=result['absent'],packets=[])
             found={}
@@ -193,7 +196,9 @@ class Manager:
                 guide=folder/f'반입안내_{index:03d}.txt'
                 guide.write_text(f'규제정보 플랫폼 자동 증분 반입\n\n파일: {path.name}\n신규{added}·수정{updated}건 / 새 파일{len(m["files"])}개\n'
                     f'이전 기준 파일: {predecessor}\n이전 메일의 모든 파일을 먼저 적용하고, 이번 메일도 번호 순서대로 적용해주세요.\n'
-                    '관리자 설정 → 데이터 반입 → .regdata 선택 → 전송하고 검증 → 검토한 자료 적용 → 완료 확인 순서입니다.\n'
+                    '첨부 ZIP을 Windows의 모두 압축 풀기로 풀면 반입할 .regdata 파일 하나가 나옵니다.\n'
+                    '관리자 설정 → 데이터 반입 → 압축을 푼 .regdata 선택 → 전송하고 검증 → 검토한 자료 적용 → 완료 확인 순서입니다.\n'
+                    '하루 자료를 한 파일로 보내는 것을 우선하며 압축 후 메일 용량 또는 반입 규격 한도를 넘는 경우에만 나눕니다.\n'
                     '메일 발송은 행내 반입 완료를 뜻하지 않습니다. 앞선 파일이 누락되거나 충돌이 나오면 강제 적용하지 말고 알려주세요.\n'
                     '변경 없는 자료와 기존 확보 파일은 재포함하지 않았습니다. 이미지 재배포는 필요하지 않습니다.\n'
                     'MAFRA·내부 문서·게시판·계정·접속키·비공개 분석은 제외합니다.\n'
@@ -202,11 +207,17 @@ class Manager:
                     f'SHA256: {sha(path)}\n',encoding='utf-8-sig')
                 body=f'<p>규제정보 플랫폼 증분자료입니다.</p><p>신규 {added}건·수정 {updated}건, 새 첨부·이미지 {len(m["files"])}개를 담았습니다.</p>'
                 body+=f'<p>이전 기준: {html.escape(predecessor)}<br>이전 메일의 모든 자료를 먼저 반입한 뒤 이번 파일을 적용해주세요.</p>'
-                body+='<p>관리자 설정 → 데이터 반입 → 전송하고 검증 → 검토한 자료 적용 순서입니다. 완료 후 반입 기준파일을 보관해주세요. 이미지 재배포는 필요하지 않습니다.</p>'
-                body+=f'<p>원문 확인 참고사항 {len(warnings)}개는 첨부 안내문에 적었습니다. 원문을 확보하지 못한 항목을 확보된 것으로 표시하지 않습니다.</p>'
+                body+='<p><strong>첨부 ZIP을 모두 압축 풀기하면 .regdata 파일 하나가 나옵니다.</strong> 관리자 설정 → 데이터 반입에서 이 .regdata 파일을 선택하고 전송·검증 후 적용해주세요. 완료 후 반입 기준파일을 보관해주세요. 이미지 재배포는 필요하지 않습니다.</p>'
+                body+=f'<p>이번 변경분의 반입 ZIP은 총 {len(result["files"])}개입니다. 압축 후에도 메일 또는 반입 규격 한도를 넘는 경우에만 나누어 보냅니다.</p>'
+                body+=f'<p>원문 확인 참고사항 {len(warnings)}개입니다. 원문을 확보하지 못한 항목은 기존 확보본을 유지합니다.</p>'
+                if warnings:body+='<pre>'+html.escape('\n'.join(warnings))+'</pre>'
                 run['packets'].append(dict(package_id=ident,manifest=m,subject=subject,to=RECIPIENT,
-                    from_address=SENDER,body_html=body,attachments=[metadata(path),metadata(guide),metadata(warning_file)],status='pending'))
+                    from_address=SENDER,body_html=body,
+                    body_text=guide.read_text(encoding='utf-8-sig')+'\n원문 확인 참고사항\n'+warning_file.read_text(encoding='utf-8-sig'),
+                    attachments=[metadata(path)],status='pending'))
             c.require(found==expected,'export_mismatch')
+            from .gmail import build
+            for packet in run['packets']:build(packet)  # Exact MIME preflight before recording pending state.
             s['pending']=run;s['last_checked_at']=now();write(self.path,s);write(folder/'자동발송_준비.json',run)
             return dict(status='prepared',run=run)
     def begin_send(self,package_id):

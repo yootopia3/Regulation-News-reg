@@ -1,6 +1,24 @@
 import json
 import pytest
-from ops.regmail.storage import Storage
+from ops.regmail.storage import Storage,BUCKET,MAX_ATTACHMENTS
+
+@pytest.mark.parametrize('limit',[None,MAX_ATTACHMENTS,MAX_ATTACHMENTS+1])
+def test_private_bucket_supports_attachment_budget(monkeypatch,limit):
+    store=Storage('https://'+'a'*20+'.supabase.co','test')
+    value=dict(id=BUCKET,public=False,file_size_limit=limit)
+    monkeypatch.setattr(store,'request',lambda *a,**k:json.dumps(value).encode())
+    store.ensure_private()
+
+@pytest.mark.parametrize('public,limit,code',[
+    (True,MAX_ATTACHMENTS,'storage_not_private'),
+    (False,24_000_000,'storage_size_limit_too_small'),
+    (False,str(MAX_ATTACHMENTS),'storage_size_limit_too_small')])
+def test_unsuitable_bucket_stops_before_delivery(monkeypatch,public,limit,code):
+    store=Storage('https://'+'a'*20+'.supabase.co','test')
+    value=dict(id=BUCKET,public=public,file_size_limit=limit)
+    monkeypatch.setattr(store,'request',lambda *a,**k:json.dumps(value).encode())
+    with pytest.raises(Exception) as error:store.ensure_private()
+    assert error.value.code==code
 
 def test_head_reads_bypass_cached_urls(monkeypatch):
     store=Storage('https://'+'a'*20+'.supabase.co','test')

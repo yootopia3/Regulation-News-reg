@@ -7,6 +7,7 @@ from email.parser import BytesParser
 from email.utils import format_datetime,getaddresses
 from pathlib import Path
 from .delivery import c,SENDER,RECIPIENT,KST,now,sha
+from .archives import MAX_ATTACHMENTS,MAX_MESSAGE
 
 def message_id(packet):return '<regmail.'+packet['package_id']+'@regulation-news-reg.local>'
 
@@ -16,13 +17,14 @@ def build(packet):
     message['From']=SENDER;message['To']=RECIPIENT;message['Subject']=packet['subject']
     message['Date']=format_datetime(datetime.now(KST));message['Message-ID']=message_id(packet)
     message['X-Regmail-Package']=packet['package_id']
-    message.set_content('규제정보 플랫폼 증분 반입자료입니다. 첨부된 반입안내를 확인해주세요.')
+    message.set_content(packet.get('body_text') or '규제정보 플랫폼 증분 반입자료입니다. 첨부된 반입안내를 확인해주세요.')
     message.add_alternative(packet['body_html'],subtype='html')
+    c.require(sum(item['bytes'] for item in packet['attachments'])<=MAX_ATTACHMENTS,'mail_too_large',409)
     for item in packet['attachments']:
         path=Path(item['path']);data=path.read_bytes()
         c.require(len(data)==item['bytes'] and hashlib.sha256(data).hexdigest()==item['sha256'],'attachment_changed',409)
-        message.add_attachment(data,maintype='application',subtype='octet-stream',filename=item['filename'])
-    wire=message.as_bytes();c.require(len(wire)<=24_000_000,'mail_too_large',409)
+        message.add_attachment(data,maintype='application',subtype='zip' if path.suffix.lower()=='.zip' else 'octet-stream',filename=item['filename'])
+    wire=message.as_bytes();c.require(len(wire)<=MAX_MESSAGE,'mail_too_large',409)
     return wire
 
 def verify(raw,packet,provider_id,internal_date):
@@ -92,5 +94,7 @@ class Gmail:
         # No automatic retry: a timeout after DATA is an unknown delivery outcome.
         with smtplib.SMTP_SSL('smtp.gmail.com',465,context=self.context,timeout=90) as smtp:
             smtp.login(SENDER,self.password)
+            limit=smtp.esmtp_features.get('size')
+            c.require(limit is None or limit.isdigit() and len(wire)<=int(limit),'mail_too_large',409)
             rejected=smtp.sendmail(SENDER,[RECIPIENT],wire)
             c.require(not rejected,'mail_recipient_rejected',502)

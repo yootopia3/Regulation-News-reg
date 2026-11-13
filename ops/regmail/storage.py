@@ -1,6 +1,7 @@
 """Private object storage with verified immutable snapshots and a guarded head."""
 import gzip,hashlib,json,os,re,time,urllib.error,urllib.parse,urllib.request,uuid
 from .delivery import c
+from .archives import MAX_ATTACHMENTS
 
 BUCKET='regulatory-delta-mail'
 
@@ -48,6 +49,8 @@ class Storage:
     def ensure_private(self):
         value=json.loads(self.request('GET','bucket/'+BUCKET))
         c.require(value.get('id')==BUCKET and value.get('public') is False,'storage_not_private',409)
+        limit=value.get('file_size_limit')
+        c.require(limit is None or type(limit) is int and limit>=MAX_ATTACHMENTS,'storage_size_limit_too_small',409)
     def blob(self,data):
         digest=hashlib.sha256(data).hexdigest();key='blobs/'+digest
         old=self.get(key,missing=True)

@@ -43,7 +43,7 @@ Cold runner: restore full envelope metadata whose hashes match delivered.
 An old attachment may be retained without re-downloading bytes only if its
 digest/size/type match the delivered receipt. Every new blob requires actual
 validated bytes. This avoids copying historical multi-GB files every morning.
-Original lookup failures remain in the attached notice; do not claim complete
+Original lookup failures remain in the email body; do not claim complete
 source capture when warnings exist. A single article larger than the mail
 package limit stops the run; never discard its attachments to make it fit.
 
